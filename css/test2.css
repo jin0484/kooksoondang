@@ -338,6 +338,7 @@ section[id] {
   --side-nav-handle-width: 21px;
   --side-nav-handle-height: 125px;
   --side-nav-handle-radius: 8px;
+  --side-nav-surface: var(--kooksoondang_lighter);
 
   position: fixed;
   z-index: 40;
@@ -349,8 +350,8 @@ section[id] {
   display: flex;
   align-items: center;
   padding: 1rem 0.75rem;
-  background: var(--makgeolli_White);
-  border: 1px solid var(--bekseju_dark3);
+  background: var(--side-nav-surface);
+  border: 1px solid var(--kooksoondang_orange);
   border-left: none;
   border-radius: 0 var(--side-nav-radius) var(--side-nav-radius) 0;
 }
@@ -370,8 +371,8 @@ section[id] {
   height: var(--side-nav-handle-height);
   transform: translateY(-50%);
   pointer-events: auto;
-  background: var(--makgeolli_White);
-  border: 1px solid var(--bekseju_dark3);
+  background: var(--side-nav-surface);
+  border: 1px solid var(--kooksoondang_orange);
   border-left: none;
   border-radius: 0 var(--side-nav-handle-radius) var(--side-nav-handle-radius) 0;
 }
@@ -390,7 +391,7 @@ section[id] {
   gap: 0.7rem;
   padding-left: 0.5rem;
   font-size: 0.875rem;
-  color: var(--bekseju_dark4);
+  color: var(--makgeolli_White);
   white-space: nowrap;
   transition: color 260ms ease, font-size 260ms ease, padding-left 260ms ease;
 }
