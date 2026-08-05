@@ -752,7 +752,7 @@ section[id] {
 .history {
   position: relative;
   background: linear-gradient(180deg, var(--makgeolli_White) 0%, var(--makgeolli_light3) 100%);
-  padding: clamp(3rem, 6vw, 6rem) var(--gutter-x) clamp(5rem, 9vw, 9rem);
+  padding: calc(clamp(3rem, 6vw, 6rem) + 400px) var(--gutter-x) clamp(5rem, 9vw, 9rem);
 }
 
 .history_timeline {
@@ -766,7 +766,7 @@ section[id] {
   z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: clamp(4rem, 8vw, 8rem);
+  gap: calc(clamp(4rem, 8vw, 8rem) + 400px);
 }
 
 .history_morph_rail {
