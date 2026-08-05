@@ -1109,6 +1109,7 @@ section[id] {
 .events {
   background: var(--makgeolli_White);
   padding: clamp(4rem, 8vw, 9.375rem) var(--gutter-x);
+  margin-bottom: 400px;
 }
 
 .events_inner {
@@ -1218,10 +1219,11 @@ section[id] {
 
 .site_footer_wave {
   position: absolute;
-  top: -1px;
+  top: 0;
   left: 0;
   width: 100%;
   height: auto;
+  transform: translateY(-18.4%);
   z-index: 0;
 }
 
@@ -1306,8 +1308,19 @@ section[id] {
 .footer_sns {
   display: flex;
   align-items: center;
+  gap: 0.75rem;
+}
+
+.footer_sns a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: var(--bekseju_dark4);
 }
 
 .footer_sns img {
-  width: 3.5rem;
+  width: 1.75rem;
 }
