@@ -19,8 +19,8 @@
                         <li><a href="#hero">ABOUT BRAND</a></li>
                         <li><a href="#best">PRODUCTS</a></li>
                         <li><a href="#pairing">PAIRING</a></li>
-                        <li><a href="#events">EVENT/PROMOTION</a></li>
-                        <li><a href="#site_footer">CONTACT US</a></li>
+                        <li><span class="is_disabled" aria-disabled="true">EVENT/PROMOTION</span></li>
+                        <li><span class="is_disabled" aria-disabled="true">CONTACT US</span></li>
                     </ul>
                 </nav>
             </div>
@@ -33,7 +33,7 @@
     <nav class="side_nav" aria-label="Page sections">
         <ul>
             <li><a href="#hero"><img src="asset/test2/icon/submenu_dot.svg" alt="" aria-hidden="true">Test</a></li>
-            <li class="is_current"><a href="#best"><img src="asset/test2/icon/submenu_arrow.svg" alt="" aria-hidden="true">Best Products</a></li>
+            <li class="is_current"><a href="#best" aria-current="page"><img src="asset/test2/icon/submenu_arrow.svg" alt="" aria-hidden="true">Best Products</a></li>
             <li><a href="#history"><img src="asset/test2/icon/submenu_dot.svg" alt="" aria-hidden="true">Brand Story</a></li>
             <li><a href="#pairing"><img src="asset/test2/icon/submenu_dot.svg" alt="" aria-hidden="true">Pairing Game</a></li>
             <li><a href="#events"><img src="asset/test2/icon/submenu_dot.svg" alt="" aria-hidden="true">Event</a></li>
@@ -78,14 +78,17 @@
                 <div class="best_collage" aria-hidden="true">
                     <div class="best_card best_card_bekseju">
                         <span class="best_card_label">Bekseju</span>
+                        <img class="best_card_shadow" src="asset/test2/icon/ellipse_shadow_3.svg" alt="">
                         <img class="best_card_bottle" src="asset/test2/img/bekseju_bottle.png" alt="">
                     </div>
                     <div class="best_card best_card_prebiotics">
                         <span class="best_card_label">100 Billion<br>Prebiotics<br>Makgeolli</span>
+                        <img class="best_card_shadow" src="asset/test2/icon/ellipse_shadow_2.svg" alt="">
                         <img class="best_card_bottle" src="asset/test2/img/prebiotics_bottle.png" alt="">
                     </div>
                     <div class="best_card best_card_banana">
                         <span class="best_card_label">Kooksoondang<br>Banana<br>Makgeolli</span>
+                        <img class="best_card_shadow" src="asset/test2/icon/ellipse_shadow_1.svg" alt="">
                         <img class="best_card_bottle" src="asset/test2/img/banana_bottle.png" alt="">
                     </div>
                     <img class="best_deco best_deco_ring" src="asset/test2/icon/best_ring.svg" alt="">
@@ -98,9 +101,11 @@
         </section>
 
         <div class="marquee" aria-hidden="true">
-            <p>Kooksoondang Brand History</p>
-            <img src="asset/test2/icon/marquee_cup.svg" alt="">
-            <p>Kooksoondang Brand History</p>
+            <div class="marquee_track">
+                <p>Brand History</p>
+                <img src="asset/test2/icon/marquee_cup.svg" alt="">
+                <p>Kooksoondang</p>
+            </div>
         </div>
 
         <div class="glass_divider" aria-hidden="true">
@@ -110,10 +115,7 @@
         <section class="history" id="history" aria-labelledby="history_title">
             <header class="history_head">
                 <p>Brand History</p>
-                <h2 id="history_title">
-                    Kooksoondang
-                    <img class="history_head_deco" src="asset/test2/icon/brand_history_circle.svg" alt="" aria-hidden="true">
-                </h2>
+                <h2 id="history_title">Kooksoondang</h2>
             </header>
             <ol class="history_list">
                 <li class="history_item">
@@ -134,6 +136,7 @@
                             </ul>
                         </div>
                     </article>
+                    <img class="history_deco history_deco_circle" src="asset/icon/brand_history_circle.svg" alt="" aria-hidden="true">
                 </li>
                 <li class="history_item">
                     <article>
@@ -153,7 +156,7 @@
                             </ul>
                         </div>
                     </article>
-                    <img class="history_deco" src="asset/test2/icon/trans_03.svg" alt="" aria-hidden="true">
+                    <img class="history_deco history_deco_cup" src="asset/icon/brand_history_cup.svg" alt="" aria-hidden="true">
                 </li>
                 <li class="history_item">
                     <article>
@@ -173,7 +176,7 @@
                             </ul>
                         </div>
                     </article>
-                    <img class="history_deco" src="asset/test2/icon/trans_02.svg" alt="" aria-hidden="true">
+                    <img class="history_deco history_deco_bottle" src="asset/icon/brand_history_botlle.svg" alt="" aria-hidden="true">
                 </li>
                 <li class="history_item">
                     <article>
@@ -194,7 +197,7 @@
                             </ul>
                         </div>
                     </article>
-                    <img class="history_deco" src="asset/test2/icon/trans_04.svg" alt="" aria-hidden="true">
+                    <img class="history_deco history_deco_pet" src="asset/icon/brand_history_pet.svg" alt="" aria-hidden="true">
                 </li>
             </ol>
         </section>
@@ -337,5 +340,39 @@
             </div>
         </div>
     </footer>
+
+    <script>
+        const sideNav = document.querySelector('.side_nav');
+        const sideNavItems = sideNav.querySelectorAll('li');
+        const activeIcon = 'asset/test2/icon/submenu_arrow.svg';
+        const inactiveIcon = 'asset/test2/icon/submenu_dot.svg';
+
+        function changeSideNavIcon(icon, iconSource) {
+            if (icon.getAttribute('src') === iconSource) return;
+
+            icon.classList.remove('is_icon_animating');
+            void icon.offsetWidth;
+            icon.src = iconSource;
+            icon.classList.add('is_icon_animating');
+        }
+
+        sideNav.addEventListener('click', (event) => {
+            const link = event.target.closest('a');
+
+            if (!link || !sideNav.contains(link)) return;
+
+            const activeItem = link.closest('li');
+
+            sideNavItems.forEach((item) => {
+                const isActive = item === activeItem;
+                const itemLink = item.querySelector('a');
+                const icon = item.querySelector('img');
+
+                item.classList.toggle('is_current', isActive);
+                itemLink.toggleAttribute('aria-current', isActive);
+                changeSideNavIcon(icon, isActive ? activeIcon : inactiveIcon);
+            });
+        });
+    </script>
 </body>
 </html>
