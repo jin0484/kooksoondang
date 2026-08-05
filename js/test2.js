@@ -31,6 +31,27 @@ sideNav.addEventListener('click', (event) => {
 });
 
 (() => {
+    const siteLogo = document.querySelector('.site_logo');
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    if (!siteLogo) return;
+
+    siteLogo.addEventListener('click', () => {
+        if (reducedMotionQuery.matches) return;
+
+        siteLogo.classList.remove('is_dot_bouncing');
+        void siteLogo.offsetWidth;
+        siteLogo.classList.add('is_dot_bouncing');
+    });
+
+    siteLogo.addEventListener('animationend', (event) => {
+        if (event.animationName === 'logo_dot_bounce') {
+            siteLogo.classList.remove('is_dot_bouncing');
+        }
+    });
+})();
+
+(() => {
     const historySection = document.querySelector('.history');
     const historyTimeline = historySection?.querySelector('.history_timeline');
     const morphStage = historySection?.querySelector('.history_morph');
