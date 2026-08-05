@@ -3,8 +3,10 @@
 
 :root {
   /* ----- brand_color ----- */
-  --brand_color-kooksoondang_green: #D4E400;
-  --brand_color-bekseju_darker_cold: #232323;
+  --kooksoondang_green: #D4E400;
+  --kooksoondang_orange: #F29556;
+  --kooksoondang_lighter: #FFD7BB;
+  --bekseju_darker_cold: #232323;
   --brand_color-bg_color: #FAF8F7;
 
   /* ----- dark_color ----- */
@@ -26,7 +28,7 @@
 
   /* ----- 컬러 스타일 가이드에 표기된 라벨 (변수 미바인딩) ----- */
   --Primary_Color: #F29556;
-  --Lighter: #FFD7BB;
+
 
   /* ----- 폰트 패밀리 ----- */
   --font-Pretendard: 'Pretendard', sans-serif;
