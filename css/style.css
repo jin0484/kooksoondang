@@ -1,0 +1,98 @@
+@charset "UTF-8";
+
+
+:root {
+  /* ----- brand_color ----- */
+  --brand_color-kooksoondang_green: #D4E400;
+  --brand_color-bekseju_darker_cold: #232323;
+  --brand_color-bg_color: #FAF8F7;
+
+  /* ----- dark_color ----- */
+  --bekseju_dark1: #4C3B33;
+  --bekseju_dark2: #5D504A;
+  --bekseju_dark3: #8D7E77;
+  --bekseju_dark4: #C7B7AC;
+
+  /* ----- light_color ----- */
+  --makgeolli_light1: #EADFD8;
+  --makgeolli_light2: #F6F0EC;
+  --makgeolli_light3: #F8F2EF;
+  --makgeolli_light4: #FAF8F7;
+
+  /* ----- 기타 색상 변수 ----- */
+  --White: #FFFFFF;
+  --Light-Light_1: #DDE5E9;
+  --Dark-Dark_1: #3A3A3C;
+
+  /* ----- 컬러 스타일 가이드에 표기된 라벨 (변수 미바인딩) ----- */
+  --Primary_Color: #F29556;
+  --Lighter: #FFD7BB;
+
+  /* ----- 폰트 패밀리 ----- */
+  --font-Pretendard: 'Pretendard', sans-serif;
+  --font-Albert_Sans: 'Albert Sans', sans-serif;
+  --font-ROH_HOE-CHAN: 'ROH HOE-CHAN', serif;
+  --font-Mulish: 'Mulish', sans-serif;
+
+  /* Body Large 20px / Semibold */
+  --Body_Large_20px-Semibold: 600 20px/1.7 var(--font-Mulish);
+  --Body_Large_20px-Semibold-letter-spacing: 0px;
+
+  /* Text_tab (Mobile/Tablet Banner) */
+  --Text_tab-Banner_64R: 400 64px/0.9 var(--font-Pretendard);
+  --Text_tab-Banner_64R-letter-spacing: -2px;
+  --Text_tab-Banner_64B: 700 64px/0.9 var(--font-Pretendard);
+  --Text_tab-Banner_64B-letter-spacing: -2px;
+
+  /* Text_M (Mobile Display) */
+  --Text_M-Display_32B: 700 32px/1.3 var(--font-Pretendard);
+  --Text_M-Display_32B-letter-spacing: -2px;
+
+  /* Text_PC */
+  --Text_PC-Banner_Point_96R: 400 96px/0.9 var(--font-ROH_HOE-CHAN);
+  --Text_PC-Banner_Point_96R-letter-spacing: -2px;
+  --Text_PC-Banner_96R: 400 96px/0.9 var(--font-Pretendard);
+  --Text_PC-Banner_96R-letter-spacing: -2px;
+  --Text_PC-Banner_96B: 700 96px/0.9 var(--font-Pretendard);
+  --Text_PC-Banner_96B-letter-spacing: -2px;
+  --Text_PC-Display1_86B: 700 86px/1.3 var(--font-Pretendard);
+  --Text_PC-Display1_86B-letter-spacing: -2px;
+  --Text_PC-Display2_64R: 400 64px/1.3 var(--font-Albert_Sans);
+  --Text_PC-Display2_64R-letter-spacing: -2px;
+  --Text_PC-Display2_64B: 700 64px/1.3 var(--font-Pretendard);
+  --Text_PC-Display2_64B-letter-spacing: -2px;
+  --Text_PC-Display3_48R: 400 48px/1.3 var(--font-Albert_Sans);
+  --Text_PC-Display3_48R-letter-spacing: -2px;
+  --Text_PC-Display3_48B: 700 48px/1.3 var(--font-Pretendard);
+  --Text_PC-Display3_48B-letter-spacing: -2px;
+
+  /* Heading */
+  --Heading1_32B: 700 32px/1.3 var(--font-Pretendard);
+  --Heading1_32B-letter-spacing: 0px;
+  --Heading1_32R: 400 32px/1.3 var(--font-Pretendard);
+  --Heading1_32R-letter-spacing: 0px;
+  --Heading2_28B: 700 28px/1.3 var(--font-Pretendard);
+  --Heading2_28B-letter-spacing: 0px;
+  --Heading1_28R: 400 28px/1.3 var(--font-Pretendard);
+  --Heading1_28R-letter-spacing: 0px;
+  --Heading3_24B: 700 24px/1.3 var(--font-Pretendard);
+  --Heading3_24B-letter-spacing: 0px;
+  --Heading1_24R: 400 24px/1.3 var(--font-Pretendard);
+  --Heading1_24R-letter-spacing: 0px;
+
+  /* Body */
+  --Body_Large_20SB: 600 20px/1.7 var(--font-Pretendard);
+  --Body_Large_20SB-letter-spacing: 0px;
+  --point_20R: 400 20px/1.7 var(--font-ROH_HOE-CHAN);
+  --point_20R-letter-spacing: 0px;
+  --Body_Medium_18SB: 600 18px/1.7 var(--font-Pretendard);
+  --Body_Medium_18SB-letter-spacing: 0px;
+  --Body_Normal_16SB: 600 16px/1.7 var(--font-Pretendard);
+  --Body_Normal_16SB-letter-spacing: 0px;
+  --Body_Small_14SB: 600 14px/1.7 var(--font-Pretendard);
+  --Body_Small_14SB-letter-spacing: 0px;
+  --Body_Small_14M: 500 14px/1.7 var(--font-Pretendard);
+  --Body_Small_14M-letter-spacing: 0px;
+  --Body_Small_14L: 300 14px/1.7 var(--font-Pretendard);
+  --Body_Small_14L-letter-spacing: 0px;
+}
