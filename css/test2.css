@@ -662,13 +662,13 @@ section[id] {
   display: flex;
   align-items: center;
   overflow: hidden;
-  height: clamp(7rem, 8.25vw, 10.5rem);
+  padding: 80px 0;
 }
 
 .marquee_track {
   position: relative;
   width: 100%;
-  height: 100%;
+  min-height: clamp(7rem, 8.25vw, 10.5rem);
 }
 
 .marquee p {
@@ -724,30 +724,50 @@ section[id] {
   padding: clamp(3rem, 6vw, 6rem) var(--gutter-x) clamp(5rem, 9vw, 9rem);
 }
 
-.history_head {
+.history_timeline {
+  position: relative;
   max-width: var(--page-max);
-  margin: 0 auto clamp(3rem, 6vw, 6rem);
-}
-
-.history_head p {
-  font-family: var(--font-ROH_HOE-CHAN);
-  font-size: 1.25rem;
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
-  color: var(--kooksoondang_orange);
-}
-
-.history_head h2 {
-  font-weight: 800;
-  font-size: clamp(2.5rem, 4vw, 4.5rem);
+  margin: 0 auto;
 }
 
 .history_list {
-  max-width: var(--page-max);
-  margin: 0 auto;
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: clamp(4rem, 8vw, 8rem);
+}
+
+.history_morph_rail {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.history_morph {
+  --history-morph-offset: 0px;
+  --history-morph-rotation: 0deg;
+  position: sticky;
+  top: 50vh;
+  flex: 0 0 auto;
+  width: var(--history-morph-width, clamp(9rem, 11vw, 14.25rem));
+  aspect-ratio: 228 / 510;
+  overflow: visible;
+  transform: translateY(calc(-50% + var(--history-morph-offset))) rotate(var(--history-morph-rotation));
+  transform-origin: center;
+}
+
+.history.is_morph_ready .history_morph_rail {
+  visibility: visible;
+}
+
+.history.is_morph_ready .history_deco {
+  visibility: hidden;
 }
 
 .history_item {
@@ -834,6 +854,14 @@ section[id] {
 }
 
 @media (max-width: 48rem) {
+  .history_morph_rail {
+    display: none;
+  }
+
+  .history.is_morph_ready .history_deco {
+    visibility: visible;
+  }
+
   .history_item {
     grid-template-columns: minmax(0, 1fr);
     row-gap: 2rem;
@@ -850,6 +878,16 @@ section[id] {
   .history_deco {
     grid-column: 1;
     grid-row: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .history_morph_rail {
+    display: none;
+  }
+
+  .history.is_morph_ready .history_deco {
+    visibility: visible;
   }
 }
 
