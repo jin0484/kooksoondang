@@ -289,31 +289,31 @@
             <div class="pairing_inner">
                 <header class="pairing_head">
                     <h2 id="pairing_title">What&rsquo;s on My Plate?</h2>
-                    <p>Pairing Roulette: Spin Your Flavor</p>
+                    <p>Drag and drop one drink card and one food card onto the plate to check your pairing score!</p>
                 </header>
 
                 <ul class="pairing_row pairing_food" role="list">
-                    <li class="pairing_card" style="--card-bg:#F29556">
+                    <li class="pairing_card" data-pairing-key="pancake" style="--card-bg:#F29556">
                         <span class="pairing_card_media"><img src="asset/img/food_pancake.png"
                                 alt="Seafood Scallion Pancake"></span>
                         <span class="pairing_card_label">Seafood<br>Scallion Pancake</span>
                     </li>
-                    <li class="pairing_card" style="--card-bg:#FFC943">
+                    <li class="pairing_card" data-pairing-key="pizza" style="--card-bg:#FFC943">
                         <span class="pairing_card_media"><img src="asset/img/food_pizza.png"
                                 alt="Gorgonzola Cheese Pizza"></span>
                         <span class="pairing_card_label">Gorgonzola<br>Cheese Pizza</span>
                     </li>
-                    <li class="pairing_card" style="--card-bg:#B32D18">
+                    <li class="pairing_card" data-pairing-key="chicken" style="--card-bg:#B32D18">
                         <span class="pairing_card_media"><img src="asset/img/food_chicken.png"
                                 alt="Spicy Braised Chicken"></span>
                         <span class="pairing_card_label">Spicy<br>Braised Chicken</span>
                     </li>
-                    <li class="pairing_card" style="--card-bg:#F3A765">
+                    <li class="pairing_card" data-pairing-key="ribs" style="--card-bg:#F3A765">
                         <span class="pairing_card_media"><img src="asset/img/food_ribs.png"
                                 alt="Sweet and Savory BBQ Ribs"></span>
                         <span class="pairing_card_label">Sweet and Savory<br>BBQ Ribs</span>
                     </li>
-                    <li class="pairing_card" style="--card-bg:#F5DB9E">
+                    <li class="pairing_card" data-pairing-key="bossam" style="--card-bg:#F5DB9E">
                         <span class="pairing_card_media"><img src="asset/img/food_bossam.png"
                                 alt="Korean-Style Bossam"></span>
                         <span class="pairing_card_label">Korean-Style<br>Bossam</span>
@@ -321,31 +321,31 @@
                 </ul>
 
                 <ul class="pairing_row pairing_drink" role="list">
-                    <li class="pairing_card pairing_card_drink pairing_card_bekseju">
+                    <li class="pairing_card pairing_card_drink pairing_card_bekseju" data-pairing-key="baekseju">
                         <span class="pairing_card_media"><img src="asset/img/bekseju_bottle.png"
                                 alt="Korea's Signature Traditional Wine Baekseju"><img class="pairing_card_shadow"
                                 src="asset/icon/ellipse_bottle_shadow.svg" alt=""></span>
                         <span class="pairing_card_label">Korea&rsquo;s Signature<br>Traditional<br>Wine Bekseju</span>
                     </li>
-                    <li class="pairing_card pairing_card_drink"
+                    <li class="pairing_card pairing_card_drink" data-pairing-key="banana"
                         style="--card-bg:#FFC943; --card-shadow:url('asset/icon/drink_bg_4.svg')">
                         <span class="pairing_card_media"><img src="asset/img/banana_bottle.png"
                                 alt="Kooksoondang Banana Makgeolli"></span>
                         <span class="pairing_card_label">Kooksoondang<br>Banana<br>Makgeolli</span>
                     </li>
-                    <li class="pairing_card pairing_card_drink"
+                    <li class="pairing_card pairing_card_drink" data-pairing-key="chestnut"
                         style="--card-bg:#6D4C40; --card-shadow:url('asset/icon/drink_bg_1.svg')">
                         <span class="pairing_card_media"><img src="asset/img/chestnut_bottle.png"
                                 alt="Kooksoondang Chestnut Makgeolli"></span>
                         <span class="pairing_card_label">Kooksoondang<br>Chestnut<br>Makgeolli</span>
                     </li>
-                    <li class="pairing_card pairing_card_drink"
+                    <li class="pairing_card pairing_card_drink" data-pairing-key="draft"
                         style="--card-bg:#3E9B4B; --card-shadow:url('asset/icon/drink_bg_2.svg')">
                         <span class="pairing_card_media"><img src="asset/img/draft_bottle.png"
                                 alt="Kooksoondang Draft Makgeolli"></span>
                         <span class="pairing_card_label">Kooksoondang<br>Draft<br>Makgeolli</span>
                     </li>
-                    <li class="pairing_card pairing_card_drink"
+                    <li class="pairing_card pairing_card_drink" data-pairing-key="prebiotics"
                         style="--card-bg:#D4E400; --card-shadow:url('asset/icon/drink_bg_3.svg')">
                         <span class="pairing_card_media"><img src="asset/img/prebiotics_bottle.png"
                                 alt="100 Billion Prebiotics Makgeolli"></span>
@@ -362,18 +362,36 @@
                         </div>
                     </div>
                     <div class="pairing_plates">
-                        <img class="pairing_plate" data-pairing-plate="food" src="asset/icon/plate.svg"
-                            alt="Food plate" width="300" height="40">
-                        <img class="pairing_plate" data-pairing-plate="drink" src="asset/icon/plate.svg"
-                            alt="Drink plate" width="300" height="40">
+                        <div class="pairing_plate_slot" data-pairing-plate="food">
+                            <span class="pairing_plate_pick" data-pairing-selection aria-live="polite">Food card</span>
+                            <img class="pairing_plate" src="asset/icon/plate.svg" alt="Food plate" width="300" height="40">
+                        </div>
+                        <div class="pairing_plate_slot" data-pairing-plate="drink">
+                            <span class="pairing_plate_pick" data-pairing-selection aria-live="polite">Drink card</span>
+                            <img class="pairing_plate" src="asset/icon/plate.svg" alt="Drink plate" width="300" height="40">
+                        </div>
                     </div>
                     <div class="pairing_actions">
                         <button type="button" class="btn_pill btn_pill_reset">Reset</button>
                         <button type="button" class="btn_pill btn_pill_check">Check the result</button>
                     </div>
+                    <p class="pairing_feedback" data-pairing-feedback aria-live="polite"></p>
                 </div>
             </div>
         </section>
+
+        <div class="pairing_result_modal" data-pairing-result-modal hidden>
+            <section class="pairing_result_dialog" role="dialog" aria-modal="true" aria-labelledby="pairing_result_title"
+                tabindex="-1">
+                <button type="button" class="pairing_result_close" data-pairing-result-close aria-label="Close result">&times;</button>
+                <p class="pairing_result_eyebrow">PAIRING RESULT</p>
+                <p class="pairing_result_pair" data-pairing-result-pair></p>
+                <p class="pairing_result_score"><strong data-pairing-result-score>0</strong><span>POINTS</span></p>
+                <h2 id="pairing_result_title" data-pairing-result-title></h2>
+                <p class="pairing_result_description" data-pairing-result-description></p>
+                <button type="button" class="btn_pill btn_pill_check pairing_result_retry" data-pairing-result-retry>Try another pairing</button>
+            </section>
+        </div>
 
         <section class="events" id="events" aria-labelledby="events_title">
             <div class="events_inner">

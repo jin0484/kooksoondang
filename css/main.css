@@ -1297,6 +1297,16 @@ section[id] {
   box-shadow: 0 1.75rem 3.75rem rgba(14, 19, 38, 0.28);
 }
 
+.pairing_card.is_pairing_selected {
+  outline: 2px solid var(--kooksoondang_orange);
+  outline-offset: 4px;
+  box-shadow: 0 1.25rem 2.5rem rgba(14, 19, 38, 0.24);
+}
+
+.pairing_card_drink.is_pairing_selected {
+  outline-color: var(--makgeolli_White);
+}
+
 @media (hover: hover) and (pointer: fine) {
   .pairing_card {
     cursor: grab;
@@ -1393,17 +1403,56 @@ section[id] {
   justify-content: center;
 }
 
-.pairing_plates img {
+.pairing_plate_slot {
+  position: relative;
+  display: grid;
+  flex: 0 0 18.75rem;
   width: 18.75rem;
-  height: auto;
+  padding-top: 2.625rem;
+  justify-items: center;
+}
+
+.pairing_plate_pick {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 1;
+  max-width: calc(100% - 1rem);
+  padding: 0.4rem 0.75rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--bekseju_darker_cold);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 0.35rem) scale(0.96);
+  transition: opacity 200ms ease, transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.pairing_plate_slot.is_pairing_slot_filled .pairing_plate_pick {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
 }
 
 .pairing_plate {
+  display: block;
+  width: 100%;
+  height: auto;
   transform-origin: center;
   transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1), filter 240ms ease;
 }
 
-.pairing_plate.is_pairing_drop_active {
+.pairing_plate_slot.is_pairing_slot_filled .pairing_plate {
+  filter: drop-shadow(0 0.4rem 0.75rem rgba(242, 149, 86, 0.25));
+}
+
+.pairing_plate_slot.is_pairing_drop_active .pairing_plate {
   animation: pairing_plate_drop 620ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -1413,6 +1462,113 @@ section[id] {
 }
 
 .pairing_actions .btn_pill {
+  border-radius: 0 0 2rem 2rem;
+}
+
+.pairing_feedback {
+  min-height: 1.35em;
+  margin: -1.5rem 0 0;
+  color: var(--makgeolli_light3);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.pairing_result_modal[hidden] {
+  display: none;
+}
+
+.pairing_result_modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  padding: 1.5rem;
+  overflow-y: auto;
+  place-items: center;
+  background: rgba(14, 19, 38, 0.62);
+  backdrop-filter: blur(0.55rem);
+}
+
+.pairing_result_dialog {
+  position: relative;
+  width: min(100%, 34rem);
+  padding: clamp(2rem, 5vw, 3.5rem);
+  border-radius: 1.5rem;
+  background: var(--makgeolli_White);
+  box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.3);
+  color: var(--bekseju_darker_cold);
+  text-align: center;
+}
+
+.pairing_result_close {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  place-items: center;
+  background: var(--makgeolli_light4);
+  color: var(--bekseju_darker_cold);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pairing_result_eyebrow {
+  margin-bottom: 0.85rem;
+  color: var(--kooksoondang_orange);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.pairing_result_pair {
+  color: var(--makgeolli_light3);
+  font-size: clamp(0.875rem, 1.2vw, 1rem);
+}
+
+.pairing_result_score {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.4rem;
+  margin: 0.45rem 0 0.75rem;
+}
+
+.pairing_result_score strong {
+  color: var(--kooksoondang_orange);
+  font-family: var(--font-Albert_Sans);
+  font-size: clamp(4rem, 10vw, 6.5rem);
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.08em;
+}
+
+.pairing_result_score span {
+  color: var(--makgeolli_light3);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.pairing_result_dialog h2 {
+  margin-bottom: 0.7rem;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+}
+
+.pairing_result_description {
+  max-width: 25rem;
+  margin: 0 auto 1.75rem;
+  color: var(--makgeolli_light3);
+  font-size: clamp(0.95rem, 1.4vw, 1.1rem);
+  line-height: 1.65;
+}
+
+.pairing_result_retry {
   border-radius: 0 0 2rem 2rem;
 }
 
@@ -1487,8 +1643,12 @@ section[id] {
   }
 
   .pairing_arrows img,
-  .pairing_plate.is_pairing_drop_active {
+  .pairing_plate_slot.is_pairing_drop_active .pairing_plate {
     animation: none;
+  }
+
+  .pairing_plate_pick {
+    transition: none;
   }
 }
 

@@ -630,11 +630,22 @@ sideNav.addEventListener('click', (event) => {
     const section = document.querySelector('.pairing');
     const cards = section ? [...section.querySelectorAll('.pairing_card')] : [];
     const foodCards = section ? [...section.querySelectorAll('.pairing_food .pairing_card')] : [];
-    const plates = section ? [...section.querySelectorAll('.pairing_plate')] : [];
+    const drinkCards = section ? [...section.querySelectorAll('.pairing_drink .pairing_card')] : [];
+    const plates = section ? [...section.querySelectorAll('.pairing_plate_slot')] : [];
     const resetButton = section?.querySelector('.btn_pill_reset');
+    const checkButton = section?.querySelector('.btn_pill_check');
     const handHint = section?.querySelector('.pairing_drag_hand');
+    const feedback = section?.querySelector('[data-pairing-feedback]');
+    const resultModal = document.querySelector('[data-pairing-result-modal]');
+    const resultDialog = resultModal?.querySelector('.pairing_result_dialog');
+    const resultPair = resultModal?.querySelector('[data-pairing-result-pair]');
+    const resultScore = resultModal?.querySelector('[data-pairing-result-score]');
+    const resultTitle = resultModal?.querySelector('[data-pairing-result-title]');
+    const resultDescription = resultModal?.querySelector('[data-pairing-result-description]');
+    const resultCloseButtons = resultModal ? [...resultModal.querySelectorAll('[data-pairing-result-close]')] : [];
+    const resultRetryButton = resultModal?.querySelector('[data-pairing-result-retry]');
 
-    if (!section || !cards.length || !foodCards.length || plates.length < 2) return;
+    if (!section || !cards.length || !foodCards.length || !drinkCards.length || plates.length < 2 || !checkButton) return;
 
     const desktopQuery = window.matchMedia('(min-width: 48.0625rem)');
     const finePointerQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
@@ -649,11 +660,169 @@ sideNav.addEventListener('click', (event) => {
     let hintPositionFrame = 0;
     let hasRevealed = false;
     let dragState = null;
+    let suppressTapUntil = 0;
     const plateFlashTimers = new WeakMap();
+    const selectedCards = { food: null, drink: null };
+    const labels = {
+        food: {
+            pancake: '해물파전',
+            pizza: '고르곤졸라 피자',
+            chicken: '매운 닭볶음탕',
+            ribs: '바비큐 립',
+            bossam: '한방 보쌈'
+        },
+        drink: {
+            baekseju: '백세주',
+            banana: '국순당 쌀 바나나',
+            chestnut: '국순당 쌀 밤',
+            draft: '국순당 생막걸리',
+            prebiotics: '1000억 유산균 막걸리'
+        }
+    };
+    const pairingResults = {
+        baekseju: {
+            pancake: { score: 88, description: '파전의 기름진 맛을 백세주의 깔끔한 산미가 잡아줌' },
+            pizza: { score: 70, description: '꿀을 찍어 먹는 고르곤졸라와 백세주의 단맛·풍미가 나쁘지 않음' },
+            chicken: { score: 82, description: '매운맛을 부드럽게 다독여주는 은은한 감칠맛' },
+            ribs: { score: 75, description: '달콤 짭조름한 바비큐 소스와 약주 풍미의 의외의 조화' },
+            bossam: { score: 98, description: '최고의 궁합! 한약재 풍미와 수육의 고소함이 완벽히 아우러짐' }
+        },
+        draft: {
+            pancake: { score: 100, description: '클래식 만점 조합! 탄산과 톡 쏘는 청량감이 전의 느끼함을 싹 씻어줌' },
+            pizza: { score: 85, description: '치즈의 고소함과 막걸리의 산미·탄산이 만드는 한식-양식 퓨전 꿀조합' },
+            chicken: { score: 95, description: '매콤한 양념과 부드러운 생막걸리의 탄산 및 단맛이 환상의 케미' },
+            ribs: { score: 65, description: '소사이어티 한 끼로는 괜찮으나 막걸리의 청량감이 묵직한 소스에 조금 묻힘' },
+            bossam: { score: 90, description: '담백한 보쌈 고기와 쌀 막걸리의 구수한 풍미가 조화로움' }
+        },
+        prebiotics: {
+            pancake: { score: 80, description: '일반 막걸리보다는 다소 단편이지만 바삭한 파전과 무난히 어울림' },
+            pizza: { score: 92, description: '크리미한 유산균 풍미와 피자 치즈의 풍부한 단짠 조합' },
+            chicken: { score: 98, description: '요거트 같은 새콤달콤함이 캡사이신의 매운맛을 완벽하게 중화' },
+            ribs: { score: 72, description: '단짠 바비큐 소스에 새콤한 막걸리가 더해져 독특한 핑거푸드 느낌 연출' },
+            bossam: { score: 78, description: '보쌈의 담백함과 어우러지나 약간의 단맛이 강하게 느껴질 수 있음' }
+        },
+        banana: {
+            pancake: { score: 60, description: '파전의 기분 좋은 파 향과 바나나 향이 충돌할 수 있음' },
+            pizza: { score: 95, description: '바나나의 달콤함과 치즈의 짭조름함이 만나 완성되는 단짠의 정석' },
+            chicken: { score: 75, description: '매운맛을 달래주는 달달한 디저트주 역할' },
+            ribs: { score: 80, description: '달콤한 과일 향이 스모키한 BBQ 소스와 조화를 이룸' },
+            bossam: { score: 55, description: '한방 약재 풍미와 바나나 향의 매칭이 다소 아쉬움' }
+        },
+        chestnut: {
+            pancake: { score: 58, description: '파전의 은은한 파 향과 밤의 달달한 디저트 향이 다소 충돌함' },
+            pizza: { score: 96, description: "고소한 밤 향과 짭조름한 치즈가 만나 완벽한 '단짠' 디저트 페어링" },
+            chicken: { score: 85, description: '매운맛을 얼얼하게 달래주는 달콤하고 매력적인 조합' },
+            ribs: { score: 78, description: '달콤한 밤 풍미가 짭조름한 바비큐 양념과 의외의 단짠 단짠을 형성' },
+            bossam: { score: 50, description: '한약재 풍미와 강한 밤 맛의 조화가 아쉬운 꽝 조합' }
+        }
+    };
 
     const isMotionEnabled = () => desktopQuery.matches && !reducedMotionQuery.matches;
     const isDragEnabled = () => desktopQuery.matches && finePointerQuery.matches;
     const areCardsReady = () => !isMotionEnabled() || hasRevealed;
+
+    function typeFor(card) {
+        return card.closest('.pairing_drink') ? 'drink' : 'food';
+    }
+
+    function labelFor(card) {
+        if (!card) return '';
+
+        const type = typeFor(card);
+        return labels[type][card.dataset.pairingKey] || '';
+    }
+
+    function defaultPlateLabel(type) {
+        return type === 'food' ? 'Food card' : 'Drink card';
+    }
+
+    function setFeedback(message = '') {
+        if (feedback) feedback.textContent = message;
+    }
+
+    function syncPlate(plate) {
+        const type = plate.dataset.pairingPlate;
+        const selectedCard = selectedCards[type];
+        const selection = plate.querySelector('[data-pairing-selection]');
+
+        plate.classList.toggle('is_pairing_slot_filled', Boolean(selectedCard));
+
+        if (selection) selection.textContent = selectedCard ? labelFor(selectedCard) : defaultPlateLabel(type);
+    }
+
+    function selectCard(card, plate) {
+        const type = typeFor(card);
+
+        if (!plate || plate.dataset.pairingPlate !== type) return;
+
+        const previousCard = selectedCards[type];
+
+        if (previousCard && previousCard !== card) previousCard.classList.remove('is_pairing_selected');
+
+        selectedCards[type] = card;
+        card.classList.add('is_pairing_selected');
+        syncPlate(plate);
+        stopHint();
+        section.classList.add('is_pairing_hint_paused');
+
+        if (selectedCards.food && selectedCards.drink) {
+            setFeedback('두 카드를 모두 골랐어요. 결과를 확인해 보세요.');
+        } else {
+            setFeedback(type === 'food' ? '음식 카드가 접시에 담겼어요. 술 카드를 골라 주세요.' : '술 카드가 접시에 담겼어요. 음식 카드를 골라 주세요.');
+        }
+    }
+
+    function clearSelections() {
+        selectedCards.food = null;
+        selectedCards.drink = null;
+        cards.forEach((card) => card.classList.remove('is_pairing_selected'));
+        plates.forEach(syncPlate);
+    }
+
+    function getPairingResult() {
+        const foodCard = selectedCards.food;
+        const drinkCard = selectedCards.drink;
+
+        if (!foodCard || !drinkCard) return null;
+
+        const foodKey = foodCard.dataset.pairingKey;
+        const drinkKey = drinkCard.dataset.pairingKey;
+        const result = pairingResults[drinkKey]?.[foodKey];
+
+        if (!result) return null;
+
+        return {
+            ...result,
+            foodLabel: labelFor(foodCard),
+            drinkLabel: labelFor(drinkCard)
+        };
+    }
+
+    function resultTitleFor(score) {
+        if (score >= 95) return '최고의 궁합!';
+        if (score >= 85) return '아주 좋은 궁합!';
+        if (score >= 75) return '색다른 조화!';
+        return '새로운 페어링!';
+    }
+
+    function closeResult() {
+        if (resultModal) resultModal.hidden = true;
+    }
+
+    function showResult(result) {
+        if (!resultModal) {
+            setFeedback(`${result.foodLabel} × ${result.drinkLabel}: ${result.score}점 — ${result.description}`);
+            return;
+        }
+
+        if (resultPair) resultPair.textContent = `${result.foodLabel} × ${result.drinkLabel}`;
+        if (resultScore) resultScore.textContent = result.score;
+        if (resultTitle) resultTitle.textContent = resultTitleFor(result.score);
+        if (resultDescription) resultDescription.textContent = result.description;
+
+        resultModal.hidden = false;
+        window.requestAnimationFrame(() => resultDialog?.focus({ preventScroll: true }));
+    }
 
     function clearTimers() {
         window.clearTimeout(revealTimer);
@@ -737,7 +906,7 @@ sideNav.addEventListener('click', (event) => {
     }
 
     function targetPlateFor(card) {
-        const type = card.closest('.pairing_drink') ? 'drink' : 'food';
+        const type = typeFor(card);
 
         return plates.find((plate) => plate.dataset.pairingPlate === type);
     }
@@ -766,6 +935,8 @@ sideNav.addEventListener('click', (event) => {
         const offsetX = event.clientX - dragState.startX;
         const offsetY = event.clientY - dragState.startY;
         const rotation = Math.max(-4, Math.min(4, offsetX * 0.016));
+
+        if (Math.abs(offsetX) > 6 || Math.abs(offsetY) > 6) dragState.hasMoved = true;
 
         dragState.card.style.setProperty('--pairing-card-drag-x', `${offsetX.toFixed(1)}px`);
         dragState.card.style.setProperty('--pairing-card-drag-y', `${offsetY.toFixed(1)}px`);
@@ -797,10 +968,15 @@ sideNav.addEventListener('click', (event) => {
         const isDrop = event.type === 'pointerup';
         const targetPlate = targetPlateFor(card);
 
-        clearDragState();
+        const completedDrag = clearDragState();
+
+        if (completedDrag?.hasMoved) suppressTapUntil = performance.now() + 350;
 
         if (isDrop && targetPlate && isPointInside(targetPlate, event.clientX, event.clientY)) {
+            selectCard(card, targetPlate);
             flashPlate(targetPlate);
+        } else if (isDrop) {
+            setFeedback('카드를 알맞은 접시 위에 놓아 주세요.');
         }
     }
 
@@ -819,7 +995,8 @@ sideNav.addEventListener('click', (event) => {
             card,
             pointerId: event.pointerId,
             startX: event.clientX,
-            startY: event.clientY
+            startY: event.clientY,
+            hasMoved: false
         };
 
         card.classList.add('is_pairing_dragging');
@@ -827,6 +1004,17 @@ sideNav.addEventListener('click', (event) => {
         card.addEventListener('pointermove', handlePointerMove);
         card.addEventListener('pointerup', finishDrag);
         card.addEventListener('pointercancel', finishDrag);
+    }
+
+    function selectWithTap(card) {
+        if (!areCardsReady() || performance.now() < suppressTapUntil) return;
+
+        const targetPlate = targetPlateFor(card);
+
+        if (!targetPlate) return;
+
+        selectCard(card, targetPlate);
+        flashPlate(targetPlate);
     }
 
     function revealCards() {
@@ -865,7 +1053,9 @@ sideNav.addEventListener('click', (event) => {
 
         clearDragState();
         cards.forEach(resetCardPosition);
+        clearSelections();
         plates.forEach(resetPlate);
+        closeResult();
         section.classList.remove(
             'is_pairing_motion_ready',
             'is_pairing_cards_revealing',
@@ -895,7 +1085,10 @@ sideNav.addEventListener('click', (event) => {
 
     resetButton?.addEventListener('click', () => {
         cards.forEach(resetCardPosition);
+        clearSelections();
         plates.forEach(resetPlate);
+        closeResult();
+        setFeedback('선택한 카드를 초기화했어요.');
         section.classList.remove('is_pairing_hint_paused');
 
         if (isMotionEnabled() && hasRevealed) {
@@ -904,7 +1097,37 @@ sideNav.addEventListener('click', (event) => {
         }
     });
 
-    cards.forEach((card) => card.addEventListener('pointerdown', startDrag));
+    checkButton.addEventListener('click', () => {
+        const result = getPairingResult();
+
+        if (!result) {
+            setFeedback('음식 카드와 술 카드를 각각 하나씩 접시에 담아 주세요.');
+            return;
+        }
+
+        showResult(result);
+    });
+
+    resultCloseButtons.forEach((button) => button.addEventListener('click', closeResult));
+
+    resultRetryButton?.addEventListener('click', () => {
+        closeResult();
+        clearSelections();
+        setFeedback('새로운 음식과 술을 골라 페어링해 보세요.');
+    });
+
+    resultModal?.addEventListener('click', (event) => {
+        if (event.target === resultModal) closeResult();
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && resultModal && !resultModal.hidden) closeResult();
+    });
+
+    cards.forEach((card) => {
+        card.addEventListener('pointerdown', startDrag);
+        card.addEventListener('click', () => selectWithTap(card));
+    });
 
     const listenForChanges = (query, callback) => {
         if (query.addEventListener) query.addEventListener('change', callback);
