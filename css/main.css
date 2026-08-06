@@ -534,6 +534,17 @@ section[id] {
   max-width: none;
 }
 
+/* 배경 도형 위에 겹치는 캐릭터. 원본 PNG 상하좌우에 투명 여백이 있어 음수 오프셋으로 보정 */
+.hero_visual .hero_character {
+  left: -15%;
+  right: auto;
+  bottom: -11%;
+  top: auto;
+  width: auto;
+  height: 92%;
+  transform: none;
+}
+
 /* ---------- best ---------- */
 
 .best {
