@@ -483,6 +483,7 @@ sideNav.addEventListener('click', (event) => {
             const item = {
                 element,
                 base: '',
+                strength: Math.min(Math.max(Number.parseFloat(element.dataset.momentumStrength) || 1, 0.05), 1),
                 x: 0,
                 y: 0,
                 rotation: 0,
@@ -536,9 +537,12 @@ sideNav.addEventListener('click', (event) => {
             const cross = offsetX * velocityY - offsetY * velocityX;
             const distance = Math.hypot(offsetX, offsetY) || 1;
 
-            item.velocityX = clamp(velocityX * throwScale, maxThrow);
-            item.velocityY = clamp(velocityY * throwScale, maxThrow);
-            item.velocityRotation = clamp((cross / distance) * spinScale, maxSpin);
+            item.velocityX = clamp(velocityX * throwScale * item.strength, maxThrow * item.strength);
+            item.velocityY = clamp(velocityY * throwScale * item.strength, maxThrow * item.strength);
+            item.velocityRotation = clamp(
+                (cross / distance) * spinScale * item.strength,
+                maxSpin * item.strength
+            );
             item.awake = true;
             wake();
         });
@@ -620,6 +624,298 @@ sideNav.addEventListener('click', (event) => {
     window.addEventListener('resize', requestRender, { passive: true });
     window.addEventListener('load', requestRender);
     render();
+})();
+
+(() => {
+    const section = document.querySelector('.pairing');
+    const cards = section ? [...section.querySelectorAll('.pairing_card')] : [];
+    const foodCards = section ? [...section.querySelectorAll('.pairing_food .pairing_card')] : [];
+    const plates = section ? [...section.querySelectorAll('.pairing_plate')] : [];
+    const resetButton = section?.querySelector('.btn_pill_reset');
+    const handHint = section?.querySelector('.pairing_drag_hand');
+
+    if (!section || !cards.length || !foodCards.length || plates.length < 2) return;
+
+    const desktopQuery = window.matchMedia('(min-width: 48.0625rem)');
+    const finePointerQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const hintCard = foodCards[Math.min(1, foodCards.length - 1)];
+    const revealDuration = 1100;
+    const hintDelay = 1250;
+
+    let revealObserver = null;
+    let revealTimer = 0;
+    let hintTimer = 0;
+    let hintPositionFrame = 0;
+    let hasRevealed = false;
+    let dragState = null;
+    const plateFlashTimers = new WeakMap();
+
+    const isMotionEnabled = () => desktopQuery.matches && !reducedMotionQuery.matches;
+    const isDragEnabled = () => desktopQuery.matches && finePointerQuery.matches;
+    const areCardsReady = () => !isMotionEnabled() || hasRevealed;
+
+    function clearTimers() {
+        window.clearTimeout(revealTimer);
+        window.clearTimeout(hintTimer);
+        revealTimer = 0;
+        hintTimer = 0;
+    }
+
+    function setCardDelays() {
+        cards.forEach((card) => {
+            const row = card.closest('.pairing_drink') ? 1 : 0;
+            const column = Math.max(0, [...card.parentElement.children].indexOf(card));
+            const delay = column * 74 + row * 80;
+
+            card.style.setProperty('--pairing-card-delay', `${delay}ms`);
+        });
+    }
+
+    function resetCardPosition(card) {
+        card.classList.remove('is_pairing_dragging');
+        card.style.removeProperty('--pairing-card-drag-x');
+        card.style.removeProperty('--pairing-card-drag-y');
+        card.style.removeProperty('--pairing-card-drag-rotation');
+    }
+
+    function stopHint() {
+        window.clearTimeout(hintTimer);
+        hintTimer = 0;
+        section.classList.remove('is_pairing_hint_running');
+    }
+
+    function positionHint() {
+        hintPositionFrame = 0;
+
+        if (!isMotionEnabled() || !hintCard || !plates[0]) return;
+
+        const sectionBounds = section.getBoundingClientRect();
+        const sourceBounds = hintCard.getBoundingClientRect();
+        const targetBounds = plates[0].getBoundingClientRect();
+        const startX = sourceBounds.left - sectionBounds.left + sourceBounds.width * 0.55;
+        const startY = sourceBounds.top - sectionBounds.top + sourceBounds.height * 0.54;
+        const targetX = targetBounds.left - sectionBounds.left + targetBounds.width / 2;
+        const targetY = targetBounds.top - sectionBounds.top + targetBounds.height / 2;
+
+        section.style.setProperty('--pairing-hint-start-x', `${startX.toFixed(1)}px`);
+        section.style.setProperty('--pairing-hint-start-y', `${startY.toFixed(1)}px`);
+        section.style.setProperty('--pairing-hint-delta-x', `${(targetX - startX).toFixed(1)}px`);
+        section.style.setProperty('--pairing-hint-delta-y', `${(targetY - startY).toFixed(1)}px`);
+    }
+
+    function requestHintPosition() {
+        if (!isMotionEnabled() || hintPositionFrame) return;
+
+        hintPositionFrame = window.requestAnimationFrame(positionHint);
+    }
+
+    function startHint() {
+        if (!isMotionEnabled() || !hasRevealed || section.classList.contains('is_pairing_hint_paused')) return;
+
+        positionHint();
+        section.classList.remove('is_pairing_hint_running');
+
+        if (handHint) void handHint.offsetWidth;
+
+        section.classList.add('is_pairing_hint_running');
+    }
+
+    function scheduleHint() {
+        stopHint();
+        hintTimer = window.setTimeout(startHint, hintDelay);
+    }
+
+    function isPointInside(element, x, y) {
+        const bounds = element.getBoundingClientRect();
+        const horizontalPadding = 16;
+        const topPadding = 88;
+        const bottomPadding = 24;
+
+        return x >= bounds.left - horizontalPadding && x <= bounds.right + horizontalPadding
+            && y >= bounds.top - topPadding && y <= bounds.bottom + bottomPadding;
+    }
+
+    function targetPlateFor(card) {
+        const type = card.closest('.pairing_drink') ? 'drink' : 'food';
+
+        return plates.find((plate) => plate.dataset.pairingPlate === type);
+    }
+
+    function flashPlate(plate) {
+        window.clearTimeout(plateFlashTimers.get(plate));
+        plate.classList.remove('is_pairing_drop_active');
+        void plate.offsetWidth;
+        plate.classList.add('is_pairing_drop_active');
+
+        const timer = window.setTimeout(() => {
+            plate.classList.remove('is_pairing_drop_active');
+        }, 650);
+
+        plateFlashTimers.set(plate, timer);
+    }
+
+    function resetPlate(plate) {
+        window.clearTimeout(plateFlashTimers.get(plate));
+        plate.classList.remove('is_pairing_drop_active');
+    }
+
+    function handlePointerMove(event) {
+        if (!dragState || event.pointerId !== dragState.pointerId) return;
+
+        const offsetX = event.clientX - dragState.startX;
+        const offsetY = event.clientY - dragState.startY;
+        const rotation = Math.max(-4, Math.min(4, offsetX * 0.016));
+
+        dragState.card.style.setProperty('--pairing-card-drag-x', `${offsetX.toFixed(1)}px`);
+        dragState.card.style.setProperty('--pairing-card-drag-y', `${offsetY.toFixed(1)}px`);
+        dragState.card.style.setProperty('--pairing-card-drag-rotation', `${rotation.toFixed(2)}deg`);
+    }
+
+    function clearDragState() {
+        if (!dragState) return null;
+
+        const activeDrag = dragState;
+        const { card, pointerId } = activeDrag;
+
+        card.removeEventListener('pointermove', handlePointerMove);
+        card.removeEventListener('pointerup', finishDrag);
+        card.removeEventListener('pointercancel', finishDrag);
+
+        if (card.hasPointerCapture?.(pointerId)) card.releasePointerCapture(pointerId);
+
+        resetCardPosition(card);
+        dragState = null;
+
+        return activeDrag;
+    }
+
+    function finishDrag(event) {
+        if (!dragState || event.pointerId !== dragState.pointerId) return;
+
+        const { card } = dragState;
+        const isDrop = event.type === 'pointerup';
+        const targetPlate = targetPlateFor(card);
+
+        clearDragState();
+
+        if (isDrop && targetPlate && isPointInside(targetPlate, event.clientX, event.clientY)) {
+            flashPlate(targetPlate);
+        }
+    }
+
+    function startDrag(event) {
+        if (!isDragEnabled() || !areCardsReady() || dragState || event.button !== 0) return;
+
+        const card = event.currentTarget;
+
+        if (!(card instanceof HTMLElement)) return;
+
+        event.preventDefault();
+        stopHint();
+        section.classList.add('is_pairing_hint_paused');
+
+        dragState = {
+            card,
+            pointerId: event.pointerId,
+            startX: event.clientX,
+            startY: event.clientY
+        };
+
+        card.classList.add('is_pairing_dragging');
+        card.setPointerCapture?.(event.pointerId);
+        card.addEventListener('pointermove', handlePointerMove);
+        card.addEventListener('pointerup', finishDrag);
+        card.addEventListener('pointercancel', finishDrag);
+    }
+
+    function revealCards() {
+        if (!isMotionEnabled() || hasRevealed) return;
+
+        hasRevealed = true;
+        section.classList.add('is_pairing_cards_revealing');
+
+        window.requestAnimationFrame(() => {
+            window.requestAnimationFrame(() => {
+                if (!isMotionEnabled() || !hasRevealed) return;
+
+                section.classList.add('is_pairing_cards_revealed');
+                requestHintPosition();
+                scheduleHint();
+
+                revealTimer = window.setTimeout(() => {
+                    section.classList.remove('is_pairing_cards_revealing');
+                }, revealDuration);
+            });
+        });
+    }
+
+    function resetMotion() {
+        clearTimers();
+
+        if (revealObserver) {
+            revealObserver.disconnect();
+            revealObserver = null;
+        }
+
+        if (hintPositionFrame) {
+            window.cancelAnimationFrame(hintPositionFrame);
+            hintPositionFrame = 0;
+        }
+
+        clearDragState();
+        cards.forEach(resetCardPosition);
+        plates.forEach(resetPlate);
+        section.classList.remove(
+            'is_pairing_motion_ready',
+            'is_pairing_cards_revealing',
+            'is_pairing_cards_revealed',
+            'is_pairing_hint_running',
+            'is_pairing_hint_paused'
+        );
+        hasRevealed = false;
+        dragState = null;
+    }
+
+    function updateMode() {
+        resetMotion();
+
+        if (!isMotionEnabled()) return;
+
+        setCardDelays();
+        section.classList.add('is_pairing_motion_ready');
+        revealObserver = new IntersectionObserver((entries) => {
+            if (!entries.some((entry) => entry.isIntersecting)) return;
+
+            revealCards();
+            revealObserver?.disconnect();
+        }, { threshold: 0.18 });
+        revealObserver.observe(section);
+    }
+
+    resetButton?.addEventListener('click', () => {
+        cards.forEach(resetCardPosition);
+        plates.forEach(resetPlate);
+        section.classList.remove('is_pairing_hint_paused');
+
+        if (isMotionEnabled() && hasRevealed) {
+            requestHintPosition();
+            scheduleHint();
+        }
+    });
+
+    cards.forEach((card) => card.addEventListener('pointerdown', startDrag));
+
+    const listenForChanges = (query, callback) => {
+        if (query.addEventListener) query.addEventListener('change', callback);
+        else query.addListener(callback);
+    };
+
+    window.addEventListener('resize', requestHintPosition, { passive: true });
+    window.addEventListener('load', requestHintPosition);
+    listenForChanges(desktopQuery, updateMode);
+    listenForChanges(reducedMotionQuery, updateMode);
+    updateMode();
 })();
 
 (() => {
