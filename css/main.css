@@ -918,7 +918,7 @@ section[id] {
 }
 
 .history_deco_drop {
-  top: 52%;
+  top: 62%;
   width: clamp(2rem, 2.6vw, 3.375rem);
 }
 
@@ -1148,7 +1148,7 @@ section[id] {
 
 .pairing_row {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, 248px);
   gap: 1.25rem;
   width: auto;
   align-self: stretch;
@@ -1159,9 +1159,11 @@ section[id] {
 .pairing_card {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 0.75rem;
-  padding: 0.75rem;
+  width: 248px;
+  height: 368px;
+  padding: 10px;
   border-radius: 0.5rem;
   background: var(--makgeolli_light4);
 }
@@ -1173,10 +1175,11 @@ section[id] {
 .pairing_card_media {
   position: relative;
   display: flex;
+  flex: 1 1 0;
   align-items: center;
   justify-content: center;
   width: 100%;
-  aspect-ratio: 222 / 272;
+  min-height: 0;
   border-radius: 0.5rem;
   overflow: hidden;
   background: var(--card-bg, var(--makgeolli_light1));
@@ -1211,7 +1214,8 @@ section[id] {
 }
 
 .pairing_card_label {
-  text-align: center;
+  flex: 0 0 auto;
+  text-align: left;
   font-weight: 300;
   font-size: clamp(0.95rem, 1.15vw, 1.375rem);
   letter-spacing: -0.02em;
