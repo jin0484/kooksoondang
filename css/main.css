@@ -13,7 +13,7 @@
 :root {
   /* ----- brand_color ----- */
   --kooksoondang_green: #D4E400;
-  --kooksoondang_green_lighter: #FAFFB8;
+  --kooksoondang_green_lighter: #FCFFD5;
   --kooksoondang_orange: #F29556;
   --kooksoondang_lighter: #FFD7BB;
   --bekseju_darker_cold: #232323;
@@ -387,18 +387,6 @@ section[id] {
   font-size: clamp(1rem, 1.1vw, 1.25rem);
   line-height: 1.7;
   color: var(--bekseju_darker_cold);
-}
-
-/* 글자를 한 자씩 잘라 두되 자리는 처음부터 다 차지시키고 opacity 만 켠다.
-   폭을 늘려 가며 찍으면 줄바꿈이 계속 바뀌어 문단이 출렁이기 때문.
-   지연 시간은 JS 가 글자마다 --type-delay 로 심어 줌 (문장부호 뒤에서 더 쉼) */
-.hero_desc.is_typing_ready .hero_desc_char {
-  opacity: 0;
-}
-
-.hero_desc.is_typing_ready.is_typing_running .hero_desc_char {
-  opacity: 1;
-  transition: opacity 60ms linear var(--type-delay, 0ms);
 }
 
 .hero_actions {
@@ -1473,7 +1461,7 @@ section[id] {
 }
 
 .pairing_drag_explain p {
-  font-size: 1.25rem;
+  font-size: clamp(1rem, 1.1vw, 1.25rem);
   color: var(--makgeolli_light3);
 }
 
@@ -1561,7 +1549,7 @@ section[id] {
   background: rgba(255, 255, 255, 0.96);
   color: var(--bekseju_darker_cold);
   font-size: 0.825rem;
-  font-weight: 500;
+  font-weight: 700;
   line-height: 1.2;
   text-align: center;
   text-overflow: ellipsis;
@@ -1606,7 +1594,7 @@ section[id] {
   min-height: 1.35em;
   margin: -1.5rem 0 0;
   color: var(--makgeolli_light3);
-  font-size: 1rem;
+  font-size: 0.875rem;
   text-align: center;
 }
 
