@@ -119,15 +119,29 @@
         </div>
 
         <div class="glass_divider" aria-hidden="true">
-            <img src="asset/icon/glass_divider.svg" alt="">
+            <img src="asset/icon/glass_divider2.svg" alt="">
         </div>
 
         <section class="history" id="history" aria-label="Brand history">
             <div class="history_timeline">
                 <div class="history_morph_rail" aria-hidden="true">
                     <svg class="history_morph" viewBox="0 0 228 510" focusable="false">
-                        <path class="history_morph_path" fill="#F29556"></path>
+                        <defs>
+                            <linearGradient id="history_morph_fill" x1="0" y1="0" x2="0" y2="1">
+                                <stop class="history_morph_stop_top" offset="0" stop-color="#F29556"></stop>
+                                <stop class="history_morph_stop_bottom" offset="1" stop-color="#F29556"></stop>
+                            </linearGradient>
+                        </defs>
+                        <path class="history_morph_path" fill="url(#history_morph_fill)"></path>
                     </svg>
+                </div>
+
+                <!-- 유리잔에서 물방울이 떨어지는 구간. 모프 시작 두 프레임의 크기/스크롤 기준점 역할 -->
+                <div class="history_intro" aria-hidden="true">
+                    <!-- 유리잔에 고정된 장식. 모프 대상이 아니라 .history_deco 를 붙이지 않음 -->
+                    <img class="history_drip" src="asset/icon/trans_05.svg" alt="">
+                    <img class="history_deco history_deco_drip_tail" src="asset/icon/trans_06.svg" alt="">
+                    <img class="history_deco history_deco_drop" src="asset/icon/trans_01.svg" alt="">
                 </div>
                 <ol class="history_list">
                 <li class="history_item">
@@ -148,6 +162,7 @@
                             </ul>
                         </div>
                     </article>
+                    <img class="history_photo" src="asset/img/brandstory1.png" alt="Illustration of Kooksoondang's early brewers at the Kirin Brewery">
                     <img class="history_deco history_deco_circle" src="asset/icon/brand_history_circle.svg" alt="" aria-hidden="true">
                 </li>
                 <li class="history_item">
@@ -168,6 +183,7 @@
                             </ul>
                         </div>
                     </article>
+                    <img class="history_photo" src="asset/img/brandstory2.png" alt="Illustration of Baekseju being selected as the official traditional liquor for the 1994 Year of Korean Traditional Music">
                     <img class="history_deco history_deco_cup" src="asset/icon/trans_03.svg" alt="" aria-hidden="true">
                 </li>
                 <li class="history_item">
@@ -188,6 +204,7 @@
                             </ul>
                         </div>
                     </article>
+                    <img class="history_photo" src="asset/img/brandstory3.png" alt="Illustration of eco-friendly brewing in the fields of Hoengseong, Gangwon Province">
                     <img class="history_deco history_deco_bottle" src="asset/icon/trans_02.svg" alt="" aria-hidden="true">
                 </li>
                 <li class="history_item">
@@ -209,6 +226,7 @@
                             </ul>
                         </div>
                     </article>
+                    <img class="history_photo" src="asset/img/brandstory3.png" alt="Illustration of eco-friendly brewing in the fields of Hoengseong, Gangwon Province">
                     <img class="history_deco history_deco_pet" src="asset/icon/trans_04.svg" alt="" aria-hidden="true">
                 </li>
                 </ol>

@@ -56,17 +56,39 @@ sideNav.addEventListener('click', (event) => {
     const historyTimeline = historySection?.querySelector('.history_timeline');
     const morphStage = historySection?.querySelector('.history_morph');
     const morphPath = historySection?.querySelector('.history_morph_path');
+    const morphStopTop = historySection?.querySelector('.history_morph_stop_top');
+    const morphStopBottom = historySection?.querySelector('.history_morph_stop_bottom');
+    const introDecos = historySection ? [...historySection.querySelectorAll('.history_intro .history_deco')] : [];
     const staticDecos = historySection ? [...historySection.querySelectorAll('.history_deco')] : [];
     const historyItems = historySection ? [...historySection.querySelectorAll('.history_item')] : [];
 
-    if (!historySection || !historyTimeline || !morphStage || !morphPath || staticDecos.length !== 4 || historyItems.length !== staticDecos.length) return;
+    // 프레임 순서: 물방울(늘어짐) - 물방울(낙하) - 원 - 잔 - 병 - 페트
+    // 유리잔에 붙은 trans_05 는 .history_drip 으로 고정 배치되며 모프에 참여하지 않음
+    const introFrameCount = 2;
+    const frameCount = introFrameCount + 4;
+    const bottleFrameIndex = introFrameCount + 2;
+
+    if (!historySection || !historyTimeline || !morphStage || !morphPath || !morphStopTop || !morphStopBottom) return;
+    if (introDecos.length !== introFrameCount || staticDecos.length !== frameCount || historyItems.length !== frameCount - introFrameCount) return;
 
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const mobileQuery = window.matchMedia('(max-width: 48rem)');
     const svgNamespace = 'http://www.w3.org/2000/svg';
     const stageSize = { width: 228, height: 510 };
     const sampleCount = 240;
-    const rotationKeyframes = [0, -12, 12, -10];
+    const rotationKeyframes = [0, 0, 0, -12, 12, -10];
+    // 유리잔 영역에서는 흰색, 낙하하며 주황으로 물듦
+    const fillKeyframes = [
+        { top: '#FFFFFF', bottom: '#FFFFFF' },
+        { top: '#FFFFFF', bottom: '#F29556' },
+        { top: '#F29556', bottom: '#F29556' },
+        { top: '#F29556', bottom: '#F29556' },
+        { top: '#F29556', bottom: '#F29556' },
+        { top: '#F29556', bottom: '#F29556' }
+    ];
+    // 고정 장식(trans_05) 아래끝에 걸쳐 시작해 아래로 떨어짐
+    const dripTailRise = -305;
+    const dropFallDistance = 120;
     const petOffsetRange = { min: 134, viewportRatio: 0.0835, max: 160 };
     const morphScrollDuration = 1.12;
 
@@ -213,9 +235,41 @@ sideNav.addEventListener('click', (event) => {
         });
     }
 
+    function parseHexColor(hex) {
+        return [
+            parseInt(hex.slice(1, 3), 16),
+            parseInt(hex.slice(3, 5), 16),
+            parseInt(hex.slice(5, 7), 16)
+        ];
+    }
+
+    const fillColorFrames = fillKeyframes.map((frame) => ({
+        top: parseHexColor(frame.top),
+        bottom: parseHexColor(frame.bottom)
+    }));
+
+    function mixColor(startColor, endColor, progress) {
+        const channels = startColor.map((channel, index) => (
+            Math.round(channel + (endColor[index] - channel) * progress)
+        ));
+
+        return `rgb(${channels.join(' ')})`;
+    }
+
+    // 프레임별 세로 오프셋: 물방울은 그릇에 매달렸다 떨어져 나오고, 페트는 아래로 밀려남
+    function frameOffset(index) {
+        if (index === 0) return dripTailRise;
+        if (index === 1) return dropFallDistance;
+        if (index === frameCount - 1) {
+            return clamp(window.innerWidth * petOffsetRange.viewportRatio, petOffsetRange.min, petOffsetRange.max);
+        }
+
+        return 0;
+    }
+
     function prepareFrames() {
         const targetRects = staticDecos.map((deco) => deco.getBoundingClientRect());
-        const bottleWidth = targetRects[2]?.width;
+        const bottleWidth = targetRects[bottleFrameIndex]?.width;
 
         if (!bottleWidth) return false;
 
@@ -238,7 +292,10 @@ sideNav.addEventListener('click', (event) => {
     function getScrollState() {
         const viewportCenter = window.scrollY + window.innerHeight / 2;
         const timelineBounds = historyTimeline.getBoundingClientRect();
-        const rawCenters = [window.scrollY + timelineBounds.top, ...historyItems.slice(1).map((item) => {
+        const rawCenters = [...introDecos.map((deco) => {
+            const bounds = deco.getBoundingClientRect();
+            return window.scrollY + bounds.top + bounds.height / 2;
+        }), window.scrollY + timelineBounds.top, ...historyItems.slice(1).map((item) => {
             const bounds = item.getBoundingClientRect();
             return window.scrollY + bounds.top + bounds.height / 2;
         })];
@@ -270,11 +327,11 @@ sideNav.addEventListener('click', (event) => {
             ? framePaths[from]
             : createPath(interpolatePoints(morphFrames[from], morphFrames[to], easedProgress));
         const rotation = rotationKeyframes[from] + (rotationKeyframes[to] - rotationKeyframes[from]) * easedProgress;
-        const petOffset = clamp(window.innerWidth * petOffsetRange.viewportRatio, petOffsetRange.min, petOffsetRange.max);
-        const verticalOffset = from === to
-            ? (from === rotationKeyframes.length - 1 ? petOffset : 0)
-            : (to === rotationKeyframes.length - 1 ? petOffset * easedProgress : 0);
+        const startOffset = frameOffset(from);
+        const verticalOffset = startOffset + (frameOffset(to) - startOffset) * easedProgress;
 
+        morphStopTop.setAttribute('stop-color', mixColor(fillColorFrames[from].top, fillColorFrames[to].top, easedProgress));
+        morphStopBottom.setAttribute('stop-color', mixColor(fillColorFrames[from].bottom, fillColorFrames[to].bottom, easedProgress));
         morphPath.setAttribute('d', pathData);
         morphStage.style.setProperty('--history-morph-rotation', `${rotation.toFixed(2)}deg`);
         morphStage.style.setProperty('--history-morph-offset', `${verticalOffset.toFixed(2)}px`);

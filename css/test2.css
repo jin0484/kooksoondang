@@ -799,9 +799,13 @@ section[id] {
 /* ---------- brand history ---------- */
 
 .history {
+  /* 섹션 상단 여백 = 물방울이 떨어지는 구간의 높이 */
+  --history-intro-rise: calc(clamp(3rem, 6vw, 6rem) + 400px);
+  /* 고정 장식이 분리선 하단보다 위로 올라가는 거리 */
+  --history-drip-rise: 385px;
   position: relative;
   background: linear-gradient(180deg, var(--makgeolli_White) 0%, var(--makgeolli_light3) 100%);
-  padding: calc(clamp(3rem, 6vw, 6rem) + 400px) var(--gutter-x) clamp(5rem, 9vw, 9rem);
+  padding: var(--history-intro-rise) var(--gutter-x) clamp(5rem, 9vw, 9rem);
 }
 
 .history_timeline {
@@ -818,15 +822,54 @@ section[id] {
   gap: calc(clamp(4rem, 8vw, 8rem) + 400px);
 }
 
+/* 레일 위쪽을 유리잔 분리선까지 끌어올려 물방울이 그릇에 매달린 상태로 시작하게 함 */
 .history_morph_rail {
   position: absolute;
-  inset: 0;
+  inset: calc(-1 * var(--history-intro-rise)) 0 0 0;
   z-index: 2;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   pointer-events: none;
   visibility: hidden;
+}
+
+.history_intro {
+  position: absolute;
+  top: calc(-1 * var(--history-intro-rise));
+  left: 0;
+  right: 0;
+  height: var(--history-intro-rise);
+  pointer-events: none;
+}
+
+/* 유리잔에 매달린 채 고정되는 장식. 기준점은 분리선 하단에서 위로 --history-drip-rise 만큼 */
+.history_drip {
+  position: absolute;
+  top: calc(-1 * var(--history-drip-rise));
+  left: 50%;
+  width: clamp(9.72rem, 11.76vw, 15.24rem);
+  translate: -50% -50%;
+}
+
+/* 각 요소의 top 값이 해당 모프 프레임으로 전환되는 스크롤 지점이 됨 */
+.history_deco_drip_tail,
+.history_deco_drop {
+  position: absolute;
+  left: 50%;
+  translate: -50% 0;
+}
+
+/* 원본 아트워크 비율(49 / 265)에 맞춰 drip과 같은 배율로 유지.
+   top 을 올릴수록 다음 프레임까지의 스크롤 구간이 길어져 전환이 느려짐 */
+.history_deco_drip_tail {
+  top: 8%;
+  width: clamp(1.8rem, 2.17vw, 2.82rem);
+}
+
+.history_deco_drop {
+  top: 52%;
+  width: clamp(2rem, 2.6vw, 3.375rem);
 }
 
 .history_morph {
@@ -917,6 +960,22 @@ section[id] {
   opacity: 0.9;
 }
 
+/* 본문 반대쪽 칸에 배치. 본문이 좌우로 번갈아 가므로 사진도 함께 뒤집힘.
+   폭이 칸 너비를 넘어서 바깥 정렬 기준으로 안쪽 여백까지 확장됨 */
+.history_photo {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  width: 119%;
+  max-width: 40.4rem; /* 전역 img 의 max-width:100% 를 덮어써야 칸 밖으로 확장됨 */
+  height: auto;
+}
+
+.history_item:nth-child(even) .history_photo {
+  grid-column: 1;
+  justify-self: start;
+}
+
 .history_deco_circle {
   width: 2.8125rem;
 }
@@ -934,7 +993,8 @@ section[id] {
 }
 
 @media (max-width: 48rem) {
-  .history_morph_rail {
+  .history_morph_rail,
+  .history_intro {
     display: none;
   }
 
@@ -959,6 +1019,14 @@ section[id] {
     grid-column: 1;
     grid-row: 1;
   }
+
+  .history_photo,
+  .history_item:nth-child(even) .history_photo {
+    grid-column: 1;
+    grid-row: 3;
+    justify-self: stretch;
+    width: 100%;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -966,7 +1034,8 @@ section[id] {
     animation: none;
   }
 
-  .history_morph_rail {
+  .history_morph_rail,
+  .history_intro {
     display: none;
   }
 
@@ -1026,7 +1095,10 @@ section[id] {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 1.25rem;
-  width: 100%;
+  width: auto;
+  align-self: stretch;
+  /* 화면 양옆에서 225px 지점부터 카드가 시작. 섹션 좌우 패딩만큼은 이미 확보되어 있음 */
+  margin-inline: max(0px, calc(225px - var(--gutter-x)));
 }
 
 .pairing_card {
