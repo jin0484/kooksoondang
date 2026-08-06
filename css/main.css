@@ -1007,6 +1007,9 @@ section[id] {
   overflow: hidden;
   background: var(--bekseju_darker_cold);
   padding: clamp(4rem, 6vw, 5rem) var(--gutter-x) clamp(4rem, 6vw, 6rem);
+  /* 안쪽 콘텐츠 뭉치를 섹션 높이(110vh) 기준으로 상하 가운데 정렬 */
+  display: flex;
+  align-items: center;
 }
 
 .pairing--history-overlay {
@@ -1038,6 +1041,7 @@ section[id] {
 .pairing_inner {
   position: relative;
   z-index: 1;
+  width: 100%;
   max-width: var(--page-max);
   margin: 0 auto;
   display: flex;
@@ -1071,7 +1075,7 @@ section[id] {
   left: 125px;
   display: grid;
   grid-template-columns: repeat(5, 173.6px);
-  column-gap: 30px;
+  column-gap: 20px;
   width: max-content;
   align-self: flex-start;
   margin-inline: 0;
@@ -1354,8 +1358,8 @@ section[id] {
   gap: clamp(2.5rem, 4vw, 5rem);
   width: min(100%, 38rem);
   margin-top: -30px;
-  /* 안내 문구·접시·버튼을 묶어서 20% 축소 (레이아웃 기준점은 아래쪽 유지) */
-  transform: scale(0.8);
+  /* 안내 문구·접시·버튼을 묶어서 축소 (0.8 에서 10% 더 줄인 0.72) */
+  transform: scale(0.72);
   transform-origin: bottom center;
 }
 
@@ -1462,12 +1466,13 @@ section[id] {
   left: 50%;
   z-index: 1;
   max-width: calc(100% - 1rem);
-  padding: 0.4rem 0.75rem;
+  /* 선택 카드 라벨만 10% 크게 (글자·여백을 함께 키워 비율 유지) */
+  padding: 0.44rem 0.825rem;
   overflow: hidden;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.96);
   color: var(--bekseju_darker_cold);
-  font-size: 0.75rem;
+  font-size: 0.825rem;
   font-weight: 700;
   line-height: 1.2;
   text-align: center;
