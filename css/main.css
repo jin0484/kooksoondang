@@ -1,6 +1,6 @@
 @charset "UTF-8";
 
-@import url('https://fonts.googleapis.com/css2?family=Anek+Telugu:wght@800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;700&family=Anek+Telugu:wght@800&display=swap');
 
 @font-face {
   font-family: 'ROH HOE-CHAN';
@@ -148,6 +148,7 @@ body {
 }
 
 main {
+  --history-pairing-overlap: clamp(3rem, 7vw, 7rem);
   display: block;
   width: 100%;
   min-width: 0;
@@ -672,8 +673,10 @@ section[id] {
   /* 고정 장식이 분리선 하단보다 위로 올라가는 거리 */
   --history-drip-rise: 385px;
   position: relative;
+  z-index: 0;
+  isolation: isolate;
   background: linear-gradient(180deg, var(--makgeolli_White) 0%, var(--makgeolli_light3) 100%);
-  padding: var(--history-intro-rise) var(--gutter-x) clamp(5rem, 9vw, 9rem);
+  padding: var(--history-intro-rise) var(--gutter-x) calc(clamp(5rem, 9vw, 9rem) + var(--history-pairing-overlap));
 }
 
 .history_timeline {
@@ -866,6 +869,10 @@ section[id] {
 }
 
 @media (max-width: 48rem) {
+  main {
+    --history-pairing-overlap: clamp(1.25rem, 7vw, 2.25rem);
+  }
+
   .history_morph_rail,
   .history_intro {
     display: none;
@@ -922,6 +929,24 @@ section[id] {
   padding: clamp(4rem, 6vw, 5rem) var(--gutter-x) clamp(4rem, 6vw, 6rem);
 }
 
+.pairing--history-overlay {
+  z-index: 1;
+  isolation: isolate;
+  margin-top: calc(-1 * var(--history-pairing-overlap));
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-bottom: 0;
+  border-radius: clamp(2rem, 4.5vw, 4.75rem) clamp(2rem, 4.5vw, 4.75rem) 0 0;
+  box-shadow: 0 -1.5rem 3.5rem rgba(76, 59, 51, 0.18);
+  scroll-margin-top: clamp(4.5rem, 6vw, 6rem);
+}
+
+@media (max-width: 48rem) {
+  .pairing--history-overlay {
+    border-radius: 1.25rem 1.25rem 0 0;
+    box-shadow: 0 -0.5rem 1.5rem rgba(14, 19, 38, 0.12);
+  }
+}
+
 .pairing_wave {
   position: absolute;
   top: -10%;
@@ -965,11 +990,16 @@ section[id] {
   left: 50%;
   display: grid;
   grid-template-columns: repeat(5, 248px);
-  gap: 1.25rem;
+  gap: 60px;
   width: max-content;
   align-self: flex-start;
   margin-inline: 0;
   transform: translateX(-50%);
+}
+
+/* 카드 두 줄 사이만 40px. 부모 gap 을 상쇄해서 다른 간격은 건드리지 않음 */
+.pairing_row + .pairing_row {
+  margin-top: calc(40px - clamp(3rem, 5vw, 4.5rem));
 }
 
 .pairing_card {
@@ -1031,36 +1061,42 @@ section[id] {
   max-width: none;
   height: var(--pairing-food-image-height, 100%);
   object-fit: contain;
+  transform: var(--pairing-food-image-transform, none);
 }
 
 .pairing_food .pairing_card[data-pairing-key="pancake"] {
   --pairing-food-image-height: 140%;
   --pairing-food-image-left: -143.6%;
   --pairing-food-image-top: -33.9%;
+  --pairing-food-image-transform: translateX(10px);
 }
 
 .pairing_food .pairing_card[data-pairing-key="pizza"] {
   --pairing-food-image-height: 122%;
   --pairing-food-image-left: -69.4%;
   --pairing-food-image-top: 0;
+  --pairing-food-image-transform: translate(20px, 5px);
 }
 
 .pairing_food .pairing_card[data-pairing-key="chicken"] {
   --pairing-food-image-height: 154%;
   --pairing-food-image-left: -98.5%;
   --pairing-food-image-top: -47.1%;
+  --pairing-food-image-transform: translate(20px, -20px);
 }
 
 .pairing_food .pairing_card[data-pairing-key="ribs"] {
   --pairing-food-image-height: 150%;
-  --pairing-food-image-left: -122.9%;
-  --pairing-food-image-top: 0;
+  --pairing-food-image-left: 50%;
+  --pairing-food-image-top: 15px;
+  --pairing-food-image-transform: translateX(-50%);
 }
 
 .pairing_food .pairing_card[data-pairing-key="bossam"] {
   --pairing-food-image-height: 152%;
-  --pairing-food-image-left: -119.2%;
-  --pairing-food-image-top: -32.4%;
+  --pairing-food-image-left: 50%;
+  --pairing-food-image-top: calc(-32.4% - 40px);
+  --pairing-food-image-transform: translateX(-50%);
 }
 
 .pairing_card_drink .pairing_card_media {
@@ -1179,12 +1215,14 @@ section[id] {
   margin-top: -30px;
 }
 
+/* 아래 접시·버튼 위치는 그대로 두어야 해서 레이아웃을 밀지 않는 transform 으로 내림 */
 .pairing_drag_explain {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1.5rem;
   width: 100%;
+  transform: translateY(20px);
 }
 
 .pairing_drag_explain p {
@@ -1245,11 +1283,13 @@ section[id] {
   animation: pairing_drag_hint 4.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
 }
 
+/* 안내 문구는 그대로 두고 접시부터 아래(버튼 포함)만 위로 당김 */
 .pairing_plates {
   display: flex;
   gap: 1.4rem;
   align-items: center;
   justify-content: center;
+  margin-top: -20px;
 }
 
 .pairing_plate_slot {
