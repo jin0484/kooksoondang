@@ -121,6 +121,28 @@
   --btn-check: #4C3B33;
 }
 
+/* ---------- lenis (부드러운 스크롤) ---------- */
+/* lenis 배포본의 lenis.css 내용. 요청을 하나 줄이려고 여기에 함께 둠 */
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+
+.lenis [data-lenis-prevent],
+.lenis [data-lenis-prevent-wheel],
+.lenis [data-lenis-prevent-touch] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
 /* ---------- shared header ---------- */
 
 .site_header,

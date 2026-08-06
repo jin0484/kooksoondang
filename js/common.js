@@ -71,3 +71,18 @@
         toggle.focus();
     });
 })();
+
+(() => {
+    // CDN 이 막히면 그냥 기본 스크롤로 동작하도록 존재 여부를 확인
+    if (typeof Lenis === 'undefined') return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    // autoRaf: 라이브러리가 자체 rAF 루프를 돌림
+    // anchors: #id 링크를 부드럽게 이동시킴 (scroll-behavior: smooth 를 대체)
+    window.siteLenis = new Lenis({
+        autoRaf: true,
+        anchors: true,
+        lerp: 0.1,
+        wheelMultiplier: 1
+    });
+})();
