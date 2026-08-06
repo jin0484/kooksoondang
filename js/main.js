@@ -614,18 +614,19 @@
     const selectedCards = { food: null, drink: null };
     const labels = {
         food: {
-            pancake: '해물파전',
-            pizza: '고르곤졸라 피자',
-            chicken: '매운 닭볶음탕',
-            ribs: '바비큐 립',
-            bossam: '한방 보쌈'
+            pancake: 'Seafood Scallion Pancake',
+            pizza: 'Gorgonzola Cheese Pizza',
+            chicken: 'Spicy Braised Chicken',
+            ribs: 'Sweet and Savory BBQ Ribs',
+            bossam: 'Korean-Style Bossam'
         },
         drink: {
-            baekseju: '백세주',
-            banana: '국순당 쌀 바나나',
-            chestnut: '국순당 쌀 밤',
-            draft: '국순당 생막걸리',
-            prebiotics: '1000억 유산균 막걸리'
+            // 접시 위 라벨은 nowrap + ellipsis 라, 카드 문구가 긴 백세주만 짧은 이름으로 둠
+            baekseju: 'Bekseju',
+            banana: 'Kooksoondang Banana Makgeolli',
+            chestnut: 'Kooksoondang Chestnut Makgeolli',
+            draft: 'Kooksoondang Draft Makgeolli',
+            prebiotics: '100 Billion Prebiotics Makgeolli'
         }
     };
     const pairingResults = {
@@ -809,7 +810,7 @@
         if (selectedCards.food && selectedCards.drink) {
             setFeedback('');
         } else {
-            setFeedback(type === 'food' ? '음식 카드가 접시에 담겼어요. 술 카드를 골라 주세요.' : '술 카드가 접시에 담겼어요. 음식 카드를 골라 주세요.');
+            setFeedback(type === 'food' ? 'Your food card is on the plate. Now pick a drink card!' : 'Your drink card is on the plate. Now pick a food card!');
         }
     }
 
@@ -878,7 +879,7 @@
 
     function showResult(result) {
         if (!resultModal) {
-            setFeedback(`${result.foodLabel} × ${result.drinkLabel}: ${result.score}점 — ${result.description}`);
+            setFeedback(`${result.foodLabel} × ${result.drinkLabel}: ${result.score} pts — ${result.description}`);
             return;
         }
 
@@ -926,9 +927,11 @@
 
         if (!isMotionEnabled() || !hintCard || !plates[0]) return;
 
+        // 접시 칸(.pairing_plate_slot)에는 위쪽 라벨도 포함돼 있어서, 접시 그림 자체를 목표로 삼음
+        const plateGraphic = plates[0].querySelector('.pairing_plate') || plates[0];
         const sectionBounds = section.getBoundingClientRect();
         const sourceBounds = hintCard.getBoundingClientRect();
-        const targetBounds = plates[0].getBoundingClientRect();
+        const targetBounds = plateGraphic.getBoundingClientRect();
         const startX = sourceBounds.left - sectionBounds.left + sourceBounds.width * 0.55;
         const startY = sourceBounds.top - sectionBounds.top + sourceBounds.height * 0.54;
         const targetX = targetBounds.left - sectionBounds.left + targetBounds.width / 2;
@@ -1044,7 +1047,7 @@
             selectCard(card, targetPlate, sourceBounds);
             flashPlate(targetPlate);
         } else if (isDrop) {
-            setFeedback('카드를 알맞은 접시 위에 놓아 주세요.');
+            setFeedback('Please drop the card onto the matching plate.');
         }
     }
 
@@ -1156,7 +1159,7 @@
         clearSelections();
         plates.forEach(resetPlate);
         closeResult();
-        setFeedback('선택한 카드를 초기화했어요.');
+        setFeedback('Your selected cards have been reset.');
         section.classList.remove('is_pairing_hint_paused');
 
         if (isMotionEnabled() && hasRevealed) {
@@ -1169,7 +1172,7 @@
         const result = getPairingResult();
 
         if (!result) {
-            setFeedback('음식 카드와 술 카드를 각각 하나씩 접시에 담아 주세요.');
+            setFeedback('Please place one food card and one drink card on the plates.');
             return;
         }
 
@@ -1211,6 +1214,10 @@
 
     window.addEventListener('resize', requestHintPosition, { passive: true });
     window.addEventListener('load', requestHintPosition);
+    /* 힌트 애니메이션은 무한 반복이라 startHint 때 잰 좌표를 계속 쓴다.
+       그 뒤 접시 위치가 바뀌면(레이아웃 변경·이미지 지연 로딩·CSS 갱신) 손이 엉뚱한 곳으로 가므로
+       매 회차가 시작될 때 다시 재서 스스로 맞춰지게 함 */
+    handHint?.addEventListener('animationiteration', positionHint);
     listenForChanges(desktopQuery, updateMode);
     listenForChanges(reducedMotionQuery, updateMode);
     updateMode();
@@ -1421,4 +1428,96 @@
     });
 
     character.addEventListener('mouseleave', stop);
+})();
+
+/* 히어로 설명 문구: 왼쪽 → 오른쪽, 위 → 아래로 한 글자씩 타이핑되듯 나타남 */
+(() => {
+    const desc = document.querySelector('.hero_desc');
+
+    if (!desc || typeof IntersectionObserver !== 'function') return;
+
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    // 모션을 끈 사용자에겐 쪼개지 않고 그대로 둠
+    if (reducedMotionQuery.matches) return;
+
+    const charStep = 18;
+    // 타닥타닥 하는 불규칙한 리듬. 문장부호에서 손이 멈칫하는 만큼 쉬어 줌
+    const pauseAfter = { ',': 90, '.': 260, '!': 260, '?': 260 };
+    const linePause = 320;
+
+    // <br> 로 줄을 나누고, 들여쓰기 때문에 생긴 공백은 브라우저가 렌더링하는 대로 하나로 접음
+    const lines = [...desc.childNodes]
+        .reduce((acc, node) => {
+            if (node.nodeName === 'BR') acc.push('');
+            else acc[acc.length - 1] += node.textContent;
+
+            return acc;
+        }, [''])
+        .map((line) => line.replace(/\s+/g, ' ').trim())
+        .filter(Boolean);
+
+    if (!lines.length) return;
+
+    const fragment = document.createDocumentFragment();
+    let delay = 0;
+
+    lines.forEach((line, lineIndex) => {
+        if (lineIndex) {
+            fragment.append(document.createElement('br'));
+            delay += linePause;
+        }
+
+        [...line].forEach((character) => {
+            const span = document.createElement('span');
+
+            span.className = 'hero_desc_char';
+            span.textContent = character;
+            span.style.setProperty('--type-delay', `${delay}ms`);
+            fragment.append(span);
+
+            delay += charStep + (pauseAfter[character] || 0);
+        });
+    });
+
+    desc.replaceChildren(fragment);
+    desc.classList.add('is_typing_ready');
+
+    const typeObserver = new IntersectionObserver((entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+
+        // 대기 상태가 한 프레임 그려진 뒤라야 transition 이 걸림
+        window.requestAnimationFrame(() => desc.classList.add('is_typing_running'));
+        typeObserver.disconnect();
+    }, { threshold: 0.3 });
+
+    typeObserver.observe(desc);
+})();
+
+/* 유리잔 분리선: 스크롤로 화면에 들어오면 위에서 아래로 그라데이션이 차오르며 나타남 */
+(() => {
+    const divider = document.querySelector('.glass_divider');
+
+    if (!divider || typeof IntersectionObserver !== 'function') return;
+
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    // 모션을 끈 사용자에겐 마스크 자체를 씌우지 않아 처음부터 그대로 보임
+    if (reducedMotionQuery.matches) return;
+
+    // 되감기까지 하려면 옵저버를 계속 붙여 두고, 임계값을 넘나들 때마다 클래스를 토글해야 함.
+    // isIntersecting 은 1px 만 걸쳐도 true 라 임계값 판단에 못 쓰고 intersectionRatio 로 비교함
+    const revealRatio = 0.2;
+
+    divider.classList.add('is_glass_ready');
+    // 마스크가 씌워진 첫 프레임이 지난 뒤에 transition 을 열어 준다 (로드 직후 저절로 사라지는 것 방지)
+    window.requestAnimationFrame(() => divider.classList.add('is_glass_armed'));
+
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            divider.classList.toggle('is_glass_revealed', entry.intersectionRatio >= revealRatio);
+        });
+    }, { threshold: [0, revealRatio, 1] });
+
+    revealObserver.observe(divider);
 })();

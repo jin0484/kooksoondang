@@ -280,6 +280,12 @@ html.lenis body {
     opacity: 1;
 }
 
+/* opacity 를 1 로 되돌리지 않으면 파이어폭스가 기본 반투명을 얹어 색이 흐려짐 */
+.site_search_input::placeholder {
+    color: var(--bekseju_dark3);
+    opacity: 1;
+}
+
 /* 검색 취소 버튼이 열림 전에 비쳐 보이지 않도록 */
 .site_search_input::-webkit-search-cancel-button {
     appearance: none;
@@ -302,7 +308,8 @@ html.lenis body {
     --side-nav-handle-width: 21px;
     --side-nav-handle-height: 125px;
     --side-nav-handle-radius: 8px;
-    --side-nav-surface: var(--kooksoondang_lighter);
+    --side-nav-surface: var(--kooksoondang_green_lighter);
+    --side-nav-line: var(--kooksoondang_green);
 
     position: fixed;
     z-index: 40;
@@ -315,7 +322,7 @@ html.lenis body {
     align-items: center;
     padding: 1rem 0.75rem;
     background: var(--side-nav-surface);
-    border: 1px solid var(--kooksoondang_orange);
+    border: 1px solid var(--side-nav-line);
     border-left: none;
     border-radius: 0 var(--side-nav-radius) var(--side-nav-radius) 0;
 }
@@ -336,7 +343,7 @@ html.lenis body {
     transform: translateY(-50%);
     pointer-events: auto;
     background: var(--side-nav-surface);
-    border: 1px solid var(--kooksoondang_orange);
+    border: 1px solid var(--side-nav-line);
     border-left: none;
     border-radius: 0 var(--side-nav-handle-radius) var(--side-nav-handle-radius) 0;
 }
@@ -355,7 +362,7 @@ html.lenis body {
     gap: 0.7rem;
     padding-left: 0.5rem;
     font-size: 0.875rem;
-    color: var(--makgeolli_White);
+    color: var(--kooksoondang_green);
     white-space: nowrap;
     transition: color 260ms ease, font-size 260ms ease, padding-left 260ms ease;
 }
@@ -370,7 +377,7 @@ html.lenis body {
     padding-left: 0;
     font-weight: 600;
     font-size: 1rem;
-    color: var(--kooksoondang_orange);
+    color: var(--bekseju_dark1);
 }
 
 .side_nav li.is_current a img {
