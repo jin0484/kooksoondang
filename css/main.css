@@ -403,6 +403,24 @@ section[id] {
   transform: none;
 }
 
+/* 프레임 SVG 는 2000x2000 정사각에 그림이 위로 몰려 있어(PNG 는 1588x1484),
+   그대로 두면 캐릭터가 작아지며 위로 튐. 높이 1.069배 + 아래로 6.18% 로 상쇄 */
+.hero_visual .hero_character_frame {
+  bottom: -17.2%;
+  height: 96.2%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hero_visual .hero_character_frame.is_hero_frame_on {
+  opacity: 1;
+}
+
+/* 기본 이미지는 자리를 지킨 채 숨어야 hover 판정이 끊기지 않음 */
+.hero_visual .hero_character.is_hero_playing {
+  opacity: 0;
+}
+
 /* ---------- best ---------- */
 
 .best {
@@ -1469,58 +1487,88 @@ section[id] {
   cursor: pointer;
 }
 
-.pairing_result_eyebrow {
-  margin-bottom: 0.85rem;
-  color: var(--kooksoondang_orange);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+/* 고른 카드 두 장. 원본(248x368)을 그대로 복제해 축소만 함 */
+.pairing_result_cards {
+  --result-card-scale: 0.62;
+  display: flex;
+  justify-content: center;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
 }
 
-.pairing_result_pair {
-  color: var(--makgeolli_light3);
-  font-size: clamp(0.875rem, 1.2vw, 1rem);
+.pairing_result_card {
+  flex: 0 0 auto;
+  width: calc(248px * var(--result-card-scale));
+  height: calc(368px * var(--result-card-scale));
+}
+
+.pairing_result_card .pairing_card {
+  transform: scale(var(--result-card-scale));
+  transform-origin: top left;
+  opacity: 1;
+  box-shadow: none;
+  outline: 1px solid var(--kooksoondang_orange);
+  outline-offset: 0;
+  border-radius: 0.5rem;
+  transition: none;
+  cursor: default;
+}
+
+/* 복제본은 장식일 뿐이라 hover 연출을 끔 */
+.pairing_result_card .pairing_card::before,
+.pairing_result_card .pairing_card_media::after {
+  content: none;
 }
 
 .pairing_result_score {
   display: flex;
   align-items: baseline;
   justify-content: center;
-  gap: 0.4rem;
-  margin: 0.45rem 0 0.75rem;
+  gap: 0.5rem;
+  margin: 0 0 1.25rem;
+  font-family: var(--font-Albert_Sans);
+}
+
+.pairing_result_score_label {
+  font-size: clamp(1.5rem, 3.4vw, 2.25rem);
+  color: var(--bekseju_darker_cold);
 }
 
 .pairing_result_score strong {
   color: var(--kooksoondang_orange);
   font-family: var(--font-Albert_Sans);
-  font-size: clamp(4rem, 10vw, 6.5rem);
-  font-weight: 700;
+  font-size: clamp(2.75rem, 6vw, 4rem);
+  font-weight: 400;
   line-height: 0.9;
-  letter-spacing: -0.08em;
 }
 
-.pairing_result_score span {
-  color: var(--makgeolli_light3);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+.pairing_result_score_total {
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  color: var(--bekseju_darker_cold);
 }
 
-.pairing_result_dialog h2 {
-  margin-bottom: 0.7rem;
-  font-size: clamp(1.4rem, 3vw, 2rem);
-}
-
-.pairing_result_description {
-  max-width: 25rem;
+.pairing_result_message {
+  max-width: 30rem;
   margin: 0 auto 1.75rem;
-  color: var(--makgeolli_light3);
-  font-size: clamp(0.95rem, 1.4vw, 1.1rem);
-  line-height: 1.65;
+  color: var(--bekseju_dark2);
+  font-size: clamp(0.95rem, 1.4vw, 1.125rem);
+  line-height: 1.6;
 }
 
-.pairing_result_retry {
-  border-radius: 0 0 2rem 2rem;
+.pairing_result_message span {
+  display: block;
+}
+
+.pairing_result_actions {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.pairing_result_actions .btn_pill {
+  padding: 0.65rem 2.25rem;
+  border-radius: 0.75rem 0.75rem 0.25rem 0.25rem;
+  font-size: 1rem;
 }
 
 @keyframes pairing_arrow_flow_left {

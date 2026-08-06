@@ -36,22 +36,38 @@
 })();
 
 (() => {
-    const siteLogo = document.querySelector('.site_logo');
-    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const search = document.querySelector('[data-site-search]');
+    const toggle = search?.querySelector('[data-site-search-toggle]');
+    const input = search?.querySelector('[data-site-search-input]');
 
-    if (!siteLogo) return;
+    if (!search || !toggle || !input) return;
 
-    siteLogo.addEventListener('click', () => {
-        if (reducedMotionQuery.matches) return;
+    const isOpen = () => search.classList.contains('is_search_open');
 
-        siteLogo.classList.remove('is_dot_bouncing');
-        void siteLogo.offsetWidth;
-        siteLogo.classList.add('is_dot_bouncing');
+    function setOpen(open) {
+        search.classList.toggle('is_search_open', open);
+        toggle.setAttribute('aria-expanded', String(open));
+        toggle.setAttribute('aria-label', open ? 'Close search' : 'Open search');
+        // 닫혀 있을 때는 폭이 0 이라 탭으로 닿지 않게 막아 둠
+        if (open) input.removeAttribute('tabindex');
+        else input.setAttribute('tabindex', '-1');
+
+        if (open) input.focus();
+        else input.blur();
+    }
+
+    toggle.addEventListener('click', () => setOpen(!isOpen()));
+
+    document.addEventListener('click', (event) => {
+        if (!isOpen() || search.contains(event.target)) return;
+
+        setOpen(false);
     });
 
-    siteLogo.addEventListener('animationend', (event) => {
-        if (event.animationName === 'logo_dot_bounce') {
-            siteLogo.classList.remove('is_dot_bouncing');
-        }
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape' || !isOpen()) return;
+
+        setOpen(false);
+        toggle.focus();
     });
 })();

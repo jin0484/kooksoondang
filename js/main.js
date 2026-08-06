@@ -585,12 +585,13 @@
     const feedback = section?.querySelector('[data-pairing-feedback]');
     const resultModal = document.querySelector('[data-pairing-result-modal]');
     const resultDialog = resultModal?.querySelector('.pairing_result_dialog');
-    const resultPair = resultModal?.querySelector('[data-pairing-result-pair]');
+    const resultCards = resultModal?.querySelector('[data-pairing-result-cards]');
     const resultScore = resultModal?.querySelector('[data-pairing-result-score]');
     const resultTitle = resultModal?.querySelector('[data-pairing-result-title]');
     const resultDescription = resultModal?.querySelector('[data-pairing-result-description]');
     const resultCloseButtons = resultModal ? [...resultModal.querySelectorAll('[data-pairing-result-close]')] : [];
     const resultRetryButton = resultModal?.querySelector('[data-pairing-result-retry]');
+    const resultNextButton = resultModal?.querySelector('[data-pairing-result-next]');
 
     if (!section || !cards.length || !foodCards.length || !drinkCards.length || plates.length < 2 || !checkButton) return;
 
@@ -629,39 +630,39 @@
     };
     const pairingResults = {
         baekseju: {
-            pancake: { score: 88, description: '파전의 기름진 맛을 백세주의 깔끔한 산미가 잡아줌' },
-            pizza: { score: 70, description: '꿀을 찍어 먹는 고르곤졸라와 백세주의 단맛·풍미가 나쁘지 않음' },
-            chicken: { score: 82, description: '매운맛을 부드럽게 다독여주는 은은한 감칠맛' },
-            ribs: { score: 75, description: '달콤 짭조름한 바비큐 소스와 약주 풍미의 의외의 조화' },
-            bossam: { score: 98, description: '최고의 궁합! 한약재 풍미와 수육의 고소함이 완벽히 아우러짐' }
+            pancake: { score: 88, description: "Bekseju's clean acidity cuts right through the richness of the pancake." },
+            pizza: { score: 70, description: 'Gorgonzola dipped in honey meets the gentle sweetness of Bekseju — not bad at all!' },
+            chicken: { score: 82, description: 'A quiet savoury depth that softens the heat beautifully.' },
+            ribs: { score: 75, description: 'Sweet and salty barbecue sauce finds a surprising partner in the herbal notes.' },
+            bossam: { score: 98, description: 'The rich flavor of herbal medicine perfectly blends with the savory taste of the boiled pork!' }
         },
         draft: {
-            pancake: { score: 100, description: '클래식 만점 조합! 탄산과 톡 쏘는 청량감이 전의 느끼함을 싹 씻어줌' },
-            pizza: { score: 85, description: '치즈의 고소함과 막걸리의 산미·탄산이 만드는 한식-양식 퓨전 꿀조합' },
-            chicken: { score: 95, description: '매콤한 양념과 부드러운 생막걸리의 탄산 및 단맛이 환상의 케미' },
-            ribs: { score: 65, description: '소사이어티 한 끼로는 괜찮으나 막걸리의 청량감이 묵직한 소스에 조금 묻힘' },
-            bossam: { score: 90, description: '담백한 보쌈 고기와 쌀 막걸리의 구수한 풍미가 조화로움' }
+            pancake: { score: 100, description: 'A flawless classic! The fizz sweeps away every last trace of oil from the pancake.' },
+            pizza: { score: 85, description: 'Nutty cheese meets the tang and sparkle of makgeolli — fusion that really works.' },
+            chicken: { score: 95, description: 'Spicy seasoning and the sweet, sparkling draft makgeolli are a dream team.' },
+            ribs: { score: 65, description: 'Pleasant enough, though the crisp makgeolli gets a little buried under the heavy sauce.' },
+            bossam: { score: 90, description: 'Mild boiled pork and the nutty rice makgeolli sit beautifully together.' }
         },
         prebiotics: {
-            pancake: { score: 80, description: '일반 막걸리보다는 다소 단편이지만 바삭한 파전과 무난히 어울림' },
-            pizza: { score: 92, description: '크리미한 유산균 풍미와 피자 치즈의 풍부한 단짠 조합' },
-            chicken: { score: 98, description: '요거트 같은 새콤달콤함이 캡사이신의 매운맛을 완벽하게 중화' },
-            ribs: { score: 72, description: '단짠 바비큐 소스에 새콤한 막걸리가 더해져 독특한 핑거푸드 느낌 연출' },
-            bossam: { score: 78, description: '보쌈의 담백함과 어우러지나 약간의 단맛이 강하게 느껴질 수 있음' }
+            pancake: { score: 80, description: 'A touch plainer than regular makgeolli, but it still works nicely with the crisp pancake.' },
+            pizza: { score: 92, description: 'Creamy probiotic notes and rich pizza cheese make a lovely sweet-savoury match.' },
+            chicken: { score: 98, description: 'A yogurt-like sweet tartness that completely tames the chilli heat.' },
+            ribs: { score: 72, description: 'Tangy makgeolli over sweet-salty barbecue sauce gives it a fun finger-food feel.' },
+            bossam: { score: 78, description: 'It works with the mild pork, though the sweetness can come through a little strong.' }
         },
         banana: {
-            pancake: { score: 60, description: '파전의 기분 좋은 파 향과 바나나 향이 충돌할 수 있음' },
-            pizza: { score: 95, description: '바나나의 달콤함과 치즈의 짭조름함이 만나 완성되는 단짠의 정석' },
-            chicken: { score: 75, description: '매운맛을 달래주는 달달한 디저트주 역할' },
-            ribs: { score: 80, description: '달콤한 과일 향이 스모키한 BBQ 소스와 조화를 이룸' },
-            bossam: { score: 55, description: '한방 약재 풍미와 바나나 향의 매칭이 다소 아쉬움' }
+            pancake: { score: 60, description: 'The bright scallion aroma and the banana can end up fighting each other.' },
+            pizza: { score: 95, description: 'Banana sweetness meets salty cheese — the very definition of sweet and salty.' },
+            chicken: { score: 75, description: 'A sweet, dessert-like drink that soothes the spice.' },
+            ribs: { score: 80, description: 'Sweet fruity notes harmonise with the smoky BBQ sauce.' },
+            bossam: { score: 55, description: 'The herbal notes of the pork and the banana aroma never quite meet.' }
         },
         chestnut: {
-            pancake: { score: 58, description: '파전의 은은한 파 향과 밤의 달달한 디저트 향이 다소 충돌함' },
-            pizza: { score: 96, description: "고소한 밤 향과 짭조름한 치즈가 만나 완벽한 '단짠' 디저트 페어링" },
-            chicken: { score: 85, description: '매운맛을 얼얼하게 달래주는 달콤하고 매력적인 조합' },
-            ribs: { score: 78, description: '달콤한 밤 풍미가 짭조름한 바비큐 양념과 의외의 단짠 단짠을 형성' },
-            bossam: { score: 50, description: '한약재 풍미와 강한 밤 맛의 조화가 아쉬운 꽝 조합' }
+            pancake: { score: 58, description: 'The delicate scallion aroma and the sweet, dessert-like chestnut clash a little.' },
+            pizza: { score: 96, description: 'Nutty chestnut and salty cheese make a perfect sweet-and-salty dessert pairing.' },
+            chicken: { score: 85, description: 'A sweet, charming combination that calms the tingling heat.' },
+            ribs: { score: 78, description: 'Sweet chestnut forms an unexpected sweet-salty duo with the barbecue seasoning.' },
+            bossam: { score: 50, description: "The herbal flavours and the strong chestnut just don't come together." }
         }
     };
 
@@ -840,14 +841,37 @@
     }
 
     function resultTitleFor(score) {
-        if (score >= 95) return '최고의 궁합!';
-        if (score >= 85) return '아주 좋은 궁합!';
-        if (score >= 75) return '색다른 조화!';
-        return '새로운 페어링!';
+        if (score >= 95) return 'The perfect match!';
+        if (score >= 85) return 'A really great match!';
+        if (score >= 75) return 'An unexpected harmony!';
+        return 'A brand-new pairing!';
     }
 
     function closeResult() {
         if (resultModal) resultModal.hidden = true;
+    }
+
+    // 고른 카드를 그대로 복제해 보여줌. 상태 클래스와 식별자는 떼어내 원본 로직과 얽히지 않게 함
+    function renderResultCards() {
+        if (!resultCards) return;
+
+        resultCards.replaceChildren();
+
+        [selectedCards.drink, selectedCards.food].forEach((card) => {
+            if (!card) return;
+
+            const clone = card.cloneNode(true);
+
+            clone.classList.remove('is_pairing_selected', 'is_pairing_dragging');
+            clone.removeAttribute('data-pairing-key');
+            clone.removeAttribute('data-momentum');
+
+            const slot = document.createElement('div');
+
+            slot.className = 'pairing_result_card';
+            slot.append(clone);
+            resultCards.append(slot);
+        });
     }
 
     function showResult(result) {
@@ -856,7 +880,7 @@
             return;
         }
 
-        if (resultPair) resultPair.textContent = `${result.foodLabel} × ${result.drinkLabel}`;
+        renderResultCards();
         if (resultScore) resultScore.textContent = result.score;
         if (resultTitle) resultTitle.textContent = resultTitleFor(result.score);
         if (resultDescription) resultDescription.textContent = result.description;
@@ -1152,10 +1176,17 @@
 
     resultCloseButtons.forEach((button) => button.addEventListener('click', closeResult));
 
+    // 둘 다 결과를 닫고 접시를 비움. 안내 문구는 남기지 않음
     resultRetryButton?.addEventListener('click', () => {
         closeResult();
         clearSelections();
-        setFeedback('새로운 음식과 술을 골라 페어링해 보세요.');
+        setFeedback('');
+    });
+
+    resultNextButton?.addEventListener('click', () => {
+        closeResult();
+        clearSelections();
+        setFeedback('');
     });
 
     resultModal?.addEventListener('click', (event) => {
@@ -1348,4 +1379,44 @@
     listenForChanges(desktopQuery, updateMode);
     listenForChanges(reducedMotionQuery, updateMode);
     updateMode();
+})();
+
+(() => {
+    const character = document.querySelector('.hero_character:not(.hero_character_frame)');
+    const frames = [...document.querySelectorAll('[data-hero-frame]')];
+
+    if (!character || frames.length < 2) return;
+
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    // 1 - 2 - 3 - 2 로 한 바퀴. 이어 붙으면 1-2-3-2-1-2-3-2… 가 되어 같은 장면이 겹치지 않음
+    const order = [0, 1, 2, 1];
+    const frameDuration = 200;
+
+    let frameTimer = 0;
+    let step = 0;
+
+    function showStep(next) {
+        step = next % order.length;
+
+        const current = order[step];
+
+        frames.forEach((frame, index) => frame.classList.toggle('is_hero_frame_on', index === current));
+        character.classList.add('is_hero_playing');
+    }
+
+    function stop() {
+        window.clearInterval(frameTimer);
+        frameTimer = 0;
+        frames.forEach((frame) => frame.classList.remove('is_hero_frame_on'));
+        character.classList.remove('is_hero_playing');
+    }
+
+    character.addEventListener('mouseenter', () => {
+        if (frameTimer || reducedMotionQuery.matches) return;
+
+        showStep(0);
+        frameTimer = window.setInterval(() => showStep(step + 1), frameDuration);
+    });
+
+    character.addEventListener('mouseleave', stop);
 })();
