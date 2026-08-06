@@ -863,12 +863,14 @@
             const clone = card.cloneNode(true);
 
             clone.classList.remove('is_pairing_selected', 'is_pairing_dragging');
-            clone.removeAttribute('data-pairing-key');
             clone.removeAttribute('data-momentum');
 
             const slot = document.createElement('div');
+            // 음식 이미지 확대·위치가 `.pairing_food` 하위 규칙과 카드별 data-pairing-key 로 잡혀 있어서
+            // 감싸는 칸에 원래 줄 클래스를 그대로 붙여 줘야 게임 화면과 똑같이 보임
+            const rowClass = card.closest('.pairing_food') ? 'pairing_food' : 'pairing_drink';
 
-            slot.className = 'pairing_result_card';
+            slot.className = `pairing_result_card ${rowClass}`;
             slot.append(clone);
             resultCards.append(slot);
         });
