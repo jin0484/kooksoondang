@@ -958,6 +958,9 @@ section[id] {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  /* 화면 밖으로 밀려난 정도에 따라 js가 0~4px로 조절 */
+  filter: blur(var(--history-text-blur, 0px));
+  transition: filter 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .history_item:nth-child(even) article {
@@ -1293,6 +1296,12 @@ section[id] {
   gap: clamp(3rem, 5vw, 5rem);
 }
 
+.events_viewport {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3rem, 5vw, 6rem);
+}
+
 .events_head h2 {
   font-family: var(--font-Albert_Sans);
   font-weight: 400;
@@ -1328,28 +1337,70 @@ section[id] {
 }
 
 .event_copy_head {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+  display: block;
 }
 
-.event_icons {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
+.event_progress {
+  position: relative;
+  min-height: clamp(5.125rem, 8vw, 7.625rem);
 }
 
-.event_icons img:first-child {
+.event_progress_track {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 0.125rem;
+  border-radius: 999px;
+}
+
+.event_progress_track {
+  background: var(--makgeolli_light1);
+}
+
+.event_progress_path {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 100%;
+}
+
+.event_progress_fill {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 0.125rem;
+  border-radius: 999px;
+  background: var(--kooksoondang_orange);
+  transform: scaleX(var(--event-line-progress, 0));
+  transform-origin: left center;
+  will-change: transform;
+}
+
+.event_icon_cup {
+  position: absolute;
+  z-index: 1;
+  bottom: 0.875rem;
+  left: max(0px, calc(var(--event-cup-x, 0%) - 1.75rem));
   width: 3.5rem;
+  transform: translate(0, 0);
+  will-change: transform;
 }
 
-.event_icons img:last-child {
+.event_icon_bottle {
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  bottom: 0.875rem;
+  display: block;
   width: 3.375rem;
-}
-
-.event_line {
-  width: 100%;
-  height: 0.0625rem;
+  aspect-ratio: 56.3239 / 155.136;
+  background-color: var(--event-bottle-color, var(--makgeolli_light1));
+  -webkit-mask: url('../asset/icon/event_bottle.svg') center / contain no-repeat;
+  mask: url('../asset/icon/event_bottle.svg') center / contain no-repeat;
+  transition: background-color 180ms ease;
 }
 
 .event_number {
@@ -1380,6 +1431,144 @@ section[id] {
   left: 0;
   font-size: 0.85rem;
   color: var(--kooksoondang_orange);
+}
+
+/* 이벤트 스크롤 스토리텔링: 데스크톱에서만 js가 is_event_motion_ready를 붙임 */
+.events.is_event_motion_ready {
+  position: relative;
+  min-height: 360vh;
+  min-height: 360svh;
+  padding: 0 var(--gutter-x);
+  margin-bottom: 0;
+}
+
+.events.is_event_motion_ready .events_inner {
+  position: sticky;
+  top: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  align-content: start;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: clamp(4rem, 8vw, 9.375rem) 0;
+  overflow: hidden;
+}
+
+.events.is_event_motion_ready .events_viewport {
+  display: grid;
+  min-height: 0;
+}
+
+.events.is_event_motion_ready .event_card {
+  grid-area: 1 / 1;
+  position: relative;
+  align-self: center;
+  align-items: center;
+  flex-wrap: nowrap;
+  opacity: 1;
+  pointer-events: none;
+}
+
+.events.is_event_motion_ready .event_card.is_event_visible {
+  pointer-events: auto;
+}
+
+.events.is_event_motion_ready .event_media {
+  flex: 0 0 637px;
+  width: 637px;
+  height: 424px;
+  min-height: 0;
+  align-self: center;
+}
+
+.events.is_event_motion_ready .event_media img {
+  height: 100%;
+}
+
+.events.is_event_motion_ready .event_media,
+.events.is_event_motion_ready .event_number,
+.events.is_event_motion_ready .event_copy h3,
+.events.is_event_motion_ready .event_copy ul {
+  opacity: var(--event-card-opacity, 0);
+  transition: opacity 180ms ease;
+}
+
+.events.is_event_motion_ready .event_copy {
+  display: grid;
+  grid-template-areas:
+    "progress progress"
+    "number title"
+    ". list";
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: 120px;
+  row-gap: clamp(1.75rem, 3vw, 3.5rem);
+  align-content: center;
+}
+
+.events.is_event_motion_ready .event_copy_head {
+  grid-area: progress;
+}
+
+.events.is_event_motion_ready .event_number {
+  grid-area: number;
+  align-self: start;
+  padding-top: 0.35em;
+  font-family: var(--font-Albert_Sans);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.events.is_event_motion_ready .event_copy h3 {
+  grid-area: title;
+  margin: 0;
+  font-family: var(--font-Albert_Sans);
+  font-size: 32px;
+  font-weight: 400;
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+}
+
+.events.is_event_motion_ready .event_copy ul {
+  grid-area: list;
+  gap: 12px;
+  margin: 0;
+}
+
+.events.is_event_motion_ready .event_copy li {
+  padding-left: 32px;
+  line-height: 1.35;
+}
+
+.events.is_event_motion_ready .event_copy li::before {
+  top: 50%;
+  width: 12px;
+  height: 14px;
+  background: var(--kooksoondang_orange);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  content: "";
+  font-size: 0;
+  transform: translateY(-50%);
+}
+
+.events.is_event_motion_ready .event_copy li::before {
+  opacity: var(--event-copy-opacity, 1);
+}
+
+.events.is_event_motion_ready .event_icon_cup {
+  transform: translate(0, var(--event-cup-y, 0));
+  opacity: 1;
+}
+
+.event_reveal_char {
+  display: inline-block;
+  opacity: var(--event-char-emphasis, 1);
+  will-change: opacity;
+}
+
+@media (max-width: 48rem), (prefers-reduced-motion: reduce) {
+  .event_reveal_char {
+    opacity: 1 !important;
+  }
 }
 
 /* ---------- footer ---------- */

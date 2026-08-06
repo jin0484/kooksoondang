@@ -564,12 +564,14 @@ sideNav.addEventListener('click', (event) => {
 
 (() => {
     const photos = [...document.querySelectorAll('.history_photo')];
+    const textBoxes = [...document.querySelectorAll('.history_item > article')];
 
-    if (!photos.length) return;
+    if (!photos.length && !textBoxes.length) return;
 
-    // 화면에 완전히 들어와 있으면 컬러, 절반이 밖으로 나가면 완전한 흑백
+    // 화면에 완전히 들어와 있으면 선명하게, 40% 이상 밖으로 나가면 효과가 완료됨
     const colorRatio = 1;
-    const grayRatio = 0.5;
+    const grayRatio = 0.6;
+    const maximumTextBlur = 4;
 
     let animationFrame = 0;
 
@@ -588,12 +590,23 @@ sideNav.addEventListener('click', (event) => {
     function render() {
         animationFrame = 0;
 
+        const effectProgress = (element) => (
+            clamp((colorRatio - visibleRatio(element)) / (colorRatio - grayRatio), 0, 1)
+        );
+        const ease = (progress) => progress * progress * (3 - 2 * progress);
+
         photos.forEach((photo) => {
-            const progress = clamp((colorRatio - visibleRatio(photo)) / (colorRatio - grayRatio), 0, 1);
+            const progress = effectProgress(photo);
             // 양 끝에서 급격히 꺾이지 않도록 완만하게
-            const eased = progress * progress * (3 - 2 * progress);
+            const eased = ease(progress);
 
             photo.style.setProperty('--photo-grayscale', eased.toFixed(3));
+        });
+
+        textBoxes.forEach((textBox) => {
+            const blur = ease(effectProgress(textBox)) * maximumTextBlur;
+
+            textBox.style.setProperty('--history-text-blur', `${blur.toFixed(2)}px`);
         });
     }
 
@@ -607,4 +620,171 @@ sideNav.addEventListener('click', (event) => {
     window.addEventListener('resize', requestRender, { passive: true });
     window.addEventListener('load', requestRender);
     render();
+})();
+
+(() => {
+    const section = document.querySelector('.events');
+    const slides = section ? [...section.querySelectorAll('.event_slide')] : [];
+
+    if (!section || slides.length < 2) return;
+
+    const desktopQuery = window.matchMedia('(min-width: 48.0625rem)');
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+    const smoothStep = (value) => value * value * (3 - 2 * value);
+    const revealTrail = 20;
+    const transitionSpan = 0.18;
+    const cupStopProgress = 0.9;
+    const motionProperties = [
+        '--event-card-opacity',
+        '--event-copy-opacity',
+        '--event-cup-y',
+        '--event-cup-x',
+        '--event-bottle-color',
+        '--event-line-progress'
+    ];
+
+    const slideStates = slides.map((element) => ({
+        element,
+        revealTargets: [...element.querySelectorAll('[data-event-reveal]')],
+        characters: []
+    }));
+
+    let isPrepared = false;
+    let animationFrame = 0;
+
+    function prepareCharacters() {
+        if (isPrepared) return;
+
+        slideStates.forEach((slide) => {
+            slide.revealTargets.forEach((target) => {
+                const label = target.textContent.trim();
+                const fragment = document.createDocumentFragment();
+
+                target.setAttribute('aria-label', label);
+
+                [...label].forEach((character) => {
+                    if (/\s/.test(character)) {
+                        fragment.append(document.createTextNode(character));
+                        return;
+                    }
+
+                    const span = document.createElement('span');
+
+                    span.className = 'event_reveal_char';
+                    span.setAttribute('aria-hidden', 'true');
+                    span.textContent = character;
+                    fragment.append(span);
+                    slide.characters.push(span);
+                });
+
+                target.replaceChildren(fragment);
+            });
+        });
+
+        isPrepared = true;
+    }
+
+    function resetStaticState() {
+        section.classList.remove('is_event_motion_ready');
+
+        slideStates.forEach((slide) => {
+            slide.element.classList.remove('is_event_visible');
+            slide.element.removeAttribute('aria-hidden');
+            motionProperties.forEach((property) => slide.element.style.removeProperty(property));
+            slide.characters.forEach((character) => character.style.removeProperty('--event-char-emphasis'));
+        });
+    }
+
+    function slideVisibility(index, stagePosition) {
+        const enter = index === 0
+            ? 1
+            : clamp((stagePosition - (index - transitionSpan)) / (transitionSpan * 2), 0, 1);
+        const exit = index === slides.length - 1
+            ? 1
+            : clamp(((index + 1 + transitionSpan) - stagePosition) / (transitionSpan * 2), 0, 1);
+
+        return Math.min(enter, exit);
+    }
+
+    function renderSlide(slide, index, stagePosition, activeIndex, journeyProgress, cupProgress) {
+        const localProgress = clamp(stagePosition - index, 0, 1);
+        const eased = smoothStep(localProgress);
+        const opacity = slideVisibility(index, stagePosition);
+        const copyProgress = clamp((localProgress - 0.08) / 0.74, 0, 1);
+        const revealPosition = copyProgress * (slide.characters.length + revealTrail);
+
+        slide.element.classList.toggle('is_event_visible', opacity > 0.01);
+        slide.element.setAttribute('aria-hidden', index === activeIndex ? 'false' : 'true');
+        slide.element.style.setProperty('--event-card-opacity', opacity.toFixed(3));
+        slide.element.style.setProperty('--event-copy-opacity', (0.38 + eased * 0.62).toFixed(3));
+        slide.element.style.setProperty('--event-cup-y', `${((1 - cupProgress) * 10).toFixed(2)}px`);
+        slide.element.style.setProperty('--event-cup-x', `${(cupProgress * 100).toFixed(2)}%`);
+        slide.element.style.setProperty(
+            '--event-bottle-color',
+            cupProgress >= cupStopProgress
+                ? 'var(--kooksoondang_orange)'
+                : 'var(--makgeolli_light1)'
+        );
+        slide.element.style.setProperty('--event-line-progress', journeyProgress.toFixed(3));
+
+        slide.characters.forEach((character, characterIndex) => {
+            const emphasis = smoothStep(clamp((revealPosition - characterIndex) / revealTrail, 0, 1));
+            const characterOpacity = 0.34 + emphasis * 0.66;
+
+            character.style.setProperty('--event-char-emphasis', characterOpacity.toFixed(3));
+        });
+    }
+
+    function render() {
+        animationFrame = 0;
+
+        if (!section.classList.contains('is_event_motion_ready')) return;
+
+        const bounds = section.getBoundingClientRect();
+        const scrollDistance = Math.max(section.offsetHeight - window.innerHeight, 1);
+        const progress = clamp(-bounds.top / scrollDistance, 0, 1);
+        const stagePosition = progress * slides.length;
+        const activeIndex = Math.min(Math.floor(stagePosition), slides.length - 1);
+        const journeyStage = Math.min(Math.floor(stagePosition), slides.length - 1);
+        const journeyStageProgress = smoothStep(clamp(stagePosition - journeyStage, 0, 1));
+        const journeyProgress = (journeyStage + journeyStageProgress) / slides.length;
+        const cupProgress = Math.min(journeyProgress, cupStopProgress);
+
+        slideStates.forEach((slide, index) => (
+            renderSlide(slide, index, stagePosition, activeIndex, journeyProgress, cupProgress)
+        ));
+    }
+
+    function requestRender() {
+        if (animationFrame) return;
+
+        animationFrame = window.requestAnimationFrame(render);
+    }
+
+    function updateMode() {
+        const isEnabled = desktopQuery.matches && !reducedMotionQuery.matches;
+
+        if (!isEnabled) {
+            if (animationFrame) window.cancelAnimationFrame(animationFrame);
+            animationFrame = 0;
+            resetStaticState();
+            return;
+        }
+
+        prepareCharacters();
+        section.classList.add('is_event_motion_ready');
+        requestRender();
+    }
+
+    const listenForChanges = (query, callback) => {
+        if (query.addEventListener) query.addEventListener('change', callback);
+        else query.addListener(callback);
+    };
+
+    window.addEventListener('scroll', requestRender, { passive: true });
+    window.addEventListener('resize', requestRender, { passive: true });
+    listenForChanges(desktopQuery, updateMode);
+    listenForChanges(reducedMotionQuery, updateMode);
+    updateMode();
 })();
