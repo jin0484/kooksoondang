@@ -73,6 +73,58 @@
 })();
 
 (() => {
+    const header = document.querySelector('.site_header');
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    if (!header || reducedMotionQuery.matches) return;
+
+    const search = header.querySelector('[data-site-search]');
+    const minimumScrollDelta = 8;
+    let lastScrollY = Math.max(0, window.scrollY);
+    let scrollFrame = 0;
+
+    const setHeaderHidden = (hidden) => header.classList.toggle('is_header_hidden', hidden);
+    const isSearchOpen = () => search?.classList.contains('is_search_open');
+
+    function updateHeaderVisibility() {
+        scrollFrame = 0;
+
+        const currentScrollY = Math.max(0, window.scrollY);
+        const delta = currentScrollY - lastScrollY;
+        const revealZone = header.offsetHeight + 8;
+
+        if (currentScrollY <= revealZone || isSearchOpen()) {
+            setHeaderHidden(false);
+            lastScrollY = currentScrollY;
+            return;
+        }
+
+        if (Math.abs(delta) < minimumScrollDelta) return;
+
+        setHeaderHidden(delta > 0);
+        lastScrollY = currentScrollY;
+    }
+
+    function requestHeaderVisibilityUpdate() {
+        if (scrollFrame) return;
+
+        scrollFrame = window.requestAnimationFrame(updateHeaderVisibility);
+    }
+
+    window.addEventListener('scroll', requestHeaderVisibilityUpdate, { passive: true });
+    window.addEventListener('load', updateHeaderVisibility);
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) lastScrollY = Math.max(0, window.scrollY);
+    });
+
+    if (search && 'MutationObserver' in window) {
+        new MutationObserver(() => {
+            if (isSearchOpen()) setHeaderHidden(false);
+        }).observe(search, { attributes: true, attributeFilter: ['class'] });
+    }
+})();
+
+(() => {
     // CDN 이 막히면 그냥 기본 스크롤로 동작하도록 존재 여부를 확인
     if (typeof Lenis === 'undefined') return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;

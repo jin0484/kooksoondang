@@ -508,7 +508,7 @@ section[id] {
 }
 
 .best_head p {
-  font-size: clamp(1.25rem, 1.7vw, 2rem);
+  font-size: clamp(0.875rem, 1.19vw, 1.4rem);
 }
 
 .best_collage {
@@ -1041,6 +1041,7 @@ section[id] {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  transform: translateY(20px);
 }
 
 .pairing_head h2 {
@@ -1051,25 +1052,25 @@ section[id] {
 }
 
 .pairing_head p {
-  font-size: clamp(1.25rem, 1.7vw, 2rem);
+  font-size: clamp(0.875rem, 1.19vw, 1.4rem);
   color: var(--makgeolli_White);
 }
 
 .pairing_row {
   position: relative;
-  left: 50%;
+  left: 125px;
   display: grid;
-  grid-template-columns: repeat(5, 248px);
-  gap: 60px;
+  grid-template-columns: repeat(5, 173.6px);
+  gap: 42px;
   width: max-content;
   align-self: flex-start;
   margin-inline: 0;
-  transform: translateX(-50%);
+  transform: none;
 }
 
 /* 카드 두 줄 사이만 40px. 부모 gap 을 상쇄해서 다른 간격은 건드리지 않음 */
 .pairing_row + .pairing_row {
-  margin-top: calc(40px - clamp(3rem, 5vw, 4.5rem));
+  margin-top: calc(28px - clamp(3rem, 5vw, 4.5rem));
 }
 
 .pairing_card {
@@ -1082,13 +1083,13 @@ section[id] {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 0.75rem;
-  width: 248px;
-  height: 368px;
-  padding: 10px;
-  border-radius: 0.5rem;
+  gap: 8.4px;
+  width: 173.6px;
+  height: 257.6px;
+  padding: 7px;
+  border-radius: 0.35rem;
   background: var(--makgeolli_light4);
-  box-shadow: 0 0.5rem 1.5rem rgba(14, 19, 38, 0.1);
+  box-shadow: 0 0.35rem 1.05rem rgba(14, 19, 38, 0.1);
   transform: translate3d(
       var(--pairing-card-drag-x),
       calc(var(--pairing-card-enter-y) + var(--pairing-card-drag-y) + var(--pairing-card-hover-y)),
@@ -1111,7 +1112,7 @@ section[id] {
   justify-content: center;
   width: 100%;
   min-height: 0;
-  border-radius: 0.5rem;
+  border-radius: 0.35rem;
   overflow: hidden;
   background: var(--card-bg, var(--makgeolli_light1));
 }
@@ -1138,42 +1139,42 @@ section[id] {
   --pairing-food-image-height: 140%;
   --pairing-food-image-left: -143.6%;
   --pairing-food-image-top: -33.9%;
-  --pairing-food-image-transform: translateX(10px);
+  --pairing-food-image-transform: translateX(7px);
 }
 
 .pairing_food .pairing_card[data-pairing-key="pizza"] {
   --pairing-food-image-height: 122%;
   --pairing-food-image-left: -69.4%;
   --pairing-food-image-top: 0;
-  --pairing-food-image-transform: translate(20px, 5px);
+  --pairing-food-image-transform: translate(14px, 3.5px);
 }
 
 .pairing_food .pairing_card[data-pairing-key="chicken"] {
   --pairing-food-image-height: 154%;
   --pairing-food-image-left: -98.5%;
   --pairing-food-image-top: -47.1%;
-  --pairing-food-image-transform: translate(20px, -20px);
+  --pairing-food-image-transform: translate(14px, -14px);
 }
 
 .pairing_food .pairing_card[data-pairing-key="ribs"] {
   --pairing-food-image-height: 150%;
   --pairing-food-image-left: 50%;
-  --pairing-food-image-top: 15px;
+  --pairing-food-image-top: 10.5px;
   --pairing-food-image-transform: translateX(-50%);
 }
 
 .pairing_food .pairing_card[data-pairing-key="bossam"] {
   --pairing-food-image-height: 152%;
   --pairing-food-image-left: 50%;
-  --pairing-food-image-top: calc(-32.4% - 40px);
+  --pairing-food-image-top: calc(-32.4% - 28px);
   --pairing-food-image-transform: translateX(-50%);
 }
 
 /* 카드 패딩(10px) 사이로 카드 배경색이 테두리처럼 비쳐서, 위·좌·우는 끝까지 채움 */
 .pairing_card_drink .pairing_card_media {
   width: auto;
-  margin: -10px -10px 0;
-  border-radius: 0.5rem 0.5rem 0 0;
+  margin: -7px -7px 0;
+  border-radius: 0.35rem 0.35rem 0 0;
   background-color: var(--makgeolli_White);
   background-image: var(--card-shadow, none);
   background-size: cover;
@@ -1202,7 +1203,7 @@ section[id] {
   flex: 0 0 auto;
   text-align: left;
   font-weight: 300;
-  font-size: clamp(0.95rem, 1.15vw, 1.375rem);
+  font-size: clamp(0.665rem, 0.805vw, 0.9625rem);
   letter-spacing: -0.02em;
   text-transform: uppercase;
   color: var(--bekseju_darker_cold);
@@ -1214,7 +1215,7 @@ section[id] {
 
 .pairing.is_pairing_motion_ready .pairing_card {
   opacity: 0;
-  --pairing-card-enter-y: 24px;
+  --pairing-card-enter-y: 16.8px;
 }
 
 .pairing.is_pairing_motion_ready.is_pairing_cards_revealing .pairing_card {
@@ -1234,7 +1235,7 @@ section[id] {
   z-index: 4;
   cursor: grabbing;
   transition: box-shadow 160ms ease, filter 160ms ease;
-  box-shadow: 0 1.75rem 3.75rem rgba(14, 19, 38, 0.28);
+  box-shadow: 0 1.225rem 2.625rem rgba(14, 19, 38, 0.28);
 }
 
 .pairing .pairing_card.is_pairing_selected {
@@ -1274,8 +1275,8 @@ section[id] {
   }
 
   .pairing.is_pairing_motion_ready.is_pairing_cards_revealed .pairing_card:hover:not(.is_pairing_dragging) {
-    --pairing-card-hover-y: -6px;
-    box-shadow: 0 1.75rem 3.75rem rgba(14, 19, 38, 0.25);
+    --pairing-card-hover-y: -4.2px;
+    box-shadow: 0 1.225rem 2.625rem rgba(14, 19, 38, 0.25);
   }
 
   .pairing.is_pairing_motion_ready.is_pairing_cards_revealed .pairing_card:hover .pairing_card_media img:not(.pairing_card_shadow) {

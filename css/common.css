@@ -160,15 +160,30 @@ html.lenis body {
   background: rgba(255, 255, 255, 0.55);
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
+  transition: transform 360ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease;
+  will-change: transform, opacity;
+}
+
+.site_header.is_header_hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.site_header:focus-within {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .site_header_inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: var(--page-max);
+  width: calc(100% - 200px);
+  max-width: 1720px;
   margin: 0 auto;
-  padding: 1.25rem var(--gutter-x);
+  padding: 1.25rem 0;
 }
 
 .site_header_left {
@@ -269,6 +284,10 @@ html.lenis body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .site_header {
+    transition: none;
+  }
+
   .site_search_input {
     transition: none;
   }
