@@ -106,7 +106,7 @@
   /* ----- layout ----- */
   --gutter-x: clamp(1.5rem, 5.2vw, 6.25rem);
   --gutter-hero-x: clamp(1.5rem, 9.4vw, 11.25rem);
-  --page-max: 120rem;
+  --page-max: 107.5rem; /* 1720px */
 
   /* ----- colors used only on this page ----- */
   --card-chestnut: #6D4C40;
@@ -525,7 +525,8 @@ section[id] {
   align-self: stretch;
 }
 
-.hero_visual img {
+.hero_visual img,
+.hero_visual .hero_shape {
   position: absolute;
   right: -22%;
   top: calc(50% + 33px);
@@ -534,14 +535,52 @@ section[id] {
   max-width: none;
 }
 
-/* 배경 도형 위에 겹치는 캐릭터. 원본 PNG 상하좌우에 투명 여백이 있어 음수 오프셋으로 보정 */
+/* 도형들이 완전히 겹쳐 있어서, 칠해진 영역에서만 커서를 받아야 각각 반응함 */
+.hero_shape {
+  height: auto;
+  aspect-ratio: 1354.06 / 1708.24;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.hero_shape path {
+  pointer-events: auto;
+}
+
+/* 원래 hero_right.svg 안에 있던 도형별 배치 보정 */
+#banner_pet {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: translate(30px, 30px) scale(0.92);
+}
+
+#banner_cup2 {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: translateY(50px) scale(0.96);
+}
+
+#banner_bottle {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  transform: matrix(0.96, 0, 0, 0.96, 12.86, 128);
+}
+
+#banner_bowl {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: translateY(90px) scale(1);
+}
+
+/* 배경 도형 아래에 깔리는 캐릭터. 쌓임 순서는 DOM 순서로 정해지므로 main.html 에서 먼저 선언함.
+   원본 PNG 상하좌우에 투명 여백이 있어 실제 그림보다 박스가 큼 */
 .hero_visual .hero_character {
-  left: -15%;
+  left: 21.5%;
   right: auto;
   bottom: -11%;
   top: auto;
   width: auto;
-  height: 92%;
+  height: 90%;
   transform: none;
 }
 
@@ -980,6 +1019,8 @@ section[id] {
   width: 119%;
   max-width: 40.4rem; /* 전역 img 의 max-width:100% 를 덮어써야 칸 밖으로 확장됨 */
   height: auto;
+  /* 화면 밖으로 밀려난 정도에 따라 js 가 0~1 로 채움 */
+  filter: grayscale(var(--photo-grayscale, 0));
 }
 
 .history_item:nth-child(even) .history_photo {
