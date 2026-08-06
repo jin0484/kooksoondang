@@ -1106,7 +1106,8 @@ section[id] {
   background-position: center;
 }
 
-.pairing_card_drink .pairing_card_media img {
+/* 그림자는 흐름에서 빠져 있어야 병이 가운데 정렬됨 */
+.pairing_card_drink .pairing_card_media img:not(.pairing_card_shadow) {
   position: relative;
   height: 88%;
   width: auto;
@@ -1203,6 +1204,37 @@ section[id] {
 
   .pairing.is_pairing_motion_ready.is_pairing_cards_revealed .pairing_card:hover .pairing_card_media img:not(.pairing_card_shadow) {
     filter: saturate(1.08) brightness(1.02);
+  }
+
+  /* 음식 카드 hover: 컬러 카드가 오른쪽으로 기울고 뒤에서 캐릭터가 튀어나옴 */
+  .pairing_food .pairing_card_media {
+    transition: transform 320ms cubic-bezier(0.34, 1.4, 0.64, 1);
+  }
+
+  .pairing_food .pairing_card:hover:not(.is_pairing_dragging) .pairing_card_media {
+    transform: rotate(4deg) scale(1.04);
+  }
+
+  /* z-index 음수라 카드 흰 배경 위, 컬러 카드 아래에 그려짐 */
+  .pairing_food .pairing_card::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    top: -26%;
+    left: -34%;
+    width: 74%;
+    aspect-ratio: 1;
+    background: url('../asset/img/hover_food.png') no-repeat center / contain;
+    opacity: 0;
+    transform: translate(18%, 18%) rotate(-10deg) scale(0.6);
+    transform-origin: bottom right;
+    transition: opacity 200ms ease, transform 380ms cubic-bezier(0.34, 1.4, 0.64, 1);
+    pointer-events: none;
+  }
+
+  .pairing_food .pairing_card:hover:not(.is_pairing_dragging)::before {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg) scale(1);
   }
 }
 
