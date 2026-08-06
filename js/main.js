@@ -1,56 +1,3 @@
-const sideNav = document.querySelector('.side_nav');
-const sideNavItems = sideNav.querySelectorAll('li');
-const activeIcon = 'asset/icon/submenu_arrow.svg';
-const inactiveIcon = 'asset/icon/submenu_dot.svg';
-
-function changeSideNavIcon(icon, iconSource) {
-    if (icon.getAttribute('src') === iconSource) return;
-
-    icon.classList.remove('is_icon_animating');
-    void icon.offsetWidth;
-    icon.src = iconSource;
-    icon.classList.add('is_icon_animating');
-}
-
-sideNav.addEventListener('click', (event) => {
-    const link = event.target.closest('a');
-
-    if (!link || !sideNav.contains(link)) return;
-
-    const activeItem = link.closest('li');
-
-    sideNavItems.forEach((item) => {
-        const isActive = item === activeItem;
-        const itemLink = item.querySelector('a');
-        const icon = item.querySelector('img');
-
-        item.classList.toggle('is_current', isActive);
-        itemLink.toggleAttribute('aria-current', isActive);
-        changeSideNavIcon(icon, isActive ? activeIcon : inactiveIcon);
-    });
-});
-
-(() => {
-    const siteLogo = document.querySelector('.site_logo');
-    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-    if (!siteLogo) return;
-
-    siteLogo.addEventListener('click', () => {
-        if (reducedMotionQuery.matches) return;
-
-        siteLogo.classList.remove('is_dot_bouncing');
-        void siteLogo.offsetWidth;
-        siteLogo.classList.add('is_dot_bouncing');
-    });
-
-    siteLogo.addEventListener('animationend', (event) => {
-        if (event.animationName === 'logo_dot_bounce') {
-            siteLogo.classList.remove('is_dot_bouncing');
-        }
-    });
-})();
-
 (() => {
     const historySection = document.querySelector('.history');
     const historyTimeline = historySection?.querySelector('.history_timeline');
@@ -662,6 +609,7 @@ sideNav.addEventListener('click', (event) => {
     let dragState = null;
     let suppressTapUntil = 0;
     const plateFlashTimers = new WeakMap();
+    const absorptionGhosts = new Set();
     const selectedCards = { food: null, drink: null };
     const labels = {
         food: {
@@ -750,16 +698,108 @@ sideNav.addEventListener('click', (event) => {
         if (selection) selection.textContent = selectedCard ? labelFor(selectedCard) : defaultPlateLabel(type);
     }
 
-    function selectCard(card, plate) {
+    function disposeAbsorptionGhost(ghost, cancelAnimation = false) {
+        if (!absorptionGhosts.delete(ghost)) return;
+
+        if (cancelAnimation) ghost.animation?.cancel();
+        ghost.element.remove();
+    }
+
+    function clearAbsorptionGhosts(card = null) {
+        [...absorptionGhosts]
+            .filter((ghost) => !card || ghost.card === card)
+            .forEach((ghost) => disposeAbsorptionGhost(ghost, true));
+    }
+
+    function animateCardIntoPlate(card, plate, sourceBounds = card.getBoundingClientRect()) {
+        if (!isMotionEnabled() || !sourceBounds?.width || !sourceBounds?.height) return;
+
+        const plateGraphic = plate.querySelector('.pairing_plate') || plate;
+        const targetBounds = plateGraphic.getBoundingClientRect();
+
+        if (!targetBounds.width || !targetBounds.height) return;
+
+        const ghostElement = document.createElement('ul');
+        const cardType = typeFor(card);
+        const ghostCard = card.cloneNode(true);
+
+        ghostElement.className = `pairing_absorb_ghost pairing_${cardType}`;
+        ghostElement.setAttribute('aria-hidden', 'true');
+        ghostCard.classList.remove('is_pairing_dragging', 'is_pairing_selected');
+        [
+            '--pairing-card-enter-y',
+            '--pairing-card-drag-x',
+            '--pairing-card-drag-y',
+            '--pairing-card-drag-rotation',
+            '--pairing-card-hover-y'
+        ].forEach((property) => ghostCard.style.removeProperty(property));
+
+        ghostElement.style.left = `${sourceBounds.left}px`;
+        ghostElement.style.top = `${sourceBounds.top}px`;
+        ghostElement.style.width = `${sourceBounds.width}px`;
+        ghostElement.style.height = `${sourceBounds.height}px`;
+        ghostElement.append(ghostCard);
+        document.body.append(ghostElement);
+
+        if (typeof ghostElement.animate !== 'function') {
+            ghostElement.remove();
+            return;
+        }
+
+        const sourceCenterX = sourceBounds.left + sourceBounds.width / 2;
+        const sourceCenterY = sourceBounds.top + sourceBounds.height / 2;
+        const targetCenterX = targetBounds.left + targetBounds.width / 2;
+        const targetCenterY = targetBounds.top + targetBounds.height * 0.48;
+        const translateX = targetCenterX - sourceCenterX;
+        const translateY = targetCenterY - sourceCenterY;
+        const midpointX = translateX * 0.72;
+        const midpointY = translateY * 0.72;
+        const turn = Math.max(-5, Math.min(5, translateX * 0.01));
+        const ghost = { card, element: ghostElement, animation: null };
+
+        absorptionGhosts.add(ghost);
+        ghost.animation = ghostElement.animate([
+            {
+                transform: 'translate3d(0, 0, 0) scale(1)',
+                opacity: 1,
+                filter: 'blur(0) brightness(1)'
+            },
+            {
+                offset: 0.62,
+                transform: `translate3d(${midpointX.toFixed(1)}px, ${midpointY.toFixed(1)}px, 0) scale(0.42) rotate(${turn.toFixed(2)}deg)`,
+                opacity: 0.84,
+                filter: 'blur(0.6px) brightness(1.04)'
+            },
+            {
+                transform: `translate3d(${translateX.toFixed(1)}px, ${translateY.toFixed(1)}px, 0) scale(0.08) rotate(${(turn * 0.35).toFixed(2)}deg)`,
+                opacity: 0,
+                filter: 'blur(4px) brightness(1.12)'
+            }
+        ], {
+            duration: 520,
+            easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+            fill: 'forwards'
+        });
+
+        ghost.animation.finished
+            .then(() => disposeAbsorptionGhost(ghost))
+            .catch(() => disposeAbsorptionGhost(ghost));
+    }
+
+    function selectCard(card, plate, sourceBounds) {
         const type = typeFor(card);
 
         if (!plate || plate.dataset.pairingPlate !== type) return;
 
         const previousCard = selectedCards[type];
 
-        if (previousCard && previousCard !== card) previousCard.classList.remove('is_pairing_selected');
+        if (previousCard && previousCard !== card) {
+            clearAbsorptionGhosts(previousCard);
+            previousCard.classList.remove('is_pairing_selected');
+        }
 
         selectedCards[type] = card;
+        if (previousCard !== card) animateCardIntoPlate(card, plate, sourceBounds);
         card.classList.add('is_pairing_selected');
         syncPlate(plate);
         stopHint();
@@ -773,6 +813,7 @@ sideNav.addEventListener('click', (event) => {
     }
 
     function clearSelections() {
+        clearAbsorptionGhosts();
         selectedCards.food = null;
         selectedCards.drink = null;
         cards.forEach((card) => card.classList.remove('is_pairing_selected'));
@@ -967,13 +1008,14 @@ sideNav.addEventListener('click', (event) => {
         const { card } = dragState;
         const isDrop = event.type === 'pointerup';
         const targetPlate = targetPlateFor(card);
+        const sourceBounds = card.getBoundingClientRect();
 
         const completedDrag = clearDragState();
 
         if (completedDrag?.hasMoved) suppressTapUntil = performance.now() + 350;
 
         if (isDrop && targetPlate && isPointInside(targetPlate, event.clientX, event.clientY)) {
-            selectCard(card, targetPlate);
+            selectCard(card, targetPlate, sourceBounds);
             flashPlate(targetPlate);
         } else if (isDrop) {
             setFeedback('카드를 알맞은 접시 위에 놓아 주세요.');
@@ -1013,7 +1055,7 @@ sideNav.addEventListener('click', (event) => {
 
         if (!targetPlate) return;
 
-        selectCard(card, targetPlate);
+        selectCard(card, targetPlate, card.getBoundingClientRect());
         flashPlate(targetPlate);
     }
 
