@@ -1496,10 +1496,13 @@ section[id] {
   margin-bottom: 2rem;
 }
 
+/* 보여주기용 복제본이라 커서를 받지 않음. :hover 가 아예 성립하지 않아
+   게임 쪽 hover 연출(컬러 카드 기울기·캐릭터 등장)이 따라오지 않음 */
 .pairing_result_card {
   flex: 0 0 auto;
   width: calc(248px * var(--result-card-scale));
   height: calc(368px * var(--result-card-scale));
+  pointer-events: none;
 }
 
 .pairing_result_card .pairing_card {
