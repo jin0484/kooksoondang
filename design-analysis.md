@@ -46,7 +46,7 @@
 ## 에셋
 
 - 로고: [asset/logo]
-- 이미지: [asset]
+- 이미지: [asset/img]
 - 아이콘: [asset/icon]
 - 폰트: [WebFont]
 
