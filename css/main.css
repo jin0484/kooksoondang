@@ -13,6 +13,7 @@
 :root {
   /* ----- brand_color ----- */
   --kooksoondang_green: #D4E400;
+  --kooksoondang_green_lighter: #FAFFB8;
   --kooksoondang_orange: #F29556;
   --kooksoondang_lighter: #FFD7BB;
   --bekseju_darker_cold: #232323;
@@ -106,7 +107,8 @@
   /* ----- layout ----- */
   --gutter-x: clamp(1.5rem, 5.2vw, 6.25rem);
   --gutter-hero-x: clamp(1.5rem, 9.4vw, 11.25rem);
-  --page-max: 107.5rem; /* 1720px */
+  --page-max: 107.5rem;
+  /* 1720px */
 
   /* ----- colors used only on this page ----- */
   --card-chestnut: #6D4C40;
@@ -123,7 +125,7 @@
 
 /* ---------- base ---------- */
 
-* ,
+*,
 *::before,
 *::after {
   box-sizing: border-box;
@@ -156,7 +158,7 @@ main {
   max-width: none;
 }
 
-main > section {
+main>section {
   width: 100%;
   max-width: none;
 }
@@ -173,7 +175,13 @@ ol {
   padding: 0;
 }
 
-h1, h2, h3, h4, p, figure, address {
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+address {
   margin: 0;
 }
 
@@ -270,9 +278,7 @@ section[id] {
   margin: 0;
 
   /* hero의 위·아래 패딩을 포함한 전체 높이가 화면 높이와 같도록 설정 */
-  min-height: calc(
-    100vh - clamp(7.5rem, 10vw, 9rem) - clamp(4rem, 6vw, 5rem)
-  );
+  min-height: calc(100vh - clamp(7.5rem, 10vw, 9rem) - clamp(4rem, 6vw, 5rem));
 }
 
 .hero_left {
@@ -696,6 +702,7 @@ section[id] {
   from {
     transform: translateX(0);
   }
+
   to {
     transform: translateX(-50%);
   }
@@ -911,7 +918,8 @@ section[id] {
   grid-row: 1;
   justify-self: end;
   width: 119%;
-  max-width: 40.4rem; /* 전역 img 의 max-width:100% 를 덮어써야 칸 밖으로 확장됨 */
+  max-width: 40.4rem;
+  /* 전역 img 의 max-width:100% 를 덮어써야 칸 밖으로 확장됨 */
   height: auto;
   /* 화면 밖으로 밀려난 정도에 따라 js 가 0~1 로 채움 */
   filter: grayscale(var(--photo-grayscale, 0));
@@ -980,6 +988,7 @@ section[id] {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .history_morph_rail,
   .history_intro {
     display: none;
@@ -994,6 +1003,7 @@ section[id] {
 
 .pairing {
   position: relative;
+  height: 110vh;
   overflow: hidden;
   background: var(--bekseju_darker_cold);
   padding: clamp(4rem, 6vw, 5rem) var(--gutter-x) clamp(4rem, 6vw, 6rem);
@@ -1061,7 +1071,7 @@ section[id] {
   left: 125px;
   display: grid;
   grid-template-columns: repeat(5, 173.6px);
-  gap: 42px;
+  column-gap: 30px;
   width: max-content;
   align-self: flex-start;
   margin-inline: 0;
@@ -1069,7 +1079,7 @@ section[id] {
 }
 
 /* 카드 두 줄 사이만 40px. 부모 gap 을 상쇄해서 다른 간격은 건드리지 않음 */
-.pairing_row + .pairing_row {
+.pairing_row+.pairing_row {
   margin-top: calc(28px - clamp(3rem, 5vw, 4.5rem));
 }
 
@@ -1090,11 +1100,9 @@ section[id] {
   border-radius: 0.35rem;
   background: var(--makgeolli_light4);
   box-shadow: 0 0.35rem 1.05rem rgba(14, 19, 38, 0.1);
-  transform: translate3d(
-      var(--pairing-card-drag-x),
+  transform: translate3d(var(--pairing-card-drag-x),
       calc(var(--pairing-card-enter-y) + var(--pairing-card-drag-y) + var(--pairing-card-hover-y)),
-      0
-    ) rotate(var(--pairing-card-drag-rotation));
+      0) rotate(var(--pairing-card-drag-rotation));
   transition: opacity 180ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 200ms cubic-bezier(0.22, 1, 0.36, 1), filter 200ms ease;
   will-change: transform, opacity;
@@ -1346,6 +1354,20 @@ section[id] {
   gap: clamp(2.5rem, 4vw, 5rem);
   width: min(100%, 38rem);
   margin-top: -30px;
+  /* 안내 문구·접시·버튼을 묶어서 20% 축소 (레이아웃 기준점은 아래쪽 유지) */
+  transform: scale(0.8);
+  transform-origin: bottom center;
+}
+
+@media (min-width: 48.0625rem) {
+  .pairing_drag {
+    position: absolute;
+    /* 화면(섹션) 오른쪽 끝에서 225px 떨어지도록 좌우 패딩(gutter)을 상쇄 */
+    right: calc(225px - var(--gutter-x));
+    bottom: 0;
+    margin-top: 0;
+    transform-origin: bottom right;
+  }
 }
 
 /* 아래 접시·버튼 위치는 그대로 두어야 해서 레이아웃을 밀지 않는 transform 으로 내림 */
@@ -1628,59 +1650,79 @@ section[id] {
 }
 
 @keyframes pairing_arrow_flow_left {
-  0%, 16% {
+
+  0%,
+  16% {
     opacity: 0.2;
     transform: translateY(-0.375rem) rotate(30deg);
   }
+
   42% {
     opacity: 1;
     transform: translateY(0.125rem) rotate(30deg);
   }
-  66%, 100% {
+
+  66%,
+  100% {
     opacity: 0.2;
     transform: translateY(0.5rem) rotate(30deg);
   }
 }
 
 @keyframes pairing_arrow_flow_right {
-  0%, 16% {
+
+  0%,
+  16% {
     opacity: 0.2;
     transform: translateY(-0.375rem) rotate(-30deg);
   }
+
   42% {
     opacity: 1;
     transform: translateY(0.125rem) rotate(-30deg);
   }
-  66%, 100% {
+
+  66%,
+  100% {
     opacity: 0.2;
     transform: translateY(0.5rem) rotate(-30deg);
   }
 }
 
 @keyframes pairing_drag_hint {
-  0%, 12% {
+
+  0%,
+  12% {
     opacity: 0;
     transform: translate(-50%, -50%) translate3d(0, 0, 0) scale(0.9);
   }
-  18%, 30% {
+
+  18%,
+  30% {
     opacity: 1;
     transform: translate(-50%, -50%) translate3d(0, 0, 0) scale(1);
   }
+
   64% {
     opacity: 1;
     transform: translate(-50%, -50%) translate3d(var(--pairing-hint-delta-x, 0px), var(--pairing-hint-delta-y, 0px), 0) scale(0.94);
   }
-  72%, 100% {
+
+  72%,
+  100% {
     opacity: 0;
     transform: translate(-50%, -50%) translate3d(var(--pairing-hint-delta-x, 0px), var(--pairing-hint-delta-y, 0px), 0) scale(0.94);
   }
 }
 
 @keyframes pairing_plate_drop {
-  0%, 100% {
+
+  0%,
+  100% {
     filter: brightness(1);
     transform: translateY(0) scale(1);
   }
+
   42% {
     filter: brightness(1.16) drop-shadow(0 0.5rem 1rem rgba(242, 149, 86, 0.45));
     transform: translateY(-0.25rem) scale(1.035);
@@ -1688,6 +1730,7 @@ section[id] {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .pairing_card,
   .pairing .pairing_card.is_pairing_dragging {
     transition: none;
@@ -1992,7 +2035,8 @@ section[id] {
   will-change: opacity;
 }
 
-@media (max-width: 48rem), (prefers-reduced-motion: reduce) {
+@media (max-width: 48rem),
+(prefers-reduced-motion: reduce) {
   .event_reveal_char {
     opacity: 1 !important;
   }
