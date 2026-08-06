@@ -1201,7 +1201,7 @@ section[id] {
       calc(var(--pairing-card-enter-y) + var(--pairing-card-drag-y) + var(--pairing-card-hover-y)),
       0
     ) rotate(var(--pairing-card-drag-rotation));
-  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+  transition: opacity 180ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 200ms cubic-bezier(0.22, 1, 0.36, 1), filter 200ms ease;
   will-change: transform, opacity;
 }
@@ -1231,9 +1231,43 @@ section[id] {
 }
 
 .pairing_food .pairing_card_media img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  position: absolute;
+  top: var(--pairing-food-image-top, 0);
+  left: var(--pairing-food-image-left, 0);
+  width: auto;
+  max-width: none;
+  height: var(--pairing-food-image-height, 100%);
+  object-fit: contain;
+}
+
+.pairing_food .pairing_card[data-pairing-key="pancake"] {
+  --pairing-food-image-height: 140%;
+  --pairing-food-image-left: -143.6%;
+  --pairing-food-image-top: -33.9%;
+}
+
+.pairing_food .pairing_card[data-pairing-key="pizza"] {
+  --pairing-food-image-height: 122%;
+  --pairing-food-image-left: -69.4%;
+  --pairing-food-image-top: 0;
+}
+
+.pairing_food .pairing_card[data-pairing-key="chicken"] {
+  --pairing-food-image-height: 154%;
+  --pairing-food-image-left: -98.5%;
+  --pairing-food-image-top: -47.1%;
+}
+
+.pairing_food .pairing_card[data-pairing-key="ribs"] {
+  --pairing-food-image-height: 150%;
+  --pairing-food-image-left: -122.9%;
+  --pairing-food-image-top: 0;
+}
+
+.pairing_food .pairing_card[data-pairing-key="bossam"] {
+  --pairing-food-image-height: 152%;
+  --pairing-food-image-left: -119.2%;
+  --pairing-food-image-top: -32.4%;
 }
 
 .pairing_card_drink .pairing_card_media {
@@ -1297,14 +1331,34 @@ section[id] {
   box-shadow: 0 1.75rem 3.75rem rgba(14, 19, 38, 0.28);
 }
 
-.pairing_card.is_pairing_selected {
-  outline: 2px solid var(--kooksoondang_orange);
-  outline-offset: 4px;
-  box-shadow: 0 1.25rem 2.5rem rgba(14, 19, 38, 0.24);
+.pairing .pairing_card.is_pairing_selected {
+  --pairing-card-hover-y: 0px;
+  opacity: 0;
+  pointer-events: none;
 }
 
-.pairing_card_drink.is_pairing_selected {
-  outline-color: var(--makgeolli_White);
+.pairing_absorb_ghost {
+  position: fixed;
+  z-index: 300;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+  transform-origin: center;
+  will-change: transform, opacity, filter;
+}
+
+.pairing_absorb_ghost .pairing_card {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 1;
+  cursor: default;
+  transition: none;
+}
+
+.pairing_absorb_ghost .pairing_card_media img {
+  filter: none;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -1328,6 +1382,7 @@ section[id] {
   align-items: center;
   gap: clamp(2.5rem, 4vw, 5rem);
   width: min(100%, 38rem);
+  margin-top: -30px;
 }
 
 .pairing_drag_explain {

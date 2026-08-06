@@ -766,7 +766,7 @@ sideNav.addEventListener('click', (event) => {
         section.classList.add('is_pairing_hint_paused');
 
         if (selectedCards.food && selectedCards.drink) {
-            setFeedback('두 카드를 모두 골랐어요. 결과를 확인해 보세요.');
+            setFeedback('');
         } else {
             setFeedback(type === 'food' ? '음식 카드가 접시에 담겼어요. 술 카드를 골라 주세요.' : '술 카드가 접시에 담겼어요. 음식 카드를 골라 주세요.');
         }
