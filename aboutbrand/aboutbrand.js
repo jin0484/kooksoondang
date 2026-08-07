@@ -780,14 +780,16 @@
 
 
 /* ---------------------------------------------------------------------------
-   respected company - 강조 단어 칠하기 + 태그 물결 채우기
+   respected company - 등장 순서
 
-   1) respected / competitiveness 가 화면 세로 가운데에 닿으면
-      흰 글씨가 왼쪽부터 초록으로 칠해진다.
-   2) Future Value / Principle / Competitiveness 태그는 화면에 들어오면
-      아래에서 물결이 차오르며 초록으로 바뀐다.
+   섹션이 화면을 꽉 채우면 잠깐 붙잡아 두고(pin) 아래 순서로 한 번만 보여 준다.
 
-   둘 다 모습은 CSS 가 그리고 여기서는 "닿았는가" 만 판단한다. 한 번만 재생한다.
+   1) 컵이 흔들리고
+   2) 그 바람에 물방울이 하나씩 튀어오르고
+   3) respected / competitiveness 가 흰색에서 초록으로 칠해지고
+   4) 마지막 물방울로부터 1초 뒤, 아래 태그가 차례로 물결처럼 차오른다.
+
+   움직이는 모습은 전부 CSS 가 그리고, 여기서는 시점만 잡는다.
 --------------------------------------------------------------------------- */
 
 (() => {
@@ -810,47 +812,25 @@
         return;
     }
 
-    // 여러 개가 함께 걸리므로 왼쪽부터 조금씩 늦게 재생한다
-    function revealInOrder(items, stepMs, doneClass, observerOptions) {
-        if (!items.length) return;
+    const icon = section.querySelector('.respected_icon');
+    const cup = section.querySelector('.respected_cup');
+    const drops = icon ? [...icon.querySelectorAll('.respected_drop')] : [];
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                if (!entry.isIntersecting) return;
+    /* ---- 재생 순서(ms) ----
+       컵이 흔들리고 -> 물방울이 하나씩 튀고 -> 강조 단어가 칠해지고
+       -> 마지막 물방울로부터 1초 뒤 아래 태그가 차례로 차오른다. */
+    const DROP_LEAD_MS = 120;   // 컵이 흔들리기 시작하고 첫 물방울이 뜨기까지
+    const DROP_STEP_MS = 220;   // 물방울끼리
+    const PAINT_DELAY_MS = 700;
+    const PAINT_STEP_MS = 180;  // 강조 단어끼리
+    const TAG_GAP_MS = 1000;    // 마지막 물방울 뒤
+    const TAG_STEP_MS = 160;    // 태그끼리
 
-                observer.unobserve(entry.target);
-
-                const order = Math.max(0, items.indexOf(entry.target));
-
-                window.setTimeout(() => {
-                    entry.target.classList.add(doneClass);
-                }, order * stepMs);
-            });
-        }, observerOptions);
-
-        items.forEach((item) => observer.observe(item));
-    }
+    const lastDropMs = DROP_LEAD_MS + Math.max(0, drops.length - 1) * DROP_STEP_MS;
 
     section.classList.add('is_paint_ready');
 
-    // 강조 단어: 화면 가운데 10% 띠에 들어왔을 때.
-    // (정확히 -50% 로 잡으면 관찰 상자 높이가 0 이라 글자가 선에 닿기만 하고
-    //  겹치는 넓이가 없어 걸리지 않는 경우가 있다)
-    revealInOrder(points, 180, 'is_painted', { rootMargin: '-45% 0px -45% 0px' });
-
-    // RESPECTED COMPANY 글자가 화면 가운데에 오면
-    // 물방울이 하나씩 튀어오르고, 잠시 뒤 아래 태그가 차례로 차오른다.
-    // 지켜보는 대상(글자)과 움직이는 대상이 달라 따로 처리한다.
-    const title = section.querySelector('.respected_title');
-    const icon = section.querySelector('.respected_icon');
-    const drops = icon ? [...icon.querySelectorAll('.respected_drop')] : [];
-
-    // 물방울끼리의 간격
-    const DROP_STEP_MS = 220;
-    // 물방울이 다 튄 뒤 태그가 차오르기까지 기다리는 시간
-    const TAG_DELAY_MS = 1000;
-    // 태그끼리의 간격
-    const TAG_STEP_MS = 160;
+    if (icon) icon.classList.add('is_splash_ready');
 
     function addLater(items, stepMs, doneClass, delayMs) {
         items.forEach((item, index) => {
@@ -858,25 +838,98 @@
         });
     }
 
-    if (title && icon && drops.length) {
-        icon.classList.add('is_splash_ready');
+    // 컵이 한 번 흔들리고 그 바람에 물방울이 튄다. 여러 번 다시 부를 수 있다.
+    let splashTimers = [];
 
-        const splashObserver = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                if (!entry.isIntersecting) return;
+    function splash() {
+        splashTimers.forEach(window.clearTimeout);
+        splashTimers = [];
 
-                splashObserver.disconnect();
+        // 클래스를 뗐다 붙여야 애니메이션과 전환이 처음부터 다시 재생된다.
+        // 사이에 크기를 한 번 읽어, 브라우저가 두 상태를 따로 인식하게 만든다.
+        cup?.classList.remove('is_shaking');
+        drops.forEach((drop) => drop.classList.remove('is_splashed'));
+        void section.offsetWidth;
 
-                addLater(drops, DROP_STEP_MS, 'is_splashed', 0);
-                // 마지막 물방울이 튄 뒤부터 세어야 "1초 뒤" 가 된다
-                addLater(tags, TAG_STEP_MS, 'is_filled',
-                    (drops.length - 1) * DROP_STEP_MS + TAG_DELAY_MS);
-            });
-        }, { rootMargin: '-45% 0px -45% 0px' });
+        cup?.classList.add('is_shaking');
 
-        splashObserver.observe(title);
-    } else {
-        // 물방울을 못 찾으면 태그만이라도 제 스스로 차오르게 둔다
-        revealInOrder(tags, TAG_STEP_MS, 'is_filled', { rootMargin: '0px 0px -20% 0px' });
+        drops.forEach((drop, index) => {
+            splashTimers.push(window.setTimeout(() => {
+                drop.classList.add('is_splashed');
+            }, DROP_LEAD_MS + index * DROP_STEP_MS));
+        });
     }
+
+    let hasPlayed = false;
+
+    // 스크롤이 걸려 멈추는 순간 컵이 흔들린다. "여기서 멈췄다" 는 신호라
+    // 되돌아 올라와 다시 걸릴 때도 매번 흔들린다.
+    // 칠하기·태그 차오름은 한 번만 보여 준다.
+    function playSequence() {
+        splash();
+
+        if (hasPlayed) return;
+
+        hasPlayed = true;
+
+        addLater(points, PAINT_STEP_MS, 'is_painted', PAINT_DELAY_MS);
+        addLater(tags, TAG_STEP_MS, 'is_filled', lastDropMs + TAG_GAP_MS);
+    }
+
+    // 컵에 마우스를 올릴 때마다 한 번씩 흔들린다.
+    // mouseenter 는 들어올 때 한 번만 나므로, 계속 올려 두어도 다시 흔들리지 않고
+    // 뗐다가 다시 올리면 그때 또 흔들린다.
+    if (cup) cup.addEventListener('mouseenter', splash);
+
+    const canUseGsap = typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined';
+
+    if (canUseGsap) {
+        // 이 섹션은 그냥 두면 한 번에 지나가 버려서 순서대로 나오는 걸 볼 틈이 없다.
+        // 화면을 꽉 채운 동안 잠깐 붙잡아 두고, 다 보여 준 뒤 놓아 준다.
+        // 붙잡는 자리를 화면의 15% 만큼 더 내린다.
+        // 다만 섹션이 화면보다 큰 만큼(여유분)과 콘텐츠 위 빈 공간까지만 쓴다.
+        // 그 이상 내리면 맨 위의 컵이 화면 밖으로 잘려 나간다.
+        const BREATH_PX = 48;   // 컵 위에 남겨 둘 자리
+        const content = section.querySelector('.respected_content');
+
+        const pinOffset = () => {
+            const screen = document.documentElement.clientHeight;
+            const slack = Math.max(0, section.offsetHeight - screen);
+            const headroom = content
+                ? Math.max(0, content.offsetTop - BREATH_PX)
+                : 0;
+
+            return Math.round(Math.min(screen * 0.15, slack + headroom));
+        };
+
+        ScrollTrigger.create({
+            trigger: section,
+            start: () => 'top -' + pinOffset(),
+            end: () => '+=' + Math.round(document.documentElement.clientHeight * 0.75),
+            pin: true,
+            // 빠르게 굴려 들어와도 붙잡히는 순간이 튀지 않게 미리 준비시킨다
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+            onEnter: playSequence,
+            onEnterBack: playSequence,
+            // 이미 지나온 자리에서 페이지가 열린 경우
+            onRefresh: (self) => {
+                if (self.progress > 0) playSequence();
+            }
+        });
+
+        return;
+    }
+
+    // GSAP 이 없으면 붙잡아 두지는 못해도 순서는 그대로 보여 준다
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+
+            observer.disconnect();
+            playSequence();
+        });
+    }, { rootMargin: '-25% 0px -25% 0px' });
+
+    observer.observe(section);
 })();
