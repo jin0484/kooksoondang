@@ -31,9 +31,9 @@
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <title>kooksoondang</title>
-  <link rel="stylesheet" href="../css/reset.css">
-  <link rel="stylesheet" href="../css/common.css">
-  <script src="../js/common.js" defer></script>
+  <link rel="stylesheet" href="reset.css">
+  <link rel="stylesheet" href="common.css">
+  <script src="common.js" defer></script>
 </head>
 
 <body>
@@ -49,17 +49,22 @@
         </a>
         <nav class="primary_nav" aria-label="Primary navigation">
           <ul>
-            <li><span class="is_static">ABOUT BRAND</span></li>
-            <li><span class="is_static">PRODUCTS</span></li>
-            <li><span class="is_static">PAIRING</span></li>
+            <li><a href="../aboutbrand/aboutbrand.html">ABOUT BRAND</a></li>
+            <li><a href="../products/products.html">PRODUCTS</a></li>
+            <li><a href="../pairing/pairing.html">PAIRING</a></li>
             <li><span class="is_disabled" aria-disabled="true">EVENT/PROMOTION</span></li>
             <li><span class="is_disabled" aria-disabled="true">CONTACT US</span></li>
           </ul>
         </nav>
       </div>
-      <button class="search_button" type="button" aria-label="Open search">
-        <img src="../asset/icon/search_icon_vector.svg" alt="" width="24" height="24">
-      </button>
+      <div class="site_search" data-site-search>
+        <input class="site_search_input" type="search" aria-label="Search" placeholder="Cannot search"
+          autocomplete="off" tabindex="-1" data-site-search-input>
+        <button class="search_button" type="button" aria-label="Open search" aria-expanded="false"
+          data-site-search-toggle>
+          <img src="../asset/icon/search_icon_vector.svg" alt="" width="24" height="24">
+        </button>
+      </div>
     </div>
   </header>
 

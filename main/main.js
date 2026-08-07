@@ -39,7 +39,10 @@
     // 원 프레임. 낙하 지점보다 살짝 아래에 두어 물방울이 튕겨 오르지 않고 이어서 내려앉음
     const circleSettleDistance = 230;
     const petOffsetRange = { min: 134, viewportRatio: 0.0835, max: 160 };
-    const morphScrollDuration = 1.12;
+    // 키프레임 간격 배율. 1 을 넘기면 기준점이 전체 중간점에서 바깥으로 밀려서
+    // 항목이 화면 중앙에 왔을 때 이미 다음 모양으로 넘어가 버림(원이 원으로 안 보임).
+    // 각 모양이 해당 항목 위치에서 정확히 완성되도록 1 로 둠
+    const morphScrollDuration = 1;
 
     let sourceShapes = [];
     let morphFrames = [];
@@ -239,16 +242,14 @@
         return true;
     }
 
+    // 각 프레임이 완성되는 스크롤 지점. 항목 프레임은 모두 그 항목이 화면 정중앙에 올 때가 기준.
+    // 첫 항목(원)만 타임라인 상단을 쓰면 항목이 가운데 왔을 때 이미 다음 모양으로 넘어가 버림
     function getScrollState() {
         const viewportCenter = window.scrollY + window.innerHeight / 2;
-        const timelineBounds = historyTimeline.getBoundingClientRect();
-        const rawCenters = [...introDecos.map((deco) => {
-            const bounds = deco.getBoundingClientRect();
+        const rawCenters = [...introDecos, ...historyItems].map((element) => {
+            const bounds = element.getBoundingClientRect();
             return window.scrollY + bounds.top + bounds.height / 2;
-        }), window.scrollY + timelineBounds.top, ...historyItems.slice(1).map((item) => {
-            const bounds = item.getBoundingClientRect();
-            return window.scrollY + bounds.top + bounds.height / 2;
-        })];
+        });
         const centerPoint = (rawCenters[0] + rawCenters[rawCenters.length - 1]) / 2;
         const centers = rawCenters.map((center) => (
             centerPoint + (center - centerPoint) * morphScrollDuration
