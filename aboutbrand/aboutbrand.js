@@ -174,6 +174,7 @@
 
     // 사진과 겹치는 글자만 흰색으로 보이게 할 복제본.
     // 원본과 같은 자리에 겹쳐 두고 사진 상자로 잘라 낸다.
+    let photoMask = null;
     const photoText = buildPhotoText();
 
     function buildPhotoText() {
@@ -189,7 +190,13 @@
         clone.className = 'history_photo_text';
         clone.setAttribute('aria-hidden', 'true');
 
-        photo.appendChild(clone);
+        // 흰 글자는 원본 글자(z-index 1) 보다 위에서 잘려야 한다.
+        // 사진 상자(z-index 0) 안에 두면 원본 글자에 가려 테두리만 보인다.
+        photoMask = document.createElement('div');
+        photoMask.className = 'history_photo_mask';
+        photoMask.setAttribute('aria-hidden', 'true');
+        photoMask.appendChild(clone);
+        host.appendChild(photoMask);
 
         return clone;
     }
@@ -201,21 +208,25 @@
         photoText?.querySelectorAll('.year_block')[index]
     ]);
 
-    const MAX_BLUR = 5;
-    const MIN_DIM = 0.45;
+    const MAX_BLUR = 3;
+    const MIN_DIM = 0.6;
+    // 화면 폭 대비. FOCUS_HOLD 까지는 완전히 선명하고, FOCUS_REACH 에서 가장 흐리다.
+    const FOCUS_HOLD = 0.42;
+    const FOCUS_REACH = 1.05;
 
-    // 화면 가운데에 있는 블록만 선명하게. main 의 history 텍스트 흐림과 같은 방식.
+    // 화면 가운데 블록만 선명하게. main 의 history 텍스트 흐림과 같은 방식.
     function updateFocus() {
-        const centerLine = screenWidth() / 2;
-        const reach = screenWidth() * 0.6;
+        const width = screenWidth();
+        const centerLine = width / 2;
 
         yearBlockPairs.forEach(([block, twin]) => {
             const rect = block.getBoundingClientRect();
 
             if (!rect.width) return;
 
-            const distance = Math.abs(rect.left + rect.width / 2 - centerLine);
-            const eased = smooth(Math.min(1, distance / reach));
+            const distance = Math.abs(rect.left + rect.width / 2 - centerLine) / width;
+            const ratio = (distance - FOCUS_HOLD) / (FOCUS_REACH - FOCUS_HOLD);
+            const eased = smooth(Math.min(1, Math.max(0, ratio)));
             const blur = (eased * MAX_BLUR).toFixed(2) + 'px';
             const dim = (1 - eased * (1 - MIN_DIM)).toFixed(3);
 
@@ -242,7 +253,10 @@
         const distance = getScrollDistance();
         const centerLine = screenWidth() / 2;
 
-        photoSlots = [...section.querySelectorAll('.img_box')].map((box) => {
+        // 복제본에도 .img_box 가 있으므로 원본 블록의 것만 고른다
+        const boxes = [...section.querySelectorAll('.history_year_con > .year_block .img_box')];
+
+        photoSlots = boxes.map((box) => {
             const rect = box.getBoundingClientRect();
             // 화면 기준 좌표를 설계 좌표로 되돌린다
             const slot = {
@@ -284,9 +298,15 @@
         photo.style.width = lerp(from.w, to.w, eased) + 'px';
         photo.style.height = lerp(from.h, to.h, eased) + 'px';
 
-        // 흰 글자 복제본을 원본 글자와 같은 자리로 되돌려 놓는다
-        if (photoText) {
+        // 흰 글자를 자를 창은 사진과 똑같은 자리·크기,
+        // 그 안의 복제본은 사진 좌표의 반대값으로 되돌려 원본 글자와 겹친다
+        if (photoMask && photoText) {
             const host = photo.parentElement;
+
+            photoMask.style.left = photo.style.left;
+            photoMask.style.top = photo.style.top;
+            photoMask.style.width = photo.style.width;
+            photoMask.style.height = photo.style.height;
 
             photoText.style.left = -x + 'px';
             photoText.style.top = -y + 'px';
@@ -316,6 +336,27 @@
         return Math.max(0, stageWidth - screenWidth());
     }
 
+    // 가로 이동이 끝난 뒤, vision 패널을 화면 한 번 분량만큼 붙잡아 둔다.
+    // 이 구간에서는 아무것도 움직이지 않고 pin 만 유지되므로,
+    // 화면이 완전히 넘어간 뒤에야 세로 스크롤로 풀린다.
+    const holdDistance = () => screenHeight();
+
+    // 스크럽으로 부드럽게 만든 값을 받아 쓰기 위한 대리 객체
+    const scrollProxy = { progress: 0 };
+
+    function renderHorizontal() {
+        const distance = getScrollDistance();
+        const total = distance + holdDistance();
+        // 붙잡아 두는 구간을 뺀, 실제로 가로로 움직이는 진행도
+        const moved = distance > 0
+            ? Math.min(1, scrollProxy.progress * total / distance)
+            : 0;
+
+        gsap.set(stage, { x: -distance * moved });
+        updatePhoto(moved);
+        updateFocus();
+    }
+
     function buildHorizontalScroll() {
         if (horizontalTween) return;
 
@@ -324,36 +365,31 @@
         section.classList.add('is_history_pinned');
         isPinned = true;
         viewport.scrollLeft = 0;
+        scrollProxy.progress = 0;
 
-        horizontalTween = gsap.to(stage, {
-            x: () => -getScrollDistance(),
+        horizontalTween = gsap.to(scrollProxy, {
+            progress: 1,
             ease: 'none',
+            onUpdate: renderHorizontal,
             scrollTrigger: {
                 trigger: section,
                 start: 'top top',
-                // 가로로 밀 거리만큼 세로 스크롤을 소비시킨다.
-                // 이 거리가 끝나면 pin 이 풀리고 vision 부터 다시 세로 스크롤이 된다.
-                end: () => '+=' + getScrollDistance(),
+                // 가로로 밀 거리 + 붙잡아 두는 거리만큼 세로 스크롤을 소비시킨다
+                end: () => '+=' + (getScrollDistance() + holdDistance()),
                 pin: true,
                 scrub: 1,
                 anticipatePin: 1,
                 invalidateOnRefresh: true,
                 // 자리 계산은 refresh 시점의 실제 크기로 다시 한다
-                onRefresh: (self) => {
+                onRefresh: () => {
                     measurePhotoSlots();
-                    updatePhoto(self.progress);
-                    updateFocus();
-                },
-                onUpdate: (self) => {
-                    updatePhoto(self.progress);
-                    updateFocus();
+                    renderHorizontal();
                 }
             }
         });
 
         measurePhotoSlots();
-        updatePhoto(0);
-        updateFocus();
+        renderHorizontal();
     }
 
     function destroyHorizontalScroll() {

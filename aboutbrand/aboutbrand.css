@@ -291,10 +291,10 @@
     padding-left: 120px;
 }
 
-/* 두루마리 본체(와 그 안의 흰 배경)가 막대를 덮지 않도록 항상 위에 둔다 */
+/* 두루마리 본체(글자 z-index 1, 흰 글자 창 z-index 2)가 막대를 덮지 않게 항상 위 */
 .history_stick {
     position: relative;
-    z-index: 2;
+    z-index: 3;
     flex: none;
     width: 161px;
     height: 852px;
@@ -559,10 +559,24 @@
    .history_photo 가 overflow:hidden 이라 사진과 겹치는 부분만 잘려서 보인다.
    위치는 aboutbrand.js 가 사진 좌표의 반대값으로 맞춰 준다. */
 
+/* 사진과 같은 자리·크기로 잘라 내는 창. 원본 글자(z-index 1) 보다 위에 둔다. */
+.history_photo_mask {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 2;
+    overflow: hidden;
+    border-radius: 10px;
+    pointer-events: none;
+}
+
+.history_section.is_history_pinned .history_photo_mask {
+    display: block;
+}
+
 .history_photo_text {
     position: absolute;
-    /* 오렌지 오버레이(::after) 보다 위 */
-    z-index: 1;
     pointer-events: none;
 }
 
@@ -675,7 +689,8 @@
     height: 1080px;
     margin-left: -30px;
     border-radius: 20px 0 0 20px;
-    background: var(--bekseju_darker_cold);
+    /* 안쪽 면과 같은 색이어야 왼쪽 띠에서 색이 갈라져 보이지 않는다 */
+    background: var(--bekseju_darker_warm);
     overflow: hidden;
 }
 
