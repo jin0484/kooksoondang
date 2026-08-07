@@ -1992,8 +1992,8 @@
     if (reducedMotionQuery.matches) return;
 
     // 원본(codepen xxmaNYj)은 stagger 0.04s. 이 문단은 글자가 137 자라 그대로 쓰면
-    // 6 초가 넘어가서 줄임. 슬라이드 인은 균일한 간격이라 문장부호 쉼은 두지 않음
-    const charStep = 18;
+    // 글자 수가 많아 간격이 조금만 넓어도 마지막 글자가 한참 뒤에 들어옴. 슬라이드 인은 균일한 간격이라 문장부호 쉼은 두지 않음
+    const charStep = 10;
 
     // <br> 로 줄을 나누고, 들여쓰기 때문에 생긴 공백은 브라우저가 렌더링하는 대로 하나로 접음
     const lines = [...desc.childNodes]
