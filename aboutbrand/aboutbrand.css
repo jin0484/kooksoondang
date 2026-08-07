@@ -907,6 +907,10 @@
     display: block;
     width: clamp(1.75rem, 2.6vw, 3.10625rem);
     aspect-ratio: 49.7079 / 30.5114;
+    /* 상자만 놓고 보면 컵과 정확히 가운데가 맞지만, 큰 물방울이 오른쪽에 있어
+       눈에 보이는 무게중심은 오른쪽으로 치우친다.
+       기하 중심 대신 눈에 보이는 중심을 컵 가운데에 맞춘 값. */
+    transform: translateX(-6px);
 }
 
 .respected_drop {
@@ -952,6 +956,48 @@
 .respected_cup {
     width: clamp(4.25rem, 6.18vw, 7.41125rem);
     height: auto;
+    /* 바닥을 딛고 흔들리도록 */
+    transform-origin: 50% 100%;
+}
+
+/* 컵이 좌우로 흔들리고 그 바람에 물방울이 튀어나온다.
+   흔들림은 점점 잦아든다. */
+.respected_cup.is_shaking {
+    animation: respected_cup_shake 900ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes respected_cup_shake {
+    0% {
+        transform: rotate(0) translateX(0);
+    }
+
+    12% {
+        transform: rotate(-6deg) translateX(-3%);
+    }
+
+    28% {
+        transform: rotate(5deg) translateX(3%);
+    }
+
+    44% {
+        transform: rotate(-3.5deg) translateX(-2%);
+    }
+
+    60% {
+        transform: rotate(2.2deg) translateX(1.5%);
+    }
+
+    76% {
+        transform: rotate(-1.2deg) translateX(-0.8%);
+    }
+
+    88% {
+        transform: rotate(0.5deg) translateX(0.3%);
+    }
+
+    100% {
+        transform: rotate(0) translateX(0);
+    }
 }
 
 .respected_title {
@@ -1170,5 +1216,9 @@
 
     .respected_icon.is_splash_ready .respected_drop.is_splashed {
         transition: none;
+    }
+
+    .respected_cup.is_shaking {
+        animation: none;
     }
 }
