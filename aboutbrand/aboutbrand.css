@@ -274,11 +274,13 @@
 
 /* ---------- 두루마리 ---------- */
 
+/* 안쪽 여백을 바꾸면 두루마리 폭도 따라 달라져야 해서 내용에 맞춘다.
+   (시안 기준값은 6196px 였다) */
 .history_year {
     flex: none;
     display: flex;
     align-items: center;
-    width: 6196px;
+    width: max-content;
     height: 1080px;
     padding-inline: 160px;
     background: var(--makgeolli_White);
@@ -336,7 +338,7 @@
 .history_photo_text {
     display: flex;
     align-items: flex-start;
-    gap: 280px;
+    gap: 300px;
     height: 684px;
     padding: 40px 80px;
 }
@@ -727,6 +729,14 @@
     text-align: center;
 }
 
+/* 시안에서 Since 1952 와 VISION 은 h2 라는 한 덩어리로 붙어 있고,
+   32px 간격은 이 덩어리와 아래 문구 사이에만 들어간다 */
+.history_vision_h2 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .history_vision_since,
 .history_vision_lead {
     font-family: var(--font-Pretendard);
@@ -889,9 +899,54 @@
     align-items: center;
 }
 
+/* 물방울 두 개를 따로 움직이려고 합본(respected_leaf.svg) 대신
+   낱개 에셋을 쓴다. 자리는 합본 캔버스(49.7079 x 30.5114) 안의 좌표를
+   퍼센트로 옮긴 값이라 원본과 같은 배치가 된다. */
 .respected_leaf {
+    position: relative;
+    display: block;
     width: clamp(1.75rem, 2.6vw, 3.10625rem);
+    aspect-ratio: 49.7079 / 30.5114;
+}
+
+.respected_drop {
+    position: absolute;
     height: auto;
+    /* 아래에서 솟는 느낌이 나도록 아래쪽을 기준으로 커진다 */
+    transform-origin: 50% 100%;
+}
+
+/* 작은 물방울: 합본 기준 x 0, y 9.902, 18 x 19 */
+.respected_drop_1 {
+    left: 0;
+    top: 32.45%;
+    width: 36.21%;
+}
+
+/* 큰 물방울: 합본 기준 x 22.310, y 0, 28 x 31 */
+.respected_drop_2 {
+    left: 44.88%;
+    top: 0;
+    width: 56.33%;
+}
+
+/* 물방울은 RESPECTED COMPANY 글자가 화면 가운데에 오면 컵 안에서 튀어오른다.
+   .is_splash_ready 는 JS 가 붙이므로, JS 가 없거나 모션 최소화 설정이면
+   처음부터 제자리에 보인다. */
+.respected_icon.is_splash_ready .respected_drop {
+    opacity: 0;
+    /* 자기 높이의 1.8배만큼 아래 = 컵 안쪽.
+       큰 물방울이 더 많이 움직여서 둘이 같이 떠도 결이 달라 보인다 */
+    transform: translateY(180%) scale(0.3);
+}
+
+.respected_icon.is_splash_ready .respected_drop.is_splashed {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    /* 살짝 지나쳤다 내려앉아 톡 튀는 느낌을 준다 */
+    transition:
+        transform 700ms cubic-bezier(0.34, 1.56, 0.64, 1),
+        opacity 260ms ease-out;
 }
 
 .respected_cup {
@@ -921,6 +976,31 @@
     color: var(--kooksoondang_green);
 }
 
+/* 화면 가운데에 닿으면 흰 글씨가 왼쪽부터 초록으로 칠해진다.
+   글자 모양으로 잘라 낸 배경(초록 | 흰색)을 옆으로 밀어서 칠하는 방식이라
+   글자를 복제하지 않아도 되고 읽는 순서도 그대로다.
+   .is_paint_ready 는 JS 가 붙이므로, JS 가 없거나 모션 최소화 설정이면
+   처음부터 초록으로 보인다. */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+    .respected_section.is_paint_ready .respected_point {
+        /* 배경을 글자 폭의 두 배로 두고 오른쪽 절반(흰색)부터 보여 준다 */
+        background-image: linear-gradient(to right,
+                var(--kooksoondang_green) 50%,
+                var(--makgeolli_White) 50%);
+        background-repeat: no-repeat;
+        background-size: 200% 100%;
+        background-position: 100% 0;
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        transition: background-position 700ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .respected_section.is_paint_ready .respected_point.is_painted {
+        background-position: 0 0;
+    }
+}
+
 .respected_chevron {
     width: clamp(1.5rem, 1.875vw, 2.25rem);
     height: auto;
@@ -935,12 +1015,16 @@
 }
 
 .respected_tag {
+    position: relative;
+    /* ::before 를 li 배경 위·글자 아래에 두기 위한 쌓임 맥락 */
+    z-index: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     width: clamp(8rem, 12.5vw, 15rem);
     padding-block: 1rem;
     border-radius: 8px;
+    overflow: hidden;
     background: rgba(255, 255, 255, 0.2);
     font-family: var(--font-Pretendard);
     font-weight: 200;
@@ -948,6 +1032,36 @@
     line-height: 1.7;
     color: var(--makgeolli_White);
 }
+
+/* 아래에서 물결이 차오른다.
+   윗변 16px 은 물결 모양 svg, 그 아래는 초록 면.
+   상자를 물결 높이만큼 더 크게 잡아, 다 차오르면 물결이 태그 위로 빠져나가
+   (overflow:hidden 이 잘라 낸다) 윗변까지 빈틈없이 채워진다.
+   svg 안에는 css 변수를 쓸 수 없어 --kooksoondang_green 과 같은 값을 적어 둔다. */
+.respected_tag::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: calc(100% + 16px);
+    opacity: 0.1;
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='16' viewBox='0 0 160 16' preserveAspectRatio='none'%3E%3Cpath d='M0 8 Q20 0 40 8 T80 8 T120 8 T160 8 V16 H0 Z' fill='%23D4E400'/%3E%3C/svg%3E") 0 0 / 160px 16px repeat-x,
+        /* 1px 겹쳐서 물결과 면 사이에 실선 틈이 보이지 않게 한다 */
+        linear-gradient(var(--kooksoondang_green), var(--kooksoondang_green)) 0 100% / 100% calc(100% - 15px) no-repeat;
+    transform: translateY(101%);
+    transition: transform 1000ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 다 차오르면 물결은 태그 위로 빠져나가 잘리고 윗변까지 꽉 찬다.
+   (그래서 차오른 뒤에는 물결이 보이지 않는다 — 올라오는 동안에만 보인다) */
+.respected_tag.is_filled::before {
+    transform: translateY(0);
+}
+
+/* 채움이 30% 라 바탕이 어둡게 남는다. 글자는 흰색 그대로 둔다 */
 
 
 /* =========================================================================
@@ -1047,5 +1161,14 @@
 @media (prefers-reduced-motion: reduce) {
     .intro_arrow img {
         animation: none;
+    }
+
+    /* 차오르고 튀어오르는 과정 없이 결과만 보여 준다 */
+    .respected_tag::before {
+        transition: none;
+    }
+
+    .respected_icon.is_splash_ready .respected_drop.is_splashed {
+        transition: none;
     }
 }

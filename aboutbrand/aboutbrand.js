@@ -161,6 +161,17 @@
         if (!lenis || lenis.__aboutbrandLinked) return;
 
         lenis.on('scroll', ScrollTrigger.update);
+
+        // 이 페이지는 가로 탐색 때문에 세로로 소비하는 거리가 길다.
+        // 공용 설정(lerp 0.1 / wheelMultiplier 1)이면 한참 굴려야 넘어가서 뻑뻑하게 느껴진다.
+        // common.js 는 건드리지 않고, 이 페이지에 올라온 인스턴스의 값만 바꾼다.
+        if (lenis.options) {
+            // 낮을수록 여운이 길다 (더 미끄러짐)
+            lenis.options.lerp = 0.085;
+            // 휠 한 칸이 더 멀리 가서 덜 무겁다
+            lenis.options.wheelMultiplier = 1.25;
+        }
+
         lenis.__aboutbrandLinked = true;
     }
 
@@ -209,26 +220,19 @@
     ]);
 
     const MAX_BLUR = 3;
-    const MIN_DIM = 0.6;
+    const MIN_DIM = 0.5;
     // 화면 폭 대비. FOCUS_HOLD 까지는 완전히 선명하고, FOCUS_REACH 에서 가장 흐리다.
     const FOCUS_HOLD = 0.42;
     const FOCUS_REACH = 1.05;
 
-    // 화면 가운데 블록만 선명하게. main 의 history 텍스트 흐림과 같은 방식.
-    function updateFocus() {
-        const width = screenWidth();
-        const centerLine = width / 2;
-
-        yearBlockPairs.forEach(([block, twin]) => {
-            const rect = block.getBoundingClientRect();
-
-            if (!rect.width) return;
-
-            const distance = Math.abs(rect.left + rect.width / 2 - centerLine) / width;
-            const ratio = (distance - FOCUS_HOLD) / (FOCUS_REACH - FOCUS_HOLD);
-            const eased = smooth(Math.min(1, Math.max(0, ratio)));
-            const blur = (eased * MAX_BLUR).toFixed(2) + 'px';
-            const dim = (1 - eased * (1 - MIN_DIM)).toFixed(3);
+    // 블록별 "지금 사진이 얼마나 가까이 있는가"(0~1) 를 받아 선명도로 옮긴다.
+    // 1 이면 완전히 선명(투명도 100%), 0 이면 가장 흐리고 옅다(투명도 50%).
+    function applyFocus(nearness) {
+        yearBlockPairs.forEach(([block, twin], index) => {
+            const near = Math.min(1, Math.max(0, nearness[index] || 0));
+            const away = 1 - near;
+            const blur = (away * MAX_BLUR).toFixed(2) + 'px';
+            const dim = (1 - away * (1 - MIN_DIM)).toFixed(3);
 
             [block, twin].forEach((target) => {
                 if (!target) return;
@@ -237,6 +241,29 @@
                 target.style.setProperty('--year_dim', dim);
             });
         });
+    }
+
+    // 폴백(가로 탐색이 아닌 네이티브 스크롤)일 때 쓰는 기준.
+    // 이때는 사진이 움직이지 않으므로 각 블록의 img_box 가 화면 가운데에
+    // 얼마나 가까운지로 판단한다.
+    function updateFocus() {
+        // 가로 탐색 중에는 사진 위치가 기준이므로 여기서 덮어쓰지 않는다
+        if (isPinned && photoSlots.length > 1) return;
+
+        const width = screenWidth();
+        const centerLine = width / 2;
+
+        applyFocus(yearBlockPairs.map(([block]) => {
+            const focusEl = block.querySelector('.img_box') || block;
+            const rect = focusEl.getBoundingClientRect();
+
+            if (!rect.width) return 1;
+
+            const distance = Math.abs(rect.left + rect.width / 2 - centerLine) / width;
+            const ratio = (distance - FOCUS_HOLD) / (FOCUS_REACH - FOCUS_HOLD);
+
+            return 1 - smooth(Math.min(1, Math.max(0, ratio)));
+        }));
     }
 
     const lerp = (from, to, ratio) => from + (to - from) * ratio;
@@ -263,11 +290,16 @@
                 x: (rect.left - hostRect.left) / scale,
                 y: (rect.top - hostRect.top) / scale,
                 w: rect.width / scale,
-                h: rect.height / scale
+                h: rect.height / scale,
+                // 이 자리가 어느 연혁 블록의 것인지 (사진이 닿으면 그 블록이 선명해진다)
+                block: yearBlocks.indexOf(box.closest('.year_block'))
             };
 
-            // 이 상자의 가운데가 화면 가운데에 닿는 시점
-            const centerOnTrack = rect.left + rect.width / 2 - trackRect.left;
+            // 멈춰 서는 시점은 사진 상자가 아니라 글자까지 포함한
+            // 블록 전체가 화면 가운데에 왔을 때로 잡는다.
+            // (사진만 가운데에 두면 글자가 왼쪽으로 쏠려 보인다)
+            const blockRect = (box.closest('.year_block') || box).getBoundingClientRect();
+            const centerOnTrack = blockRect.left + blockRect.width / 2 - trackRect.left;
 
             slot.at = distance > 0
                 ? Math.min(1, Math.max(0, (centerOnTrack - centerLine) / distance))
@@ -319,6 +351,15 @@
             else if (layerIndex === index + 1) layer.style.opacity = String(eased);
             else layer.style.opacity = '0';
         });
+
+        // 사진이 떠나온 자리와 다가가는 자리의 블록만 밝다.
+        // 사진이 붙어 있는 쪽이 100%, 완전히 멀어진 나머지는 50%.
+        const nearness = yearBlockPairs.map(() => 0);
+
+        if (from.block >= 0) nearness[from.block] = 1 - eased;
+        if (to.block >= 0) nearness[to.block] = eased;
+
+        applyFocus(nearness);
     }
 
     function resetPhoto() {
@@ -341,15 +382,78 @@
     // 화면이 완전히 넘어간 뒤에야 세로 스크롤로 풀린다.
     const holdDistance = () => screenHeight();
 
+    // 사진이 각 img_box 자리에 닿을 때마다 한 번씩 멈춰 서는 거리.
+    // 이만큼은 스크롤을 해도 트랙이 움직이지 않아서, 한 번 걸렸다가
+    // 다시 스크롤하면 다음 자리로 넘어간다.
+    const dwellDistance = () => Math.round(screenHeight() * 0.4);
+
+    // 멈춰 설 지점(트랙 이동 거리 기준). 이미 자리에 있는 첫 칸(0)은 뺀다.
+    function dwellStops(distance) {
+        return photoSlots
+            .map((slot) => slot.at * distance)
+            .filter((position) => position > 1)
+            .sort((a, b) => a - b);
+    }
+
+    // 멈춰 서는 구간을 포함한 전체 스크롤 길이
+    function getTotalDistance() {
+        const distance = getScrollDistance();
+
+        return distance + dwellStops(distance).length * dwellDistance() + holdDistance();
+    }
+
+    // 멈춤 지점을 오갈 때 속도를 어느 정도까지 죽일지.
+    // 1 이면 완전히 섰다가 출발해 툭툭 끊기고, 0 이면 등속이라 그냥 지나친다.
+    // 조금 남겨 두어야 구간 초입에서 "안 움직인다" 는 느낌이 나지 않는다.
+    const EASE_MIX = 0.85;
+
+    // 구간 안에서는 천천히 들어와 천천히 빠져나간다.
+    // 멈춤 구간의 속도(0)와 이어져서 끊기는 느낌이 없다.
+    const easeRun = (ratio) => ratio * (1 - EASE_MIX) + smooth(ratio) * EASE_MIX;
+
+    // 스크롤한 거리(멈춤 포함) -> 트랙이 실제로 움직인 거리.
+    // 멈춤 지점마다 dwell 만큼 스크롤을 먹고 트랙은 제자리에 있는다.
+    function movedByScroll(scrolled, distance) {
+        const dwell = dwellDistance();
+        const stops = dwellStops(distance);
+        // 마지막 목적지(트랙 끝)에는 멈춤을 두지 않는다
+        const targets = [...stops, distance];
+        let moved = 0;
+        let used = 0;
+
+        for (let index = 0; index < targets.length; index++) {
+            const run = targets[index] - moved;
+
+            if (run > 0) {
+                if (scrolled - used < run) {
+                    return moved + run * easeRun((scrolled - used) / run);
+                }
+
+                used += run;
+                moved = targets[index];
+            }
+
+            if (index === targets.length - 1) break;
+
+            if (scrolled - used < dwell) return moved;
+
+            used += dwell;
+        }
+
+        return Math.min(distance, moved);
+    }
+
     // 스크럽으로 부드럽게 만든 값을 받아 쓰기 위한 대리 객체
     const scrollProxy = { progress: 0 };
 
     function renderHorizontal() {
         const distance = getScrollDistance();
-        const total = distance + holdDistance();
-        // 붙잡아 두는 구간을 뺀, 실제로 가로로 움직이는 진행도
+        const total = getTotalDistance();
+        // 끝에서 붙잡아 두는 구간을 뺀, 가로로 쓸 수 있는 스크롤 거리
+        const usable = Math.max(0, total - holdDistance());
+        const scrolled = Math.min(usable, scrollProxy.progress * total);
         const moved = distance > 0
-            ? Math.min(1, scrollProxy.progress * total / distance)
+            ? Math.min(1, movedByScroll(scrolled, distance) / distance)
             : 0;
 
         gsap.set(stage, { x: -distance * moved });
@@ -374,10 +478,12 @@
             scrollTrigger: {
                 trigger: section,
                 start: 'top top',
-                // 가로로 밀 거리 + 붙잡아 두는 거리만큼 세로 스크롤을 소비시킨다
-                end: () => '+=' + (getScrollDistance() + holdDistance()),
+                // 가로로 밀 거리 + 자리마다 멈추는 거리 + 끝에서 붙잡아 두는 거리
+                end: () => '+=' + getTotalDistance(),
                 pin: true,
-                scrub: 1,
+                // lenis 가 이미 스크롤을 부드럽게 만들어 주므로 scrub 까지 길게 잡으면
+                // 두 번 뭉개져서 손끝을 따라오지 않는 느낌이 난다
+                scrub: 0.5,
                 anticipatePin: 1,
                 invalidateOnRefresh: true,
                 // 자리 계산은 refresh 시점의 실제 크기로 다시 한다
@@ -490,4 +596,287 @@
     }
 
     syncMode();
+})();
+
+
+/* ---------------------------------------------------------------------------
+   vision - 4 keywords 흩어지기
+
+   원 네 개가 한가운데 겹쳐 있다가 스크롤을 내리면 제자리로 흩어지고,
+   흩어지는 동안 원 안의 글자가 왼쪽부터 차례로 나타난다.
+   원이 다 펼쳐진 뒤에 아래 화살표, 마지막으로 문구가 이어서 나타난다.
+
+   흩어진 뒤의 모습이 CSS 의 기본 배치라, GSAP 이 없거나 모션 최소화 설정이면
+   아무것도 하지 않고 처음부터 흩어진 상태로 보인다.
+--------------------------------------------------------------------------- */
+
+(() => {
+    const section = document.querySelector('.vision_section');
+    const list = section?.querySelector('.vision_circles');
+
+    if (!section || !list) return;
+
+    const circles = [...list.querySelectorAll('.vision_circle')];
+    const names = circles.map((circle) => circle.querySelector('.vision_circle_name'));
+    const arrow = section.querySelector('.vision_arrow');
+    const statement = section.querySelector('.vision_statement');
+
+    if (!circles.length) return;
+
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    const canUseGsap = () => typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined';
+    const shouldAnimate = () => canUseGsap() && !reducedMotionQuery.matches;
+
+    const clamp = (value) => Math.min(1, Math.max(0, value));
+    const smooth = (ratio) => ratio * ratio * (3 - 2 * ratio);
+
+    // 전체 진행도(0~1) 안에서 각 단계가 차지하는 구간.
+    // 원 흩어짐 -> 원 안 글자 -> 화살표 -> 문구 순으로 이어진다.
+    const phase = (progress, start, span) => smooth(clamp((progress - start) / span));
+
+    // 원이 다 흩어지는 시점
+    const SPREAD_SPAN = 0.5;
+    // 원 안 글자. 흩어지는 도중부터 왼쪽 원부터 차례로
+    const NAME_START = 0.3;
+    const NAME_SPAN = 0.25;
+    const NAME_STEP = 0.05;
+    // 원이 다 펼쳐진 뒤 화살표, 그다음 문구
+    const ARROW_START = 0.68;
+    const ARROW_SPAN = 0.16;
+    const STATEMENT_START = 0.8;
+    const STATEMENT_SPAN = 0.2;
+    // 모여 있을 때 살짝 작게 시작해 흩어지면서 제 크기가 된다
+    const GATHER_SCALE = 0.94;
+    // 화살표·문구는 아래에서 살짝 올라오며 나타난다
+    const RISE_PX = 16;
+
+    let slots = [];
+    let tween = null;
+
+    // 모였을 때 각 원이 이동해야 할 거리. transform 의 영향을 받지 않는
+    // offsetLeft / offsetTop 으로 재서 다시 계산해도 값이 밀리지 않게 한다.
+    // (360px 에서는 2 x 2 로 접히므로 세로 거리도 함께 본다)
+    function measure() {
+        let minX = Infinity;
+        let maxX = -Infinity;
+        let minY = Infinity;
+        let maxY = -Infinity;
+
+        circles.forEach((circle) => {
+            minX = Math.min(minX, circle.offsetLeft);
+            maxX = Math.max(maxX, circle.offsetLeft + circle.offsetWidth);
+            minY = Math.min(minY, circle.offsetTop);
+            maxY = Math.max(maxY, circle.offsetTop + circle.offsetHeight);
+        });
+
+        const centerX = (minX + maxX) / 2;
+        const centerY = (minY + maxY) / 2;
+
+        slots = circles.map((circle) => ({
+            x: centerX - (circle.offsetLeft + circle.offsetWidth / 2),
+            y: centerY - (circle.offsetTop + circle.offsetHeight / 2)
+        }));
+    }
+
+    // progress 0 = 한가운데 겹침, 1 = 제자리
+    const scrollProxy = { progress: 0 };
+
+    function render() {
+        const progress = scrollProxy.progress;
+        const spread = phase(progress, 0, SPREAD_SPAN);
+        const gathered = 1 - spread;
+
+        circles.forEach((circle, index) => {
+            const slot = slots[index];
+
+            if (!slot) return;
+
+            gsap.set(circle, {
+                x: slot.x * gathered,
+                y: slot.y * gathered,
+                scale: GATHER_SCALE + (1 - GATHER_SCALE) * spread
+            });
+        });
+
+        names.forEach((name, index) => {
+            if (!name) return;
+
+            gsap.set(name, {
+                opacity: phase(progress, NAME_START + index * NAME_STEP, NAME_SPAN)
+            });
+        });
+
+        // 원이 다 펼쳐진 다음 화살표, 마지막으로 문구
+        [
+            [arrow, ARROW_START, ARROW_SPAN],
+            [statement, STATEMENT_START, STATEMENT_SPAN]
+        ].forEach(([target, start, span]) => {
+            if (!target) return;
+
+            const shown = phase(progress, start, span);
+
+            gsap.set(target, { opacity: shown, y: RISE_PX * (1 - shown) });
+        });
+    }
+
+    function build() {
+        if (tween) return;
+
+        measure();
+
+        tween = gsap.to(scrollProxy, {
+            progress: 1,
+            ease: 'none',
+            onUpdate: render,
+            scrollTrigger: {
+                trigger: section,
+                // 모여 있는 원이 화면 아래에 들어온 뒤부터 흩어지기 시작한다
+                start: 'top 70%',
+                // 원 -> 글자 -> 화살표 -> 문구 네 단계가 이어지도록.
+                // 마지막 문구까지 화면 안에서 끝나는 길이로 잡았다
+                end: () => '+=' + Math.round(document.documentElement.clientHeight * 0.75),
+                scrub: 1,
+                invalidateOnRefresh: true,
+                // 창 크기가 바뀌면 흩어질 거리도 달라진다.
+                // 재는 동안에는 transform 을 지워 원래 배치에서 값을 읽는다.
+                onRefreshInit: () => {
+                    gsap.set(circles, { clearProps: 'transform' });
+                    measure();
+                },
+                onRefresh: render
+            }
+        });
+
+        render();
+    }
+
+    function destroy() {
+        if (!tween) return;
+
+        tween.scrollTrigger?.kill();
+        tween.kill();
+        tween = null;
+
+        gsap.set(circles, { clearProps: 'transform' });
+        [...names, arrow, statement].forEach((target) => {
+            if (target) gsap.set(target, { clearProps: 'opacity,transform' });
+        });
+    }
+
+    function syncMode() {
+        if (shouldAnimate()) build();
+        else destroy();
+    }
+
+    reducedMotionQuery.addEventListener('change', syncMode);
+
+    window.addEventListener('load', syncMode);
+
+    // 창 크기 변화는 ScrollTrigger 가 스스로 refresh 하면서
+    // onRefreshInit 에서 거리를 다시 재므로 따로 듣지 않는다.
+    syncMode();
+})();
+
+
+/* ---------------------------------------------------------------------------
+   respected company - 강조 단어 칠하기 + 태그 물결 채우기
+
+   1) respected / competitiveness 가 화면 세로 가운데에 닿으면
+      흰 글씨가 왼쪽부터 초록으로 칠해진다.
+   2) Future Value / Principle / Competitiveness 태그는 화면에 들어오면
+      아래에서 물결이 차오르며 초록으로 바뀐다.
+
+   둘 다 모습은 CSS 가 그리고 여기서는 "닿았는가" 만 판단한다. 한 번만 재생한다.
+--------------------------------------------------------------------------- */
+
+(() => {
+    const section = document.querySelector('.respected_section');
+
+    if (!section) return;
+
+    const points = [...section.querySelectorAll('.respected_point')];
+    const tags = [...section.querySelectorAll('.respected_tag')];
+
+    if (!points.length && !tags.length) return;
+
+    const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // 관찰자가 없거나 모션 최소화 설정이면 과정 없이 결과만 보여 준다.
+    // (강조 단어는 CSS 기본값이 이미 초록이라 그대로 두면 된다)
+    if (!('IntersectionObserver' in window) || isReduced) {
+        tags.forEach((tag) => tag.classList.add('is_filled'));
+        // 물방울은 .is_splash_ready 를 안 붙이면 처음부터 제자리에 보인다
+        return;
+    }
+
+    // 여러 개가 함께 걸리므로 왼쪽부터 조금씩 늦게 재생한다
+    function revealInOrder(items, stepMs, doneClass, observerOptions) {
+        if (!items.length) return;
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+
+                observer.unobserve(entry.target);
+
+                const order = Math.max(0, items.indexOf(entry.target));
+
+                window.setTimeout(() => {
+                    entry.target.classList.add(doneClass);
+                }, order * stepMs);
+            });
+        }, observerOptions);
+
+        items.forEach((item) => observer.observe(item));
+    }
+
+    section.classList.add('is_paint_ready');
+
+    // 강조 단어: 화면 가운데 10% 띠에 들어왔을 때.
+    // (정확히 -50% 로 잡으면 관찰 상자 높이가 0 이라 글자가 선에 닿기만 하고
+    //  겹치는 넓이가 없어 걸리지 않는 경우가 있다)
+    revealInOrder(points, 180, 'is_painted', { rootMargin: '-45% 0px -45% 0px' });
+
+    // RESPECTED COMPANY 글자가 화면 가운데에 오면
+    // 물방울이 하나씩 튀어오르고, 잠시 뒤 아래 태그가 차례로 차오른다.
+    // 지켜보는 대상(글자)과 움직이는 대상이 달라 따로 처리한다.
+    const title = section.querySelector('.respected_title');
+    const icon = section.querySelector('.respected_icon');
+    const drops = icon ? [...icon.querySelectorAll('.respected_drop')] : [];
+
+    // 물방울끼리의 간격
+    const DROP_STEP_MS = 220;
+    // 물방울이 다 튄 뒤 태그가 차오르기까지 기다리는 시간
+    const TAG_DELAY_MS = 1000;
+    // 태그끼리의 간격
+    const TAG_STEP_MS = 160;
+
+    function addLater(items, stepMs, doneClass, delayMs) {
+        items.forEach((item, index) => {
+            window.setTimeout(() => item.classList.add(doneClass), delayMs + index * stepMs);
+        });
+    }
+
+    if (title && icon && drops.length) {
+        icon.classList.add('is_splash_ready');
+
+        const splashObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+
+                splashObserver.disconnect();
+
+                addLater(drops, DROP_STEP_MS, 'is_splashed', 0);
+                // 마지막 물방울이 튄 뒤부터 세어야 "1초 뒤" 가 된다
+                addLater(tags, TAG_STEP_MS, 'is_filled',
+                    (drops.length - 1) * DROP_STEP_MS + TAG_DELAY_MS);
+            });
+        }, { rootMargin: '-45% 0px -45% 0px' });
+
+        splashObserver.observe(title);
+    } else {
+        // 물방울을 못 찾으면 태그만이라도 제 스스로 차오르게 둔다
+        revealInOrder(tags, TAG_STEP_MS, 'is_filled', { rootMargin: '0px 0px -20% 0px' });
+    }
 })();
