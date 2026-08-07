@@ -539,7 +539,12 @@ section[id] {
   max-width: none;
 }
 
-/* 히어로 일러스트는 정적인 장식 요소로 유지한다. */
+.hero_visual [data-hero-layer] {
+  will-change: transform;
+}
+
+/* 부유 / 시차 움직임은 js 가 매 프레임 transform 으로 얹으므로 여기에는 전환을 걸지 않음.
+   transition 이 있으면 프레임마다 목표가 바뀌어 뭉개짐 */
 .hero_shape {
   height: auto;
   aspect-ratio: 1354.06 / 1708.24;
@@ -1052,6 +1057,36 @@ section[id] {
   font-size: clamp(2.25rem, 3.6vw, 4rem);
   letter-spacing: -0.02em;
   text-transform: uppercase;
+  /* 제목 글자 폭까지만 차지해야 hover 판정과 형광펜 길이가 글씨에 맞음.
+     글줄이 왼쪽 정렬이라 보이는 위치는 그대로임 */
+  align-self: flex-start;
+  position: relative;
+  /* 쌓임 맥락을 끊어 둬야 z-index: -1 인 형광펜이 제목 뒤에만 깔리고 바깥 배경까지 뚫고 내려가지 않음 */
+  isolation: isolate;
+}
+
+/* 형광펜 하이라이트: hover 하면 왼쪽 끝을 축으로 오른쪽으로 늘어나고,
+   hover 를 풀면 같은 축으로 되감겨 오른쪽에서 왼쪽으로 사라짐 */
+.history_item h3::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0.1em -0.12em 0.08em;
+  background: var(--kooksoondang_green);
+  opacity: 0.5;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.history_item h3:hover::before {
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .history_item h3::before {
+    transition: none;
+  }
 }
 
 .history_text {

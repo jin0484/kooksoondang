@@ -354,9 +354,29 @@
     const damping = 15;
     const restEpsilon = 0.08;
 
+    /* 던지기와 별개로 늘 살아 있는 움직임(부유 / 시차 / 오른쪽 진입 반응)의 층별 세기.
+       float 은 위아래 진폭(px), period 는 한 번 오르내리는 데 걸리는 초, phase 는 층끼리 어긋나게 하는 시작점,
+       depth 는 커서를 따라 밀리는 최대 거리(px) 라 값이 클수록 앞에 있는 것처럼 보임,
+       spread 는 오른쪽 영역 진입 시 캐릭터에서 멀어지는 거리(px), lift 는 캐릭터가 떠오르는 거리(px).
+       같은 이름을 쓴 요소는 값도 위상도 같아 캐릭터 4 장처럼 겹쳐 둔 것도 어긋나지 않음 */
+    const heroLayers = {
+        cup: { float: 8, period: 7.4, phase: 0, depth: 10, spread: 5 },
+        character: { float: 6, period: 6.6, phase: 1.9, depth: 6, spread: 0, lift: 4 },
+        pet: { float: 12, period: 8.4, phase: 3.4, depth: 16, spread: 7 },
+        bottle: { float: 16, period: 6.2, phase: 0.8, depth: 22, spread: 8 },
+        bowl: { float: 10, period: 9, phase: 4.6, depth: 26, spread: 6 }
+    };
+
+    // 가로로 이 지점을 넘어가면 "오른쪽 영역" 으로 봄
+    const rightZone = 0.55;
+    // 목표값을 따라가는 속도. 프레임 수와 상관없이 같은 속도가 되도록 지수 보간에 씀
+    const followSpeed = 4.5;
+
     const items = [];
+    const ambients = [];
     let animationFrame = 0;
     let lastTime = 0;
+    let clock = 0;
 
     const clamp = (value, limit) => Math.min(Math.max(value, -limit), limit);
     const isEnabled = () => hoverQuery.matches && !reducedMotionQuery.matches;
@@ -370,6 +390,19 @@
         item.base = base && base !== 'none' ? `${base} ` : '';
     }
 
+    // 던진 흔들림과 상시 움직임을 한 자리에서 합쳐야 둘이 서로 transform 을 덮어쓰지 않음
+    function render(item) {
+        const x = item.x + item.ambientX;
+        const y = item.y + item.ambientY;
+
+        if (!x && !y && !item.rotation) {
+            item.element.style.transform = '';
+            return;
+        }
+
+        item.element.style.transform = `${item.base}translate(${x.toFixed(2)}px, ${y.toFixed(2)}px) rotate(${item.rotation.toFixed(2)}deg)`;
+    }
+
     function rest(item) {
         item.awake = false;
         item.x = 0;
@@ -378,7 +411,59 @@
         item.velocityX = 0;
         item.velocityY = 0;
         item.velocityRotation = 0;
-        item.element.style.transform = '';
+        render(item);
+    }
+
+    // svg 는 그림보다 훨씬 큰 상자를 쓰므로 실제 도형(path)의 중심을 봐야 벌어질 방향이 맞음
+    function centerOf(element) {
+        const target = element.querySelector('path') || element;
+        const bounds = target.getBoundingClientRect();
+
+        return { x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 };
+    }
+
+    // 캐릭터를 기준으로 각 도형이 어느 쪽으로 물러날지 미리 재 둠
+    function measureSpread(ambient) {
+        const anchor = ambient.items.find((item) => item.layer.lift);
+        const origin = anchor ? centerOf(anchor.element) : null;
+
+        ambient.items.forEach((item) => {
+            item.spreadX = 0;
+            item.spreadY = 0;
+
+            if (!origin || !item.layer.spread) return;
+
+            const center = centerOf(item.element);
+            const offsetX = center.x - origin.x;
+            const offsetY = center.y - origin.y;
+            const distance = Math.hypot(offsetX, offsetY) || 1;
+
+            item.spreadX = (offsetX / distance) * item.layer.spread;
+            item.spreadY = (offsetY / distance) * item.layer.spread;
+        });
+    }
+
+    function stepAmbient(ambient, delta) {
+        // 커서를 따라가는 값과 오른쪽 반응은 목표를 향해 서서히 붙어야 뚝뚝 끊기지 않음
+        const follow = 1 - Math.exp(-followSpeed * delta);
+
+        ambient.x += (ambient.targetX - ambient.x) * follow;
+        ambient.y += (ambient.targetY - ambient.y) * follow;
+        ambient.right += (ambient.targetRight - ambient.right) * follow;
+
+        ambient.items.forEach((item) => {
+            const layer = item.layer;
+            const wave = (clock / layer.period) * Math.PI * 2 + layer.phase;
+
+            // 가로는 세로보다 폭이 좁고 주기도 어긋나야 같은 자리를 왕복하지 않고 떠다니는 것처럼 보임
+            item.ambientX = Math.sin(wave * 0.73) * layer.float * 0.5
+                - ambient.x * layer.depth
+                + item.spreadX * ambient.right;
+            item.ambientY = Math.sin(wave) * layer.float
+                - ambient.y * layer.depth
+                + item.spreadY * ambient.right
+                - (layer.lift || 0) * ambient.right;
+        });
     }
 
     function step(time) {
@@ -386,30 +471,55 @@
 
         const delta = lastTime ? Math.min((time - lastTime) / 1000, 0.04) : 1 / 60;
         lastTime = time;
+        clock += delta;
 
         let awakeCount = 0;
 
-        items.forEach((item) => {
-            if (!item.awake) return;
+        ambients.forEach((ambient) => {
+            const enabled = isEnabled() && ambient.visible;
 
-            item.velocityX += (-stiffness * item.x - damping * item.velocityX) * delta;
-            item.velocityY += (-stiffness * item.y - damping * item.velocityY) * delta;
-            item.velocityRotation += (-stiffness * item.rotation - damping * item.velocityRotation) * delta;
-            item.x += item.velocityX * delta;
-            item.y += item.velocityY * delta;
-            item.rotation += item.velocityRotation * delta;
+            if (!enabled) {
+                // 꺼진 첫 프레임에만 제자리로 돌려 놓고 손을 뗌
+                if (!ambient.running) return;
 
-            const settled = Math.abs(item.x) < restEpsilon && Math.abs(item.velocityX) < restEpsilon
-                && Math.abs(item.y) < restEpsilon && Math.abs(item.velocityY) < restEpsilon
-                && Math.abs(item.rotation) < restEpsilon && Math.abs(item.velocityRotation) < restEpsilon;
-
-            if (settled) {
-                rest(item);
+                ambient.running = false;
+                ambient.items.forEach((item) => {
+                    item.ambientX = 0;
+                    item.ambientY = 0;
+                });
+                awakeCount += 1;
                 return;
             }
 
+            ambient.running = true;
             awakeCount += 1;
-            item.element.style.transform = `${item.base}translate(${item.x.toFixed(2)}px, ${item.y.toFixed(2)}px) rotate(${item.rotation.toFixed(2)}deg)`;
+            stepAmbient(ambient, delta);
+        });
+
+        items.forEach((item) => {
+            if (item.awake) {
+                item.velocityX += (-stiffness * item.x - damping * item.velocityX) * delta;
+                item.velocityY += (-stiffness * item.y - damping * item.velocityY) * delta;
+                item.velocityRotation += (-stiffness * item.rotation - damping * item.velocityRotation) * delta;
+                item.x += item.velocityX * delta;
+                item.y += item.velocityY * delta;
+                item.rotation += item.velocityRotation * delta;
+
+                const settled = Math.abs(item.x) < restEpsilon && Math.abs(item.velocityX) < restEpsilon
+                    && Math.abs(item.y) < restEpsilon && Math.abs(item.velocityY) < restEpsilon
+                    && Math.abs(item.rotation) < restEpsilon && Math.abs(item.velocityRotation) < restEpsilon;
+
+                if (settled) {
+                    rest(item);
+                    return;
+                }
+
+                awakeCount += 1;
+                render(item);
+                return;
+            }
+
+            if (item.layer) render(item);
         });
 
         if (awakeCount) animationFrame = window.requestAnimationFrame(step);
@@ -432,11 +542,31 @@
         let velocityY = 0;
         let entered = null;
 
-        container.querySelectorAll('[data-momentum]').forEach((element) => {
+        const ambient = {
+            // 커서 위치는 히어로 구역 전체를 기준으로 재야 도형이 상자 밖으로 삐져나와 있어도 어색하지 않음
+            scope: container.closest('section') || container,
+            items: [],
+            targetX: 0,
+            targetY: 0,
+            targetRight: 0,
+            x: 0,
+            y: 0,
+            right: 0,
+            visible: false,
+            running: false
+        };
+
+        container.querySelectorAll('[data-momentum], [data-hero-layer]').forEach((element) => {
+            const layer = heroLayers[element.dataset.heroLayer] || null;
             const item = {
                 element,
                 base: '',
                 strength: Math.min(Math.max(Number.parseFloat(element.dataset.momentumStrength) || 1, 0.05), 1),
+                layer,
+                spreadX: 0,
+                spreadY: 0,
+                ambientX: 0,
+                ambientY: 0,
                 x: 0,
                 y: 0,
                 rotation: 0,
@@ -447,9 +577,49 @@
             };
 
             captureBase(item);
-            lookup.set(element, item);
+            if (element.hasAttribute('data-momentum')) lookup.set(element, item);
+            if (layer) ambient.items.push(item);
             items.push(item);
         });
+
+        if (ambient.items.length) {
+            ambients.push(ambient);
+
+            // 화면 밖에서까지 매 프레임 돌 이유가 없음
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    ambient.visible = entry.isIntersecting;
+                    if (entry.isIntersecting) measureSpread(ambient);
+                });
+                wake();
+            });
+
+            // 도형이 상자 밖으로 나가 있어 컨테이너 자체는 폭이 0 이 되기도 하므로 구역을 기준으로 봄
+            observer.observe(ambient.scope);
+            window.addEventListener('load', () => measureSpread(ambient));
+
+            ambient.scope.addEventListener('mousemove', (event) => {
+                const bounds = ambient.scope.getBoundingClientRect();
+
+                if (!bounds.width || !bounds.height) return;
+
+                const ratioX = (event.clientX - bounds.left) / bounds.width;
+                const ratioY = (event.clientY - bounds.top) / bounds.height;
+
+                // -1 ~ 1 로 바꿔 두면 층마다 depth 만 곱해서 이동량을 다르게 줄 수 있음
+                ambient.targetX = clamp(ratioX * 2 - 1, 1);
+                ambient.targetY = clamp(ratioY * 2 - 1, 1);
+                ambient.targetRight = ratioX > rightZone ? 1 : 0;
+                wake();
+            }, { passive: true });
+
+            ambient.scope.addEventListener('mouseleave', () => {
+                ambient.targetX = 0;
+                ambient.targetY = 0;
+                ambient.targetRight = 0;
+                wake();
+            });
+        }
 
         container.addEventListener('mousemove', (event) => {
             const elapsed = event.timeStamp - pointerTime;
@@ -515,6 +685,9 @@
                 rest(item);
                 captureBase(item);
             });
+            // 도형끼리의 위치 관계가 달라졌으니 벌어질 방향도 다시 잼
+            ambients.forEach(measureSpread);
+            wake();
         }, 150);
     }, { passive: true });
 })();
