@@ -110,6 +110,12 @@
   --page-max: 107.5rem;
   /* 1720px */
 
+  /* 페어링 카드 원본 크기(248x368)의 0.7배.
+     결과 모달이 .pairing 바깥에 있어 상속되려면 :root 에 있어야 함 */
+  --pairing-card-w: 173.6px;
+  --pairing-card-h: 257.6px;
+  --pairing-row-gap: 28px;
+
   /* ----- colors used only on this page ----- */
   --card-chestnut: #6D4C40;
   --card-draft: #3E9B4B;
@@ -158,9 +164,16 @@ main {
   max-width: none;
 }
 
-main>section {
+main>section,
+main>.scroll_stack>section {
   width: 100%;
   max-width: none;
+}
+
+/* 스크롤 스택(sticky stacking): 앞 섹션이 마지막 화면에서 고정되고 뒤 섹션이 그 위를 덮으며 올라옴.
+   sticky 범위를 이 래퍼로 묶어 둬야 페어링이 지나간 뒤 브랜드 스토리가 따라오지 않음 */
+.scroll_stack {
+  position: relative;
 }
 
 img {
@@ -207,6 +220,32 @@ section[id] {
 }
 
 /* ---------- shared pieces ---------- */
+
+/* 섹션 머리말 fade-up. data-head-reveal 을 붙이면 자식들이 위에서부터 차례로 떠오르고,
+   휠을 되감으면 역순으로 되감김. 칸 간격(--head-reveal-in/out)은 js 가 자식 수에 맞춰 채움.
+   부모에 이미 transform 이 걸린 경우(.pairing_head)가 있어 자식만 움직임 */
+[data-head-reveal].is_head_reveal_ready>* {
+  opacity: 0;
+  transform: translateY(18px);
+}
+
+/* 되감기(휠 업)용. 사라질 땐 조금 빠르게.
+   대기 상태가 한 프레임 그려진 뒤에 열어야 로드 직후 저절로 재생되지 않음 */
+[data-head-reveal].is_head_reveal_armed>* {
+  transition: opacity 420ms cubic-bezier(0.22, 1, 0.36, 1) var(--head-reveal-out, 0ms),
+    transform 420ms cubic-bezier(0.22, 1, 0.36, 1) var(--head-reveal-out, 0ms);
+}
+
+/* 나타날 때. 셀렉터가 한 칸 더 구체적이라 위 규칙을 덮음 */
+[data-head-reveal].is_head_reveal_armed.is_head_reveal_revealed>* {
+  transition: opacity 620ms cubic-bezier(0.22, 1, 0.36, 1) var(--head-reveal-in, 0ms),
+    transform 620ms cubic-bezier(0.22, 1, 0.36, 1) var(--head-reveal-in, 0ms);
+}
+
+[data-head-reveal].is_head_reveal_revealed>* {
+  opacity: 1;
+  transform: none;
+}
 
 .pill {
   display: inline-flex;
@@ -783,10 +822,19 @@ section[id] {
 
 .history {
   /* 섹션 상단 여백 = 물방울이 떨어지는 구간의 높이 */
-  --history-intro-rise: calc(clamp(3rem, 6vw, 6rem) + 400px);
+  --history-intro-rise: calc(clamp(3rem, 6vw, 6rem) + 900px);
   /* 고정 장식이 분리선 하단보다 위로 올라가는 거리 */
   --history-drip-rise: 385px;
-  position: relative;
+  /* 스크롤 스택: 아래끝이 화면 아래에 닿는 순간부터 고정되고, 그 위로 페어링이 덮으며 올라옴.
+     sticky 는 지정한 변 반대쪽으로 박스를 미므로 아래를 붙잡으려면 bottom 이 아니라 top 을 써야 함.
+     그래서 "화면 높이 - 섹션 높이" 만큼 음수 top 을 줌. 섹션 높이는 js 가 --history-sticky-height 로 넣어 줌.
+     끝의 뺄셈은 고정 시점을 늦추는 여유분. 0 이면 병 모프가 마지막 프레임에 닿기 전에 화면이 멈춤.
+     모프는 마지막 항목 중심이 화면 중앙(50vh)을 지날 때 끝나고,
+     여유 = (마지막 항목 중심~섹션 아래끝 거리) - 180px 로 화면 높이와 무관함.
+     그 거리가 가장 짧은 좁은 데스크톱에서 219px 라 약 40px 확보됨.
+     변수가 없으면(js 실패) top 이 극단적인 음수가 되어 고정이 걸리지 않고 기존 동작 그대로 흐름 */
+  position: sticky;
+  top: calc(100vh - var(--history-sticky-height, 99999px) - max(0px, 50vh - 180px));
   z-index: 0;
   isolation: isolate;
   background: linear-gradient(180deg, var(--makgeolli_White) 0%, var(--makgeolli_light3) 100%);
@@ -853,7 +901,7 @@ section[id] {
 }
 
 .history_deco_drop {
-  top: 62%;
+  top: 55%;
   width: clamp(2rem, 2.6vw, 3.375rem);
 }
 
@@ -1041,9 +1089,8 @@ section[id] {
 .pairing {
   /* 카드 아래로 어두운 배경을 더 끌고 내려가 흰 배경이 비치지 않게 함 */
   --pairing-tail: 14vh;
-  /* 카드 2줄 묶음의 실제 높이. 오른쪽 접시 그룹을 여기에 맞춰 세로 가운데 정렬함 */
-  --pairing-card-h: 257.6px;
-  --pairing-row-gap: 28px;
+  /* 카드 2줄 묶음의 실제 높이. 오른쪽 접시 그룹을 여기에 맞춰 세로 가운데 정렬함.
+     카드 크기 자체(--pairing-card-w/h, --pairing-row-gap)는 :root 에 있음 */
   --pairing-cards-h: calc(var(--pairing-card-h) * 2 + var(--pairing-row-gap));
   position: relative;
   height: calc(110vh + var(--pairing-tail));
@@ -1119,7 +1166,7 @@ section[id] {
   position: relative;
   left: 125px;
   display: grid;
-  grid-template-columns: repeat(5, 173.6px);
+  grid-template-columns: repeat(5, var(--pairing-card-w));
   column-gap: 20px;
   width: max-content;
   align-self: flex-start;
@@ -1143,7 +1190,7 @@ section[id] {
   flex-direction: column;
   align-items: stretch;
   gap: 8.4px;
-  width: 173.6px;
+  width: var(--pairing-card-w);
   height: var(--pairing-card-h);
   padding: 7px;
   border-radius: 0.35rem;
@@ -1643,9 +1690,10 @@ section[id] {
   cursor: pointer;
 }
 
-/* 고른 카드 두 장. 원본(248x368)을 그대로 복제해 축소만 함 */
+/* 고른 카드 두 장을 그대로 복제해 축소만 함.
+   카드 실물이 248x368 의 0.7배(173.6x257.6)라 배율도 0.62/0.7 로 환산해 둠 */
 .pairing_result_cards {
-  --result-card-scale: 0.62;
+  --result-card-scale: 0.886;
   display: flex;
   justify-content: center;
   gap: 1.25rem;
@@ -1656,8 +1704,8 @@ section[id] {
    게임 쪽 hover 연출(컬러 카드 기울기·캐릭터 등장)이 따라오지 않음 */
 .pairing_result_card {
   flex: 0 0 auto;
-  width: calc(248px * var(--result-card-scale));
-  height: calc(368px * var(--result-card-scale));
+  width: calc(var(--pairing-card-w) * var(--result-card-scale));
+  height: calc(var(--pairing-card-h) * var(--result-card-scale));
   pointer-events: none;
 }
 

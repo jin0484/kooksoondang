@@ -35,7 +35,9 @@
     ];
     // 고정 장식(trans_05) 아래끝에 걸쳐 시작해 아래로 떨어짐
     const dripTailRise = -305;
-    const dropFallDistance = 120;
+    const dropFallDistance = 200;
+    // 원 프레임. 낙하 지점보다 살짝 아래에 두어 물방울이 튕겨 오르지 않고 이어서 내려앉음
+    const circleSettleDistance = 230;
     const petOffsetRange = { min: 134, viewportRatio: 0.0835, max: 160 };
     const morphScrollDuration = 1.12;
 
@@ -207,6 +209,7 @@
     function frameOffset(index) {
         if (index === 0) return dripTailRise;
         if (index === 1) return dropFallDistance;
+        if (index === introFrameCount) return circleSettleDistance;
         if (index === frameCount - 1) {
             return clamp(window.innerWidth * petOffsetRange.viewportRatio, petOffsetRange.min, petOffsetRange.max);
         }
@@ -1428,6 +1431,71 @@
     });
 
     character.addEventListener('mouseleave', stop);
+})();
+
+/* 스크롤 스택: 브랜드 스토리를 마지막 화면에서 고정시키려면 sticky top 에 음수 오프셋이 필요한데,
+   그 값이 섹션 높이에 걸려 있어 css 만으로는 못 씀. 높이를 재서 변수로 넘겨 줌 */
+(() => {
+    const history = document.querySelector('.scroll_stack > .history');
+
+    if (!history) return;
+
+    const syncHeight = () => {
+        history.style.setProperty('--history-sticky-height', `${history.offsetHeight}px`);
+    };
+
+    syncHeight();
+
+    // 이미지·폰트가 늦게 들어오면 높이가 크게 달라지므로 load 는 항상 확인.
+    // top 만 바뀌고 높이에는 영향이 없어서 되먹임이 생기지 않음
+    window.addEventListener('load', syncHeight);
+
+    if (typeof ResizeObserver === 'function') {
+        new ResizeObserver(syncHeight).observe(history);
+    } else {
+        window.addEventListener('resize', syncHeight, { passive: true });
+    }
+})();
+
+/* 섹션 머리말(data-head-reveal): 화면에 들어오면 타이틀 → 설명 순서로 fade-up.
+   휠을 되감으면 클래스가 떨어지면서 역순으로 되감김 */
+(() => {
+    const heads = [...document.querySelectorAll('[data-head-reveal]')];
+
+    if (!heads.length || typeof IntersectionObserver !== 'function') return;
+
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    // 모션을 끈 사용자에겐 대기 상태 자체를 씌우지 않아 처음부터 그대로 보임
+    if (reducedMotionQuery.matches) return;
+
+    // 이 비율만큼 보이면 나타나고, 그 아래로 떨어지면 되감김
+    const revealRatio = 0.6;
+    const revealStep = 130;
+
+    heads.forEach((head) => {
+        // 나타날 땐 위에서부터, 되감을 땐 아래에서부터. 자식이 몇 개든 정확히 역순이 됨
+        const items = [...head.children];
+
+        items.forEach((item, index) => {
+            item.style.setProperty('--head-reveal-in', `${index * revealStep}ms`);
+            item.style.setProperty('--head-reveal-out', `${(items.length - 1 - index) * revealStep}ms`);
+        });
+
+        head.classList.add('is_head_reveal_ready');
+    });
+
+    window.requestAnimationFrame(() => {
+        heads.forEach((head) => head.classList.add('is_head_reveal_armed'));
+    });
+
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            entry.target.classList.toggle('is_head_reveal_revealed', entry.intersectionRatio >= revealRatio);
+        });
+    }, { threshold: [0, revealRatio, 1] });
+
+    heads.forEach((head) => revealObserver.observe(head));
 })();
 
 /* 히어로 설명 문구: 왼쪽 → 오른쪽, 위 → 아래로 한 글자씩 타이핑되듯 나타남 */
