@@ -33,11 +33,13 @@
         { top: '#F29556', bottom: '#F29556' },
         { top: '#F29556', bottom: '#F29556' }
     ];
-    // 고정 장식(trans_05) 아래끝에 걸쳐 시작해 아래로 떨어짐
+    // 고정 장식(trans_05) 아래끝에 걸쳐 시작해 아래로 떨어짐.
+    // 낙하 종점은 화면 중앙(0). 잔·병 프레임과 마찬가지로 원 프레임도 중앙에 놓여야 해서,
+    // 물방울이 그보다 아래로 떨어지면 원이 될 때 위로 튕겨 오르게 됨
     const dripTailRise = -305;
-    const dropFallDistance = 200;
-    // 원 프레임. 낙하 지점보다 살짝 아래에 두어 물방울이 튕겨 오르지 않고 이어서 내려앉음
-    const circleSettleDistance = 230;
+    const dropFallDistance = 0;
+    // 원 프레임. 첫 항목이 화면 중앙에 올 때 원도 화면 중앙에 오도록 오프셋 없음
+    const circleSettleDistance = 0;
     const petOffsetRange = { min: 134, viewportRatio: 0.0835, max: 160 };
     // 키프레임 간격 배율. 1 을 넘기면 기준점이 전체 중간점에서 바깥으로 밀려서
     // 항목이 화면 중앙에 왔을 때 이미 다음 모양으로 넘어가 버림(원이 원으로 안 보임).
@@ -575,6 +577,128 @@
     window.addEventListener('resize', requestRender, { passive: true });
     window.addEventListener('load', requestRender);
     render();
+})();
+
+// 브랜드 스토리 일러스트 플립북.
+// 항목이 화면에 60% 이상 들어오면 두 장(brandstoryN <-> brandstoryN_1)을 번갈아 보여
+// 그림이 움직이는 것처럼 만들고, 40% 아래로 내려가면 첫 장으로 되돌리고 멈춤.
+// 켜는 기준과 끄는 기준을 벌려 둔 건 경계에 걸쳐 있을 때 깜빡이지 않게 하려는 것
+(() => {
+    const photos = [...document.querySelectorAll('.history_item .history_photo')];
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    if (!photos.length || reducedMotionQuery.matches) return;
+
+    const enterRatio = 0.6;
+    const exitRatio = 0.4;
+    const frameDuration = 420;
+
+    const flipbooks = photos
+        .map((photo) => {
+            const baseSource = photo.getAttribute('src');
+            const item = photo.closest('.history_item');
+
+            if (!baseSource || !item) return null;
+
+            return {
+                photo,
+                item,
+                baseSource,
+                // 두 번째 장은 확장자 앞에 _1 이 붙는 규칙
+                altSource: baseSource.replace(/(\.[a-z0-9]+)$/i, '_1$1'),
+                loader: null,
+                isLoaded: false,
+                isPlaying: false,
+                showsAltFrame: false
+            };
+        })
+        .filter(Boolean);
+
+    if (!flipbooks.length) return;
+
+    let timer = 0;
+    let animationFrame = 0;
+
+    const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+    function visibleRatio(element) {
+        const bounds = element.getBoundingClientRect();
+        const visible = Math.min(bounds.bottom, window.innerHeight) - Math.max(bounds.top, 0);
+        // 항목이 화면보다 크면 비율이 60% 에 닿지 못하므로 화면 높이로 한 번 더 눌러 줌
+        const reference = Math.min(bounds.height, window.innerHeight);
+
+        if (reference <= 0) return 0;
+
+        return clamp(visible / reference, 0, 1);
+    }
+
+    // 두 번째 장이 무거워서 처음 재생될 때 받아 둠. 받는 동안은 첫 장이 그대로 보임
+    function preload(flipbook) {
+        if (flipbook.loader) return;
+
+        flipbook.loader = new Image();
+        flipbook.loader.addEventListener('load', () => {
+            flipbook.isLoaded = true;
+        }, { once: true });
+        flipbook.loader.src = flipbook.altSource;
+    }
+
+    function showFrame(flipbook, useAltFrame) {
+        if (flipbook.showsAltFrame === useAltFrame) return;
+
+        flipbook.showsAltFrame = useAltFrame;
+        flipbook.photo.src = useAltFrame ? flipbook.altSource : flipbook.baseSource;
+    }
+
+    function tick() {
+        flipbooks.forEach((flipbook) => {
+            if (!flipbook.isPlaying || !flipbook.isLoaded) return;
+
+            showFrame(flipbook, !flipbook.showsAltFrame);
+        });
+    }
+
+    function syncTimer() {
+        const shouldRun = flipbooks.some((flipbook) => flipbook.isPlaying);
+
+        if (shouldRun && !timer) timer = window.setInterval(tick, frameDuration);
+        else if (!shouldRun && timer) {
+            window.clearInterval(timer);
+            timer = 0;
+        }
+    }
+
+    function update() {
+        animationFrame = 0;
+
+        flipbooks.forEach((flipbook) => {
+            const ratio = visibleRatio(flipbook.item);
+
+            if (!flipbook.isPlaying && ratio >= enterRatio) {
+                flipbook.isPlaying = true;
+                preload(flipbook);
+                return;
+            }
+
+            if (flipbook.isPlaying && ratio < exitRatio) {
+                flipbook.isPlaying = false;
+                showFrame(flipbook, false);
+            }
+        });
+
+        syncTimer();
+    }
+
+    function requestUpdate() {
+        if (animationFrame) return;
+
+        animationFrame = window.requestAnimationFrame(update);
+    }
+
+    window.addEventListener('scroll', requestUpdate, { passive: true });
+    window.addEventListener('resize', requestUpdate, { passive: true });
+    window.addEventListener('load', requestUpdate);
+    update();
 })();
 
 (() => {
