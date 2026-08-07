@@ -321,6 +321,18 @@ section[id] {
 }
 
 .hero_left {
+  /* 히어로 등장 순서를 한곳에서 잡음: 제목 채우기 → 컵 드로잉 → 설명 문구.
+     제목과 설명이 서로 다른 묶음에 있어서 공통 조상인 여기에 둬야 둘 다 물려받음 */
+  --hero-pour-delay: 150ms;
+  --hero-pour-duration: 1200ms;
+  /* 컵은 제목이 다 차오른 뒤 한 박자 쉬고 그려짐 */
+  --hero-cup-start: calc(var(--hero-pour-delay) + var(--hero-pour-duration) + 120ms);
+  --hero-cup-duration: 720ms;
+  /* 컵 마지막 획이 시작하는 시점(획 간격 0 / 460 / 610 / 740ms 중 마지막) */
+  --hero-cup-last-stroke: 740ms;
+  /* 컵 마지막 획까지 다 그려지는 시점 = 설명 문구가 시작하는 시점 */
+  --hero-intro-end: calc(var(--hero-cup-start) + var(--hero-cup-last-stroke) + var(--hero-cup-duration));
+
   position: relative;
   z-index: 1;
   display: flex;
@@ -331,12 +343,6 @@ section[id] {
 }
 
 .hero_title_wrap {
-  /* 제목 채우기와 컵 드로잉의 순서를 한곳에서 잡음.
-     컵은 제목이 다 차오른 뒤(--hero-pour-delay + --hero-pour-duration) 한 박자 쉬고 그려짐 */
-  --hero-pour-delay: 150ms;
-  --hero-pour-duration: 1200ms;
-  --hero-cup-start: calc(var(--hero-pour-delay) + var(--hero-pour-duration) + 120ms);
-
   position: relative;
 }
 
@@ -431,7 +437,7 @@ section[id] {
   opacity: 0;
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-  animation: hero_cup_draw 720ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: hero_cup_draw var(--hero-cup-duration) cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 /* 획 사이 간격(0 / 460 / 610 / 740ms)은 원래 리듬 그대로 두고 시작점만 뒤로 미룸 */
@@ -448,7 +454,7 @@ section[id] {
 }
 
 .hero_cup path:nth-child(4) {
-  animation-delay: calc(var(--hero-cup-start) + 740ms);
+  animation-delay: calc(var(--hero-cup-start) + var(--hero-cup-last-stroke));
 }
 
 @keyframes hero_cup_draw {
@@ -503,11 +509,12 @@ section[id] {
   transform: translateX(150px);
 }
 
+/* 제목 채우기와 컵 드로잉이 모두 끝난 뒤(--hero-intro-end)부터 글자가 차례로 들어옴 */
 .hero_desc.is_typing_running .hero_desc_char {
   opacity: 1;
   transform: none;
-  transition: opacity 700ms cubic-bezier(0.165, 0.84, 0.44, 1) var(--type-delay, 0ms),
-    transform 700ms cubic-bezier(0.165, 0.84, 0.44, 1) var(--type-delay, 0ms);
+  transition: opacity 700ms cubic-bezier(0.165, 0.84, 0.44, 1) calc(var(--hero-intro-end) + var(--type-delay, 0ms)),
+    transform 700ms cubic-bezier(0.165, 0.84, 0.44, 1) calc(var(--hero-intro-end) + var(--type-delay, 0ms));
 }
 
 .hero_actions {
@@ -1713,6 +1720,9 @@ section[id] {
    접시 그림과 같은 칸에 겹쳐 두고 plate.svg 를 마스크로 씌워 접시 모양 안에서만 색이 보이게 함.
    차오름/빠짐은 같은 height 트랜지션이라 클래스가 붙고 떨어지는 것만으로 양방향이 처리됨 */
 .pairing_plate_fill {
+  /* 물결 마루 높이. 비었을 때 이만큼 아래로 내려 접시 밖으로 빼야 하므로 한곳에서 관리 */
+  --plate-wave-crest: 0.375rem;
+
   grid-row: 1;
   grid-column: 1;
   position: relative;
@@ -1733,7 +1743,11 @@ section[id] {
   width: 200%;
   height: 0;
   background: var(--kooksoondang_orange);
-  transition: height 620ms cubic-bezier(0.4, 0, 0.2, 1);
+  /* 마루는 액체 위(bottom: 100%)에 붙어 있어서, 비었을 때 그대로 두면 접시 바닥에 걸쳐 보임.
+     마루 높이만큼 통째로 내려 접시 밖(overflow 로 잘리는 자리)에 세워 둠 */
+  transform: translateY(var(--plate-wave-crest));
+  transition: height 620ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 620ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* 액체 표면. 물결 무늬를 마스크로 써서 색은 CSS 토큰 그대로 씀 */
@@ -1743,7 +1757,7 @@ section[id] {
   left: 0;
   bottom: 100%;
   width: 100%;
-  height: 0.375rem;
+  height: var(--plate-wave-crest);
   background: var(--kooksoondang_orange);
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M0 10V5Q12.5 0 25 5T50 5T75 5T100 5V10Z' fill='%23000'/%3E%3C/svg%3E") repeat-x bottom / 25% 100%;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M0 10V5Q12.5 0 25 5T50 5T75 5T100 5V10Z' fill='%23000'/%3E%3C/svg%3E") repeat-x bottom / 25% 100%;
@@ -1751,6 +1765,7 @@ section[id] {
 
 .pairing_plate_slot.is_pairing_slot_filled .pairing_plate_wave {
   height: 100%;
+  transform: none;
 }
 
 /* 마스크 한 칸(25%)만큼 밀면 무늬가 그대로 반복돼 이음매가 보이지 않음 */
@@ -1805,7 +1820,8 @@ section[id] {
 
 .pairing_result_dialog {
   position: relative;
-  width: min(100%, 34rem);
+  /* 34rem + 100px. 점수 줄("Pairing Score: 50 /100")이 한 줄에 들어가도록 넓힘 */
+  width: min(100%, 40.25rem);
   padding: clamp(2rem, 5vw, 3.5rem);
   border-radius: 1.5rem;
   background: var(--makgeolli_White);
@@ -1856,7 +1872,7 @@ section[id] {
   transform-origin: top left;
   opacity: 1;
   box-shadow: none;
-  outline: 1px solid var(--kooksoondang_orange);
+  outline: 1px solid var(--bekseju_dark4);
   outline-offset: 0;
   border-radius: 0.5rem;
   transition: none;
@@ -1884,6 +1900,11 @@ section[id] {
 }
 
 .pairing_result_score strong {
+  /* 1 에서 최종 점수까지 세는 동안 자릿수가 늘어남. 이 줄은 가운데 정렬이라
+     폭을 미리 잡아 두지 않으면 숫자가 바뀔 때마다 양옆 문구가 밀림 */
+  min-width: 3ch;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
   color: var(--kooksoondang_orange);
   font-family: var(--font-Albert_Sans);
   font-size: clamp(2.75rem, 6vw, 4rem);
