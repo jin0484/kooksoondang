@@ -331,10 +331,21 @@ section[id] {
 }
 
 .hero_title_wrap {
+  /* 제목 채우기와 컵 드로잉의 순서를 한곳에서 잡음.
+     컵은 제목이 다 차오른 뒤(--hero-pour-delay + --hero-pour-duration) 한 박자 쉬고 그려짐 */
+  --hero-pour-delay: 150ms;
+  --hero-pour-duration: 1200ms;
+  --hero-cup-start: calc(var(--hero-pour-delay) + var(--hero-pour-duration) + 120ms);
+
   position: relative;
 }
 
 .hero_title {
+  /* .hero_left 폭은 고정인데 글자는 화면이 넓어지면 6rem 까지 커져서 nowrap 인 첫 줄이 박스 밖으로 나감.
+     배경은 박스 안까지만 칠해지므로 삐져나온 글자에 채우기 색이 닿지 않음.
+     가장 긴 줄에 박스를 맞춰 두면 어떤 화면 폭에서도 글자 전체가 칠해짐.
+     부모(.hero_title_wrap)는 여전히 .hero_left 폭을 따르므로 컵 위치는 그대로임 */
+  width: max-content;
   font: var(--PC-Banner_96R);
   letter-spacing: var(--PC-Banner_96R-letter-spacing);
   color: var(--bekseju_darker_cold);
@@ -359,6 +370,54 @@ section[id] {
   font-weight: 700;
 }
 
+/* 제목 채우기: 페이지에 들어올 때 한 번, 잔에 술이 차오르듯 아래에서 위로 색이 채워짐.
+   세 줄을 한 덩어리로 보이게 하려고 제목 전체에 배경 하나를 깔고 글자 모양으로 오려 냄.
+   배경 이미지를 글자 높이의 두 배로 잡아 위 절반(투명)에서 아래 절반(글자색)으로 밀어 올리는 방식.
+   경계의 얇은 주황 띠가 액체 표면 역할을 함.
+   재생이 끝나면 js 가 클래스를 떼어 평범하게 칠해진 글자로 되돌림 */
+@supports ((background-clip: text) or (-webkit-background-clip: text)) {
+  .hero_title.is_pour_ready {
+    background-image: linear-gradient(to top,
+        var(--bekseju_darker_cold) 0 49.4%,
+        var(--kooksoondang_orange) 49.4% 50%,
+        transparent 50%);
+    background-repeat: no-repeat;
+    background-size: 100% 200%;
+    background-position: 50% 0%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* 다른 곳에서 쓰는 (0.22, 1, 0.36, 1) 은 짧은 전환용이라 초반에 확 차오르고 끝을 기어감.
+     따르는 동작처럼 보이려면 처음에 흐르기 시작해 끝에서 잦아드는 완만한 곡선이어야 함 */
+  .hero_title.is_pour_running {
+    animation: hero_title_pour var(--hero-pour-duration) cubic-bezier(0.4, 0, 0.2, 1) var(--hero-pour-delay) forwards;
+  }
+}
+
+@keyframes hero_title_pour {
+  from {
+    background-position: 50% 0%;
+  }
+
+  to {
+    background-position: 50% 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .hero_title.is_pour_ready,
+  .hero_title.is_pour_running {
+    animation: none;
+    background-image: none;
+    color: var(--bekseju_darker_cold);
+    -webkit-text-fill-color: currentColor;
+  }
+}
+
 .hero_cup {
   position: absolute;
   display: block;
@@ -375,20 +434,21 @@ section[id] {
   animation: hero_cup_draw 720ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
+/* 획 사이 간격(0 / 460 / 610 / 740ms)은 원래 리듬 그대로 두고 시작점만 뒤로 미룸 */
 .hero_cup path:nth-child(1) {
-  animation-delay: 80ms;
+  animation-delay: var(--hero-cup-start);
 }
 
 .hero_cup path:nth-child(2) {
-  animation-delay: 540ms;
+  animation-delay: calc(var(--hero-cup-start) + 460ms);
 }
 
 .hero_cup path:nth-child(3) {
-  animation-delay: 690ms;
+  animation-delay: calc(var(--hero-cup-start) + 610ms);
 }
 
 .hero_cup path:nth-child(4) {
-  animation-delay: 820ms;
+  animation-delay: calc(var(--hero-cup-start) + 740ms);
 }
 
 @keyframes hero_cup_draw {
@@ -426,6 +486,28 @@ section[id] {
   font-size: clamp(1rem, 1.1vw, 1.25rem);
   line-height: 1.7;
   color: var(--bekseju_darker_cold);
+}
+
+/* 설명 문구 글자 등장: GreenSock SplitText 데모의 characters 설정을 그대로 옮김
+   (x 150px / opacity 0 / 0.7s / power4.out / 글자마다 일정 간격).
+   gsap 의 power4.out 은 quart out 이라 cubic-bezier(0.165, 0.84, 0.44, 1) 과 같은 곡선 */
+.hero_desc_word {
+  /* 글자를 inline-block 으로 만들면 단어 중간에서도 줄이 바뀌므로 단어를 한 겹 감쌈 */
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.hero_desc.is_typing_ready .hero_desc_char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateX(150px);
+}
+
+.hero_desc.is_typing_running .hero_desc_char {
+  opacity: 1;
+  transform: none;
+  transition: opacity 700ms cubic-bezier(0.165, 0.84, 0.44, 1) var(--type-delay, 0ms),
+    transform 700ms cubic-bezier(0.165, 0.84, 0.44, 1) var(--type-delay, 0ms);
 }
 
 .hero_actions {

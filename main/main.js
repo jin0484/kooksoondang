@@ -1728,6 +1728,46 @@
     heads.forEach((head) => revealObserver.observe(head));
 })();
 
+/* 히어로 제목: 페이지에 들어올 때(첫 진입·새로고침) 한 번만 잔이 차오르듯 색이 채워짐.
+   스크롤로 되돌아오거나 hover 해도 다시 재생되지 않음 */
+(() => {
+    const title = document.querySelector('.hero_title');
+
+    if (!title) return;
+
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const supportsTextClip = typeof CSS === 'object'
+        && typeof CSS.supports === 'function'
+        && (CSS.supports('background-clip', 'text') || CSS.supports('-webkit-background-clip', 'text'));
+
+    // 오려 내기를 못 하는 환경이거나 모션을 끈 사용자에겐 처음부터 칠해진 글자 그대로 둠
+    if (reducedMotionQuery.matches || !supportsTextClip) return;
+
+    const animationName = 'hero_title_pour';
+    const safetyDelay = 3000;
+    let safetyTimer = 0;
+
+    function finish() {
+        window.clearTimeout(safetyTimer);
+        title.removeEventListener('animationend', handleAnimationEnd);
+        title.classList.remove('is_pour_ready', 'is_pour_running');
+    }
+
+    function handleAnimationEnd(event) {
+        if (event.animationName !== animationName) return;
+
+        finish();
+    }
+
+    title.classList.add('is_pour_ready');
+    title.addEventListener('animationend', handleAnimationEnd);
+    // 애니메이션이 끝내 재생되지 않아도 글자가 투명한 채로 남지 않도록
+    safetyTimer = window.setTimeout(finish, safetyDelay);
+
+    // 대기 상태가 한 프레임 그려진 뒤라야 처음부터 재생됨
+    window.requestAnimationFrame(() => title.classList.add('is_pour_running'));
+})();
+
 /* 히어로 설명 문구: 왼쪽 → 오른쪽, 위 → 아래로 한 글자씩 타이핑되듯 나타남 */
 (() => {
     const desc = document.querySelector('.hero_desc');
@@ -1739,10 +1779,9 @@
     // 모션을 끈 사용자에겐 쪼개지 않고 그대로 둠
     if (reducedMotionQuery.matches) return;
 
+    // 원본(codepen xxmaNYj)은 stagger 0.04s. 이 문단은 글자가 137 자라 그대로 쓰면
+    // 6 초가 넘어가서 줄임. 슬라이드 인은 균일한 간격이라 문장부호 쉼은 두지 않음
     const charStep = 18;
-    // 타닥타닥 하는 불규칙한 리듬. 문장부호에서 손이 멈칫하는 만큼 쉬어 줌
-    const pauseAfter = { ',': 90, '.': 260, '!': 260, '?': 260 };
-    const linePause = 320;
 
     // <br> 로 줄을 나누고, 들여쓰기 때문에 생긴 공백은 브라우저가 렌더링하는 대로 하나로 접음
     const lines = [...desc.childNodes]
@@ -1761,20 +1800,28 @@
     let delay = 0;
 
     lines.forEach((line, lineIndex) => {
-        if (lineIndex) {
-            fragment.append(document.createElement('br'));
-            delay += linePause;
-        }
+        if (lineIndex) fragment.append(document.createElement('br'));
 
-        [...line].forEach((character) => {
-            const span = document.createElement('span');
+        line.split(' ').forEach((word, wordIndex) => {
+            // 단어 사이 공백은 실제 공백 문자로 남겨 둬야 이 자리에서만 줄이 바뀜
+            if (wordIndex) fragment.append(document.createTextNode(' '));
 
-            span.className = 'hero_desc_char';
-            span.textContent = character;
-            span.style.setProperty('--type-delay', `${delay}ms`);
-            fragment.append(span);
+            const wordSpan = document.createElement('span');
 
-            delay += charStep + (pauseAfter[character] || 0);
+            wordSpan.className = 'hero_desc_word';
+
+            [...word].forEach((character) => {
+                const span = document.createElement('span');
+
+                span.className = 'hero_desc_char';
+                span.textContent = character;
+                span.style.setProperty('--type-delay', `${delay}ms`);
+                wordSpan.append(span);
+
+                delay += charStep;
+            });
+
+            fragment.append(wordSpan);
         });
     });
 
