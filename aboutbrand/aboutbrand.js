@@ -76,26 +76,36 @@
         return box.top < window.innerHeight && box.bottom > 0;
     }
 
-    splitWords();
-    title.classList.add('is_reveal_ready');
+    function start() {
+        // 백그라운드 탭에서는 setTimeout 이 1초 단위로 묶여서 순서가 무너진다.
+        // 탭이 실제로 보일 때 시작한다.
+        if (document.hidden) {
+            document.addEventListener('visibilitychange', start, { once: true });
+            return;
+        }
 
-    // intro 는 맨 위라 대부분 처음부터 화면 안에 있다.
-    // 그 경우 관찰자를 기다리지 않고 바로 재생한다.
-    if (isInView() || !('IntersectionObserver' in window)) {
-        play();
-        return;
+        // intro 는 맨 위라 대부분 처음부터 화면 안에 있다.
+        // 그 경우 관찰자를 기다리지 않고 바로 재생한다.
+        if (isInView() || !('IntersectionObserver' in window)) {
+            play();
+            return;
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+
+                observer.disconnect();
+                play();
+            });
+        }, { threshold: 0.25 });
+
+        observer.observe(title);
     }
 
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-            if (!entry.isIntersecting) return;
-
-            observer.disconnect();
-            play();
-        });
-    }, { threshold: 0.25 });
-
-    observer.observe(title);
+    splitWords();
+    title.classList.add('is_reveal_ready');
+    start();
 })();
 
 
@@ -154,6 +164,81 @@
         lenis.__aboutbrandLinked = true;
     }
 
+    /* ---- 네 자리를 오가는 사진 ----
+       각 img_box 의 가운데가 화면 가운데에 오는 스크롤 진행도를 구해 두고,
+       그 사이를 자리·크기·사진 세 가지 모두 보간한다. */
+
+    const photo = section.querySelector('[data-history-photo]');
+    const photoLayers = photo ? [...photo.querySelectorAll('img')] : [];
+    let photoSlots = [];
+
+    const lerp = (from, to, ratio) => from + (to - from) * ratio;
+    // 자리에 붙었다 떨어질 때 덜 딱딱하도록 부드럽게
+    const smooth = (ratio) => ratio * ratio * (3 - 2 * ratio);
+
+    function measurePhotoSlots() {
+        if (!photo) return;
+
+        const host = photo.parentElement;
+        const hostRect = host.getBoundingClientRect();
+        const trackRect = track.getBoundingClientRect();
+        const scale = parseFloat(getComputedStyle(section).getPropertyValue('--history_scale')) || 1;
+        const distance = getScrollDistance();
+        const centerLine = screenWidth() / 2;
+
+        photoSlots = [...section.querySelectorAll('.img_box')].map((box) => {
+            const rect = box.getBoundingClientRect();
+            // 화면 기준 좌표를 설계 좌표로 되돌린다
+            const slot = {
+                x: (rect.left - hostRect.left) / scale,
+                y: (rect.top - hostRect.top) / scale,
+                w: rect.width / scale,
+                h: rect.height / scale
+            };
+
+            // 이 상자의 가운데가 화면 가운데에 닿는 시점
+            const centerOnTrack = rect.left + rect.width / 2 - trackRect.left;
+
+            slot.at = distance > 0
+                ? Math.min(1, Math.max(0, (centerOnTrack - centerLine) / distance))
+                : 0;
+
+            return slot;
+        });
+    }
+
+    function updatePhoto(progress) {
+        if (!photo || photoSlots.length < 2) return;
+
+        let index = 0;
+
+        while (index < photoSlots.length - 2 && progress > photoSlots[index + 1].at) index++;
+
+        const from = photoSlots[index];
+        const to = photoSlots[index + 1];
+        const span = to.at - from.at;
+        const ratio = span > 0 ? Math.min(1, Math.max(0, (progress - from.at) / span)) : 0;
+        const eased = smooth(ratio);
+
+        photo.style.left = lerp(from.x, to.x, eased) + 'px';
+        photo.style.top = lerp(from.y, to.y, eased) + 'px';
+        photo.style.width = lerp(from.w, to.w, eased) + 'px';
+        photo.style.height = lerp(from.h, to.h, eased) + 'px';
+
+        photoLayers.forEach((layer, layerIndex) => {
+            if (layerIndex === index) layer.style.opacity = String(1 - eased);
+            else if (layerIndex === index + 1) layer.style.opacity = String(eased);
+            else layer.style.opacity = '0';
+        });
+    }
+
+    function resetPhoto() {
+        if (!photo) return;
+
+        photo.removeAttribute('style');
+        photoLayers.forEach((layer) => layer.removeAttribute('style'));
+    }
+
     function getScrollDistance() {
         // 스케일이 적용된 stage 가 화면보다 얼마나 더 넓은지.
         // 소수점을 올림해서 오른쪽 끝에 서브픽셀 틈이 남지 않게 한다.
@@ -183,9 +268,18 @@
                 pin: true,
                 scrub: 1,
                 anticipatePin: 1,
-                invalidateOnRefresh: true
+                invalidateOnRefresh: true,
+                // 자리 계산은 refresh 시점의 실제 크기로 다시 한다
+                onRefresh: (self) => {
+                    measurePhotoSlots();
+                    updatePhoto(self.progress);
+                },
+                onUpdate: (self) => updatePhoto(self.progress)
             }
         });
+
+        measurePhotoSlots();
+        updatePhoto(0);
     }
 
     function destroyHorizontalScroll() {
@@ -198,6 +292,7 @@
         gsap.set(stage, { clearProps: 'transform' });
         section.classList.remove('is_history_pinned');
         isPinned = false;
+        resetPhoto();
     }
 
     // pin 이 걸리면 뷰포트는 스크롤되지 않으므로 초점을 줄 이유가 없고,

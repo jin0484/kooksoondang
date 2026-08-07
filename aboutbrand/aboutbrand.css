@@ -328,6 +328,7 @@
 }
 
 .history_year_con {
+    position: relative;
     display: flex;
     align-items: flex-start;
     gap: 280px;
@@ -338,6 +339,9 @@
 /* ---------- 연혁 블록 공통 ---------- */
 
 .year_block {
+    position: relative;
+    /* 이동하는 사진(z-index 0) 보다 글자가 위에 오도록 */
+    z-index: 1;
     align-self: stretch;
     display: flex;
 }
@@ -487,6 +491,51 @@
 .img_box_4 {
     width: 602px;
     height: 285px;
+}
+
+/* ---------- 네 자리를 오가는 사진 한 장 ----------
+   가로 탐색(pin)이 걸렸을 때만 동작한다. GSAP 이 없거나 모바일 폴백일 때는
+   원래대로 img_box 안의 사진이 제자리에 그대로 보인다. */
+
+.history_photo {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 0;
+    overflow: hidden;
+    border-radius: 10px;
+}
+
+.history_photo img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+}
+
+.history_photo img:first-child {
+    opacity: 1;
+}
+
+.history_photo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, var(--kooksoondang_orange) 30%, transparent);
+}
+
+.history_section.is_history_pinned .history_photo {
+    display: block;
+}
+
+/* 이동하는 사진이 대신 보여 주므로 제자리 사진과 오렌지 오버레이는 감춘다.
+   (alt 텍스트는 남겨 두려고 지우지 않고 투명하게만 처리) */
+.history_section.is_history_pinned .img_box img,
+.history_section.is_history_pinned .img_box::after {
+    opacity: 0;
 }
 
 /* ---------- 블록별 배치 ---------- */
