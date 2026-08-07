@@ -893,6 +893,9 @@
     const resultCloseButtons = resultModal ? [...resultModal.querySelectorAll('[data-pairing-result-close]')] : [];
     const resultRetryButton = resultModal?.querySelector('[data-pairing-result-retry]');
     const resultNextButton = resultModal?.querySelector('[data-pairing-result-next]');
+    const roulette = section?.querySelector('[data-pairing-roulette]');
+    const swapButtons = roulette ? [...roulette.querySelectorAll('[data-pairing-swap]')] : [];
+    const rouletteCheckButton = roulette?.querySelector('[data-pairing-roulette-check]');
 
     if (!section || !cards.length || !foodCards.length || !drinkCards.length || plates.length < 2 || !checkButton) return;
 
@@ -914,6 +917,10 @@
     const plateFlashTimers = new WeakMap();
     const absorptionGhosts = new Set();
     const selectedCards = { food: null, drink: null };
+    const rouletteCards = { food: foodCards, drink: drinkCards };
+    const rouletteIndex = { food: 1, drink: 2 };
+    // 앞장부터 순서대로. 인덱스가 곧 앞장에서 몇 장 뒤인지를 뜻함
+    const rouletteStackClasses = ['is_pairing_roulette_active', 'is_pairing_roulette_next', 'is_pairing_roulette_next2'];
     const labels = {
         food: {
             pancake: 'Seafood Scallion Pancake',
@@ -971,6 +978,7 @@
 
     const isMotionEnabled = () => desktopQuery.matches && !reducedMotionQuery.matches;
     const isDragEnabled = () => desktopQuery.matches && finePointerQuery.matches;
+    const isRouletteEnabled = () => !desktopQuery.matches;
     const areCardsReady = () => !isMotionEnabled() || hasRevealed;
 
     function typeFor(card) {
@@ -1122,6 +1130,52 @@
         selectedCards.drink = null;
         cards.forEach((card) => card.classList.remove('is_pairing_selected'));
         plates.forEach(syncPlate);
+        // 룰렛에서는 늘 한 장씩 올라와 있어야 하므로 비운 자리를 곧바로 다시 채움
+        renderRoulette();
+    }
+
+    /* 태블릿 룰렛: 접시로 끌어다 놓는 대신 줄마다 카드 한 장만 보여 주고
+       "Other food / Other drink" 로 다음 장을 넘겨 고른다.
+       고른 카드는 데스크톱과 같은 selectedCards 에 넣어 두므로 결과 계산은 그대로 쓰인다 */
+    function renderRoulette() {
+        cards.forEach((card) => card.classList.remove(...rouletteStackClasses));
+
+        if (!isRouletteEnabled()) return;
+
+        Object.entries(rouletteCards).forEach(([type, list]) => {
+            const card = list[rouletteIndex[type] % list.length];
+
+            if (!card) return;
+
+            // 모바일에서는 뒤따르는 두 장이 뒤에 겹쳐 보임(css 가 부채꼴로 눕힘)
+            rouletteStackClasses.forEach((className, offset) => {
+                list[(rouletteIndex[type] + offset) % list.length]?.classList.add(className);
+            });
+            selectedCards[type] = card;
+        });
+
+        plates.forEach(syncPlate);
+        setFeedback('');
+    }
+
+    function swapRoulette(type) {
+        const list = rouletteCards[type];
+
+        if (!list?.length) return;
+
+        rouletteIndex[type] = (rouletteIndex[type] + 1) % list.length;
+        renderRoulette();
+    }
+
+    function runCheck() {
+        const result = getPairingResult();
+
+        if (!result) {
+            setFeedback('Please place one food card and one drink card on the plates.');
+            return;
+        }
+
+        showResult(result);
     }
 
     function getPairingResult() {
@@ -1418,6 +1472,12 @@
     }
 
     function selectWithTap(card) {
+        // 룰렛에서는 앞장을 누르면 다음 장이 올라옴 (모바일 카드 뭉치)
+        if (isRouletteEnabled()) {
+            if (card.classList.contains('is_pairing_roulette_active')) swapRoulette(typeFor(card));
+            return;
+        }
+
         if (!areCardsReady() || performance.now() < suppressTapUntil) return;
 
         const targetPlate = targetPlateFor(card);
@@ -1480,6 +1540,7 @@
 
     function updateMode() {
         resetMotion();
+        renderRoulette();
 
         if (!isMotionEnabled()) return;
 
@@ -1508,15 +1569,10 @@
         }
     });
 
-    checkButton.addEventListener('click', () => {
-        const result = getPairingResult();
-
-        if (!result) {
-            setFeedback('Please place one food card and one drink card on the plates.');
-            return;
-        }
-
-        showResult(result);
+    checkButton.addEventListener('click', runCheck);
+    rouletteCheckButton?.addEventListener('click', runCheck);
+    swapButtons.forEach((button) => {
+        button.addEventListener('click', () => swapRoulette(button.dataset.pairingSwap));
     });
 
     resultCloseButtons.forEach((button) => button.addEventListener('click', closeResult));
@@ -1728,6 +1784,59 @@
     listenForChanges(desktopQuery, updateMode);
     listenForChanges(reducedMotionQuery, updateMode);
     updateMode();
+})();
+
+/* 모바일 이벤트 캐러셀 페이저.
+   넘기는 동작 자체는 css 스크롤 스냅이 맡고, 여기서는 지금 보이는 장에 점을 맞추고
+   점을 누르면 그 장으로 스크롤만 시킨다. 태블릿 이상에서는 페이저가 감춰져 있어 눌릴 일이 없음 */
+(() => {
+    const viewport = document.querySelector('.events_viewport');
+    const pager = document.querySelector('[data-events-pager]');
+    const dots = pager ? [...pager.querySelectorAll('[data-events-dot]')] : [];
+    const slides = viewport ? [...viewport.querySelectorAll('.event_slide')] : [];
+
+    if (!viewport || !dots.length || slides.length < 2) return;
+
+    let syncFrame = 0;
+
+    function syncDots() {
+        syncFrame = 0;
+
+        // 카드 사이 간격 때문에 한 칸이 뷰포트 폭과 다르므로, 실제 위치가 가장 가까운 장을 고름.
+        // 가로로 넘기지 않는 폭에서는 스크롤이 0 이라 첫 장이 그대로 남음
+        const origin = slides[0].offsetLeft;
+        const position = viewport.scrollLeft + origin;
+        let current = 0;
+
+        slides.forEach((slide, index) => {
+            if (Math.abs(slide.offsetLeft - position) < Math.abs(slides[current].offsetLeft - position)) current = index;
+        });
+
+        dots.forEach((dot, index) => {
+            if (index === current) dot.setAttribute('aria-current', 'true');
+            else dot.removeAttribute('aria-current');
+        });
+    }
+
+    function requestSync() {
+        if (syncFrame) return;
+
+        syncFrame = window.requestAnimationFrame(syncDots);
+    }
+
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            const target = slides[index];
+
+            if (!target) return;
+
+            viewport.scrollTo({ left: target.offsetLeft - slides[0].offsetLeft, behavior: 'smooth' });
+        });
+    });
+
+    viewport.addEventListener('scroll', requestSync, { passive: true });
+    window.addEventListener('resize', requestSync, { passive: true });
+    syncDots();
 })();
 
 /* 인트로로 나갈 때의 전환은 common/page_transition.js 가 사이트 안의 모든 링크와 같은 방식으로 처리함 */

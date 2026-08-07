@@ -20,6 +20,11 @@
     <header class="site_header" id="site_header">
         <div class="site_header_inner">
             <div class="site_header_left">
+                <!-- 태블릿(<=768px) 에서만 보임. 데스크톱에서는 css 가 감춰서 아래 primary_nav 가 그대로 쓰임 -->
+                <button type="button" class="nav_toggle" aria-label="Open menu" aria-expanded="false"
+                    aria-controls="nav_drawer" data-nav-toggle>
+                    <span class="nav_toggle_bars" aria-hidden="true"></span>
+                </button>
                 <a class="site_logo" href="main.html" aria-label="Kooksoondang home">
                     <svg class="site_logo_mark" width="270" height="33.0299" viewBox="0 0 270 33.0299"
                         aria-hidden="true" focusable="false">
@@ -47,6 +52,20 @@
             </div>
         </div>
     </header>
+
+    <!-- 햄버거로 여는 서랍. 헤더에 backdrop-filter 가 걸려 있어 그 안에서는 fixed 가 헤더 박스에 갇히므로 밖에 둠 -->
+    <div class="nav_drawer" id="nav_drawer" data-nav-drawer>
+        <div class="nav_drawer_scrim" data-nav-close></div>
+        <nav class="nav_drawer_panel" aria-label="Mobile navigation">
+            <ul>
+                <li><a href="../aboutbrand/aboutbrand.html">ABOUT BRAND</a></li>
+                <li><a href="../products/products.html">PRODUCTS</a></li>
+                <li><a href="../pairing/pairing.html">PAIRING</a></li>
+                <li><span class="is_disabled" aria-disabled="true">EVENT/PROMOTION</span></li>
+                <li><span class="is_disabled" aria-disabled="true">CONTACT US</span></li>
+            </ul>
+        </nav>
+    </div>
 
     <nav class="side_nav" aria-label="Page sections">
         <ul>
@@ -323,7 +342,12 @@
                 <div class="pairing_inner">
                     <header class="pairing_head" data-head-reveal>
                         <h2 id="pairing_title">What&rsquo;s on My Plate?</h2>
-                        <p>Drag and drop one drink card and one food card onto the plate to check your pairing score!</p>
+                        <!-- 드래그판과 룰렛판의 안내 문구가 다름. 폭에 맞는 쪽만 css 가 보여 줌 -->
+                        <p>
+                            <span class="pairing_lead_drag">Drag and drop one drink card and one food card onto the
+                                plate to check your pairing score!</span>
+                            <span class="pairing_lead_roulette">Pairing Roulette: Spin Your Flavor</span>
+                        </p>
                     </header>
 
                     <ul class="pairing_row pairing_food" role="list">
@@ -385,6 +409,25 @@
                             <span class="pairing_card_label">100 Billion<br>Prebiotics<br>Makgeolli</span>
                         </li>
                     </ul>
+
+                    <!-- 태블릿 전용 룰렛 조작부. 드래그 대신 카드를 한 장씩 넘겨 고름 -->
+                    <div class="pairing_roulette" data-pairing-roulette>
+                        <div class="pairing_roulette_swaps">
+                            <button type="button" class="pairing_swap" data-pairing-swap="food">
+                                Other food
+                                <img src="../asset/icon/chevron_down_3.svg" alt="" aria-hidden="true">
+                            </button>
+                            <button type="button" class="pairing_swap" data-pairing-swap="drink">
+                                Other drink
+                                <img src="../asset/icon/chevron_down_3.svg" alt="" aria-hidden="true">
+                            </button>
+                        </div>
+                        <!-- 모바일 시안은 문구가 더 김. 폭에 맞는 쪽만 css 가 보여 줌 -->
+                        <button type="button" class="btn_pill pairing_roulette_check" data-pairing-roulette-check>
+                            <span class="pairing_check_short">Check the result</span>
+                            <span class="pairing_check_long">Check the pairing result</span>
+                        </button>
+                    </div>
 
                     <div class="pairing_drag">
                         <div class="pairing_drag_explain">
@@ -520,6 +563,13 @@
                             </ul>
                         </div>
                     </article>
+                </div>
+                <!-- 모바일 캐러셀 페이저. 태블릿 이상에서는 css 가 감춤 -->
+                <div class="events_pager" data-events-pager>
+                    <button type="button" class="events_dot" data-events-dot="0" aria-label="Show event 1"
+                        aria-current="true"></button>
+                    <button type="button" class="events_dot" data-events-dot="1" aria-label="Show event 2"></button>
+                    <button type="button" class="events_dot" data-events-dot="2" aria-label="Show event 3"></button>
                 </div>
             </div>
         </section>

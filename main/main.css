@@ -1174,15 +1174,18 @@ section[id] {
     visibility: visible;
   }
 
+  /* 태블릿: 장식이 본문 왼쪽에 붙고 사진은 그 아래 한 줄을 다 씀 */
   .history_item {
-    grid-template-columns: minmax(0, 1fr);
-    row-gap: 2rem;
+    grid-template-columns: 7.25rem minmax(0, 1fr);
+    column-gap: 0;
+    row-gap: 3.5rem;
+    align-items: start;
   }
 
   .history_item article,
   .history_item:nth-child(even) article {
-    grid-column: 1;
-    grid-row: 2;
+    grid-column: 2;
+    grid-row: 1;
     justify-self: stretch;
     width: 100%;
   }
@@ -1190,14 +1193,16 @@ section[id] {
   .history_deco {
     grid-column: 1;
     grid-row: 1;
+    align-self: start;
   }
 
   .history_photo,
   .history_item:nth-child(even) .history_photo {
-    grid-column: 1;
-    grid-row: 3;
+    grid-column: 1 / -1;
+    grid-row: 2;
     justify-self: stretch;
     width: 100%;
+    max-width: none;
   }
 }
 
@@ -1595,6 +1600,17 @@ section[id] {
     opacity: 1;
     transform: translate(0, 0) scale(1);
   }
+}
+
+/* 태블릿 전용 룰렛 조작부. 데스크톱은 드래그 앤 드롭을 쓰므로 감춰 둠 */
+.pairing_roulette {
+  display: none;
+}
+
+/* 안내 문구와 확인 버튼 문구는 폭에 따라 둘 중 하나만 나옴 */
+.pairing_lead_roulette,
+.pairing_check_long {
+  display: none;
 }
 
 .pairing_drag {
@@ -2116,6 +2132,11 @@ section[id] {
   gap: clamp(3rem, 5vw, 6rem);
 }
 
+/* 모바일 캐러셀 페이저. 그 위 폭에서는 카드가 모두 세로로 쌓이므로 쓰이지 않음 */
+.events_pager {
+  display: none;
+}
+
 .events_head h2 {
   font-family: var(--font-Albert_Sans);
   font-weight: 400;
@@ -2383,5 +2404,815 @@ section[id] {
 (prefers-reduced-motion: reduce) {
   .event_reveal_char {
     opacity: 1 !important;
+  }
+}
+
+/* ---------- tablet (<= 768px) ---------- */
+/* 768px 태블릿 시안 배치. 좌우 여백은 40px 로 통일하고,
+   데스크톱에서만 도는 연출(브랜드 스토리 고정, 이벤트 스크롤 스토리텔링, 카드 드래그)은
+   js 가 이미 이 폭에서 꺼 두므로 여기서는 배치만 다시 잡음 */
+
+@media (max-width: 48rem) {
+  :root {
+    /* 태블릿에서는 카드가 원본 크기(248x368)로 보임. 결과 모달 복제본도 이 값을 씀 */
+    --pairing-card-w: 248px;
+    --pairing-card-h: 368px;
+  }
+
+  /* ----- hero ----- */
+
+  .hero {
+    height: auto;
+    min-height: 32rem;
+    padding: 8.75rem 0 5.5rem 2.5rem;
+  }
+
+  .hero_inner {
+    min-height: 0;
+    gap: 0;
+  }
+
+  .hero_left {
+    width: 20rem;
+    gap: 1.5rem;
+  }
+
+  .hero_title .line {
+    font-size: 4rem;
+  }
+
+  .hero_cup {
+    width: 5.125rem;
+    left: 24%;
+    top: calc(42% + 2px);
+  }
+
+  .hero_desc {
+    font-size: 0.9375rem;
+  }
+
+  /* 오른쪽 일러스트는 본문 흐름에서 빼내 섹션 오른쪽 끝에 걸치게 둠 */
+  .hero_visual {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 26rem;
+    flex: 0 0 auto;
+  }
+
+  .hero_visual .hero_character {
+    left: 0;
+    height: 110%;
+  }
+
+  /* 프레임 SVG 는 데스크톱과 같은 1.069 배 보정을 유지 */
+  .hero_visual .hero_character_frame {
+    height: 117.6%;
+  }
+
+  /* ----- best ----- */
+
+  .best_inner {
+    gap: 6.5rem;
+  }
+
+  .best_head {
+    padding: 0 2.5rem;
+  }
+
+  .best_head h2 {
+    font-size: 2.5rem;
+  }
+
+  .best_head p {
+    font-size: 1.25rem;
+  }
+
+  /* 콜라주는 화면보다 넓게 깔아 좌우가 잘리게 둠. 안쪽 배치는 % 라 그대로 따라옴 */
+  .best_collage {
+    align-self: flex-start;
+    width: 201%;
+    margin-left: -48.75%;
+  }
+
+  /* ----- marquee ----- */
+
+  .marquee {
+    padding: 3.75rem 0;
+  }
+
+  .marquee_track {
+    min-height: 9rem;
+  }
+
+  .marquee p {
+    font-size: 6.875rem;
+  }
+
+  .marquee img {
+    width: 7.25rem;
+  }
+
+  /* ----- brand history ----- */
+
+  /* 태블릿에서는 페어링이 덮으며 올라오는 고정 스택 대신 평범하게 이어짐 */
+  .history {
+    position: static;
+    padding: 4rem 2.5rem 5rem;
+  }
+
+  .history_list {
+    gap: 5rem;
+  }
+
+  .history_period {
+    font-size: 1.25rem;
+  }
+
+  .history_item h3 {
+    font-size: 2.75rem;
+  }
+
+  .history_text {
+    font-size: 1.0625rem;
+  }
+
+  .history_points h4,
+  .history_points ul {
+    font-size: 0.9375rem;
+  }
+
+  .history_deco_circle {
+    width: 3rem;
+  }
+
+  .history_deco_cup {
+    width: 4.5rem;
+  }
+
+  .history_deco_bottle {
+    width: 4.75rem;
+  }
+
+  .history_deco_pet {
+    width: 4.875rem;
+  }
+
+  /* ----- pairing (roulette) ----- */
+
+  /* 드래그 대신 카드를 한 장씩 넘겨 고르는 룰렛. 접시·안내 손은 쓰지 않음 */
+  .pairing {
+    height: auto;
+    display: block;
+    padding: 9.5rem 2.5rem 5rem;
+  }
+
+  .pairing--history-overlay {
+    /* 시안의 완만한 아치. 좌우로 넓은 타원이라 가로 반지름을 절반으로 둠 */
+    border-radius: 50% 50% 0 0 / 2rem 2rem 0 0;
+    box-shadow: 0 -0.5rem 1.5rem rgba(14, 19, 38, 0.12);
+  }
+
+  .pairing_wave,
+  .pairing_drag,
+  .pairing_drag_hand {
+    display: none;
+  }
+
+  .pairing_inner {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, var(--pairing-card-w)));
+    justify-content: center;
+    gap: 0 clamp(1rem, 7.8vw, 60px);
+    grid-template-areas:
+      "head  head"
+      "food  drink"
+      "swapf swapd"
+      "check check";
+  }
+
+  .pairing_head {
+    grid-area: head;
+    margin-bottom: 6.4375rem;
+    transform: none;
+  }
+
+  .pairing_head h2 {
+    font-size: 2.125rem;
+  }
+
+  .pairing_head p {
+    font-size: 1.1875rem;
+  }
+
+  .pairing_lead_drag {
+    display: none;
+  }
+
+  .pairing_lead_roulette {
+    display: inline;
+  }
+
+  .pairing_food {
+    grid-area: food;
+  }
+
+  .pairing_drink {
+    grid-area: drink;
+  }
+
+  /* 줄은 더 이상 5장을 늘어놓지 않고 고른 한 장만 보여 줌 */
+  .pairing_row,
+  .pairing_row+.pairing_row {
+    position: static;
+    left: auto;
+    display: block;
+    width: auto;
+    margin: 0;
+    align-self: stretch;
+  }
+
+  .pairing_row .pairing_card {
+    display: none;
+  }
+
+  .pairing_row .pairing_card.is_pairing_roulette_active {
+    display: flex;
+  }
+
+  .pairing_card {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 248 / 368;
+    gap: 0.75rem;
+    padding: 10px;
+    /* 룰렛에서는 hover 로 들썩이지 않게 고정 */
+    --pairing-card-hover-y: 0px;
+  }
+
+  .pairing_card_drink .pairing_card_media {
+    margin: -10px -10px 0;
+  }
+
+  .pairing_card_label {
+    font-size: 1.1875rem;
+    line-height: 1.25;
+  }
+
+  /* display: contents 로 버튼들을 위 그리드 칸에 직접 앉힘 */
+  .pairing_roulette,
+  .pairing_roulette_swaps {
+    display: contents;
+  }
+
+  .pairing_swap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.8125rem;
+    padding: 0.5rem 1.25rem;
+    border: 1px solid var(--makgeolli_light4);
+    border-radius: 0.25rem 0.25rem 2rem 2rem;
+    background: none;
+    color: var(--makgeolli_light4);
+    font-size: 1.0625rem;
+    font-weight: 500;
+    transition: background-color 180ms ease;
+  }
+
+  .pairing_swap:active {
+    background: rgba(250, 248, 247, 0.16);
+  }
+
+  .pairing_swap img {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  .pairing_swap[data-pairing-swap="food"] {
+    grid-area: swapf;
+    margin: 1.3125rem 1rem 0;
+  }
+
+  .pairing_swap[data-pairing-swap="drink"] {
+    grid-area: swapd;
+    margin: 1.3125rem 1rem 0;
+  }
+
+  .pairing_roulette_check {
+    grid-area: check;
+    justify-self: center;
+    margin-top: 3.75rem;
+    padding: 0.75rem 2.75rem;
+    background: var(--btn-reset);
+    font-size: 1.0625rem;
+  }
+
+  /* ----- events ----- */
+
+  .events,
+  .events.is_event_motion_ready {
+    padding: 4rem 2.5rem;
+    margin-bottom: 4rem;
+  }
+
+  .events_inner {
+    gap: 3rem;
+  }
+
+  .events_viewport {
+    gap: 5rem;
+  }
+
+  .events_head h2 {
+    font-size: 3rem;
+  }
+
+  .event_card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2.5rem;
+  }
+
+  .event_media,
+  .event_copy {
+    flex: 0 0 auto;
+  }
+
+  /* 번호와 제목이 한 줄, 목록이 그 아래, 진행 막대가 맨 아래 */
+  .event_copy {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    grid-template-areas:
+      "number title"
+      ".      list"
+      "progress progress";
+    column-gap: 5.5rem;
+    row-gap: 2rem;
+  }
+
+  .event_copy_head {
+    grid-area: progress;
+  }
+
+  .event_number {
+    grid-area: number;
+    align-self: start;
+    padding-top: 0.2em;
+    font-family: var(--font-Albert_Sans);
+  }
+
+  .event_copy h3 {
+    grid-area: title;
+    font-size: 1.625rem;
+  }
+
+  .event_copy ul {
+    grid-area: list;
+    padding-left: 2.5rem;
+    gap: 0.5rem;
+  }
+
+  .event_copy li {
+    padding-left: 1.875rem;
+    font-size: 0.9375rem;
+  }
+
+  /* 스크롤 연출이 꺼져 있어 진행 막대가 0 에 머무름.
+     시안처럼 카드마다 여정이 조금씩 나아간 모습으로 고정해 둠 */
+  .event_slide:nth-child(1) {
+    --event-line-progress: 0.04;
+    --event-cup-x: 0%;
+  }
+
+  .event_slide:nth-child(2) {
+    --event-line-progress: 0.63;
+    --event-cup-x: 62%;
+  }
+
+  .event_slide:nth-child(3) {
+    --event-line-progress: 0.93;
+    --event-cup-x: 90%;
+    --event-bottle-color: var(--kooksoondang_orange);
+  }
+}
+
+/* ---------- mobile (<= 480px) ---------- */
+/* 360px 모바일 시안 배치. 좌우 여백 16px.
+   태블릿 블록(48rem) 이 먼저 적용된 뒤 이 블록이 덮으므로, 달라지는 것만 적음 */
+
+@media (max-width: 30rem) {
+
+  /* ----- hero ----- */
+
+  .hero {
+    min-height: 39.375rem;
+    padding: 12.5rem 0 6rem 1rem;
+  }
+
+  /* 제목은 max-content 라 이 폭을 넘어가고, 설명 문구만 여기에 맞춰 접힘 */
+  .hero_left {
+    width: 10rem;
+  }
+
+  .hero_body {
+    gap: 2.8125rem;
+  }
+
+  .hero_actions .pill {
+    padding: 0.75rem 1.75rem;
+  }
+
+  .hero_title .line {
+    font-size: 2.5rem;
+  }
+
+  .hero_cup {
+    width: 3.25rem;
+    left: 22%;
+    top: calc(40% + 2px);
+  }
+
+  .hero_desc {
+    font-size: 0.8125rem;
+    line-height: 1.54;
+  }
+
+  /* 시안에는 TEST START 하나만 있음 */
+  .hero_actions .pill_ghost {
+    display: none;
+  }
+
+  .hero_visual {
+    width: 14rem;
+  }
+
+  .hero_visual .hero_character {
+    left: -10%;
+    height: 95%;
+  }
+
+  .hero_visual .hero_character_frame {
+    height: 101.6%;
+  }
+
+  /* ----- best ----- */
+
+  .best {
+    padding-top: 3rem;
+  }
+
+  .best_inner {
+    gap: 1.625rem;
+  }
+
+  .best_head {
+    padding: 0 1rem;
+  }
+
+  .best_head h2 {
+    font-size: 1.5rem;
+  }
+
+  .best_head p {
+    font-size: 0.875rem;
+  }
+
+  /* 콜라주 대신 옆으로 넘겨 보는 카드 줄 */
+  .best_collage {
+    align-self: stretch;
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+    margin: 0;
+    padding: 0 1rem;
+    aspect-ratio: auto;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .best_collage::-webkit-scrollbar {
+    display: none;
+  }
+
+  .best_card {
+    position: static;
+    flex: 0 0 12.75rem;
+    width: 12.75rem;
+    transform: none;
+    scroll-snap-align: center;
+    box-shadow: none;
+  }
+
+  .best_card_bekseju .best_card_label {
+    font-size: 44px;
+  }
+
+  .best_card_prebiotics .best_card_label {
+    font-size: 38px;
+  }
+
+  .best_card_banana .best_card_label {
+    font-size: 28px;
+  }
+
+  /* 흩어 놓은 장식은 콜라주 배치에서만 의미가 있음 */
+  .best_deco {
+    display: none;
+  }
+
+  /* ----- marquee ----- */
+
+  .marquee {
+    padding: 2.5rem 0;
+  }
+
+  .marquee_track {
+    min-height: 4.5rem;
+  }
+
+  .marquee p {
+    font-size: 3rem;
+  }
+
+  .marquee img {
+    width: 3.25rem;
+  }
+
+  /* ----- brand history ----- */
+
+  .history {
+    padding: 2.5rem 1rem 3rem;
+  }
+
+  .history_list {
+    gap: 3rem;
+  }
+
+  /* 장식 아이콘과 Key Points 는 시안에 없음. 본문은 한 단으로 펴짐 */
+  .history_deco,
+  .history_points {
+    display: none;
+  }
+
+  .history_item {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 2rem;
+  }
+
+  .history_item article,
+  .history_item:nth-child(even) article {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .history_photo,
+  .history_item:nth-child(even) .history_photo {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  /* 항목마다 좌우 정렬이 번갈아 감 */
+  .history_item:nth-child(even) article {
+    text-align: right;
+  }
+
+  .history_item:nth-child(even) h3 {
+    align-self: flex-end;
+  }
+
+  .history_item article {
+    gap: 0.5rem;
+  }
+
+  .history_period {
+    font-size: 0.875rem;
+  }
+
+  .history_item h3 {
+    font-size: 1.625rem;
+  }
+
+  .history_text {
+    font-size: 0.875rem;
+    line-height: 1.45;
+  }
+
+  /* ----- pairing (deck) ----- */
+
+  .pairing {
+    padding: 5.625rem 1rem 5.375rem;
+  }
+
+  /* 카드 줄은 가운데 300px 만 쓰고, 확인 버튼만 좌우 여백까지 다 씀 */
+  .pairing_inner {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: stretch;
+    gap: 0 0.75rem;
+  }
+
+  .pairing_food {
+    justify-self: end;
+  }
+
+  .pairing_drink {
+    justify-self: start;
+  }
+
+  .pairing_head {
+    margin-bottom: 2.4375rem;
+  }
+
+  .pairing_head h2 {
+    font-size: 1.75rem;
+  }
+
+  .pairing_head p {
+    font-size: 1rem;
+  }
+
+  /* 남은 카드가 뒤에 겹쳐 보이는 카드 뭉치. 앞장을 누르면 다음 장이 올라옴 */
+  .pairing_row {
+    position: relative;
+    width: 9rem;
+    aspect-ratio: 248 / 368;
+  }
+
+  .pairing_row .pairing_card,
+  .pairing_row .pairing_card.is_pairing_roulette_active {
+    display: flex;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    gap: 0.375rem;
+    padding: 6px;
+    cursor: pointer;
+  }
+
+  /* 뒷장은 앞장 뒤에 부채처럼 깔림. 그 밖의 장은 겹쳐 두기만 하고 감춤 */
+  .pairing_row .pairing_card {
+    z-index: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .pairing_row .pairing_card.is_pairing_roulette_active {
+    z-index: 3;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .pairing_row .pairing_card.is_pairing_roulette_next {
+    z-index: 2;
+    opacity: 1;
+  }
+
+  .pairing_row .pairing_card.is_pairing_roulette_next2 {
+    z-index: 1;
+    opacity: 1;
+  }
+
+  .pairing_food .pairing_card.is_pairing_roulette_active {
+    transform: rotate(-2deg);
+  }
+
+  .pairing_food .pairing_card.is_pairing_roulette_next {
+    transform: translate(3px, -5px) rotate(3deg);
+  }
+
+  .pairing_food .pairing_card.is_pairing_roulette_next2 {
+    transform: translate(6px, -10px) rotate(6deg);
+  }
+
+  .pairing_drink .pairing_card.is_pairing_roulette_active {
+    transform: rotate(1deg);
+  }
+
+  .pairing_drink .pairing_card.is_pairing_roulette_next {
+    transform: translate(5px, 5px) rotate(4deg);
+  }
+
+  .pairing_drink .pairing_card.is_pairing_roulette_next2 {
+    transform: translate(10px, 10px) rotate(7deg);
+  }
+
+  .pairing_card_drink .pairing_card_media {
+    margin: -6px -6px 0;
+  }
+
+  .pairing_card_label {
+    font-size: 0.8125rem;
+  }
+
+  /* 넘기기 버튼 대신 카드를 직접 누름 */
+  .pairing_roulette_swaps {
+    display: none;
+  }
+
+  .pairing_check_short {
+    display: none;
+  }
+
+  .pairing_check_long {
+    display: inline;
+  }
+
+  .pairing_roulette_check {
+    justify-self: stretch;
+    margin-top: 3.6875rem;
+    padding: 0.9375rem 1rem;
+    border-radius: 0.25rem 0.25rem 1.75rem 1.75rem;
+    font-size: 1.0625rem;
+    font-weight: 700;
+  }
+
+  /* ----- events ----- */
+
+  .events,
+  .events.is_event_motion_ready {
+    padding: 3rem 1rem 4.75rem;
+    margin-bottom: 0;
+  }
+
+  .events_inner {
+    gap: 1.375rem;
+  }
+
+  .events_head h2 {
+    font-size: 1.75rem;
+  }
+
+  /* 한 장씩 옆으로 넘겨 보는 캐러셀. 넘기기는 스크롤 스냅이 맡고 js 는 점만 맞춤 */
+  .events_viewport {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .events_viewport::-webkit-scrollbar {
+    display: none;
+  }
+
+  .event_card {
+    flex: 0 0 100%;
+    width: 100%;
+    gap: 1.625rem;
+    scroll-snap-align: start;
+  }
+
+  .event_media img {
+    aspect-ratio: 328 / 292;
+  }
+
+  /* 시안에는 번호와 제목만 있음 */
+  .event_copy_head,
+  .event_copy ul {
+    display: none;
+  }
+
+  .event_copy {
+    grid-template-areas: "number title";
+    column-gap: 2.25rem;
+  }
+
+  .event_copy h3 {
+    font-size: 1.125rem;
+  }
+
+  .events_pager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 0.6875rem;
+  }
+
+  .events_dot {
+    width: 0.625rem;
+    height: 0.625rem;
+    padding: 0;
+    border-radius: 50%;
+    background: var(--makgeolli_light1);
+    transition: background-color 200ms ease;
+  }
+
+  /* 현재 장은 브랜드 잔 모양으로 바뀜 */
+  .events_dot[aria-current="true"] {
+    width: 1.0625rem;
+    height: 0.9375rem;
+    border-radius: 0;
+    background: var(--kooksoondang_orange);
+    -webkit-mask: url('../asset/icon/event_cup.svg') center / contain no-repeat;
+    mask: url('../asset/icon/event_cup.svg') center / contain no-repeat;
   }
 }
