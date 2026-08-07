@@ -172,6 +172,62 @@
     const photoLayers = photo ? [...photo.querySelectorAll('img')] : [];
     let photoSlots = [];
 
+    // 사진과 겹치는 글자만 흰색으로 보이게 할 복제본.
+    // 원본과 같은 자리에 겹쳐 두고 사진 상자로 잘라 낸다.
+    const photoText = buildPhotoText();
+
+    function buildPhotoText() {
+        if (!photo) return null;
+
+        const host = photo.parentElement;
+        const clone = host.cloneNode(true);
+
+        // 복제본 안의 사진 상자는 지운다 (자기 자신이라 무한 중첩됨)
+        clone.querySelector('[data-history-photo]')?.remove();
+        // 클래스를 갈아 끼운다. history_year_con 을 남겨 두면 원본과 복제본을
+        // 선택자로 구분할 수 없다. 레이아웃 값은 CSS 에서 두 클래스가 함께 갖는다.
+        clone.className = 'history_photo_text';
+        clone.setAttribute('aria-hidden', 'true');
+
+        photo.appendChild(clone);
+
+        return clone;
+    }
+
+    // 원본 블록과 복제본 블록을 짝지어 흐림 값을 함께 넣는다
+    const yearBlocks = [...section.querySelectorAll('.history_year_con > .year_block')];
+    const yearBlockPairs = yearBlocks.map((block, index) => [
+        block,
+        photoText?.querySelectorAll('.year_block')[index]
+    ]);
+
+    const MAX_BLUR = 5;
+    const MIN_DIM = 0.45;
+
+    // 화면 가운데에 있는 블록만 선명하게. main 의 history 텍스트 흐림과 같은 방식.
+    function updateFocus() {
+        const centerLine = screenWidth() / 2;
+        const reach = screenWidth() * 0.6;
+
+        yearBlockPairs.forEach(([block, twin]) => {
+            const rect = block.getBoundingClientRect();
+
+            if (!rect.width) return;
+
+            const distance = Math.abs(rect.left + rect.width / 2 - centerLine);
+            const eased = smooth(Math.min(1, distance / reach));
+            const blur = (eased * MAX_BLUR).toFixed(2) + 'px';
+            const dim = (1 - eased * (1 - MIN_DIM)).toFixed(3);
+
+            [block, twin].forEach((target) => {
+                if (!target) return;
+
+                target.style.setProperty('--year_blur', blur);
+                target.style.setProperty('--year_dim', dim);
+            });
+        });
+    }
+
     const lerp = (from, to, ratio) => from + (to - from) * ratio;
     // 자리에 붙었다 떨어질 때 덜 딱딱하도록 부드럽게
     const smooth = (ratio) => ratio * ratio * (3 - 2 * ratio);
@@ -220,10 +276,23 @@
         const ratio = span > 0 ? Math.min(1, Math.max(0, (progress - from.at) / span)) : 0;
         const eased = smooth(ratio);
 
-        photo.style.left = lerp(from.x, to.x, eased) + 'px';
-        photo.style.top = lerp(from.y, to.y, eased) + 'px';
+        const x = lerp(from.x, to.x, eased);
+        const y = lerp(from.y, to.y, eased);
+
+        photo.style.left = x + 'px';
+        photo.style.top = y + 'px';
         photo.style.width = lerp(from.w, to.w, eased) + 'px';
         photo.style.height = lerp(from.h, to.h, eased) + 'px';
+
+        // 흰 글자 복제본을 원본 글자와 같은 자리로 되돌려 놓는다
+        if (photoText) {
+            const host = photo.parentElement;
+
+            photoText.style.left = -x + 'px';
+            photoText.style.top = -y + 'px';
+            photoText.style.width = host.offsetWidth + 'px';
+            photoText.style.height = host.offsetHeight + 'px';
+        }
 
         photoLayers.forEach((layer, layerIndex) => {
             if (layerIndex === index) layer.style.opacity = String(1 - eased);
@@ -273,13 +342,18 @@
                 onRefresh: (self) => {
                     measurePhotoSlots();
                     updatePhoto(self.progress);
+                    updateFocus();
                 },
-                onUpdate: (self) => updatePhoto(self.progress)
+                onUpdate: (self) => {
+                    updatePhoto(self.progress);
+                    updateFocus();
+                }
             }
         });
 
         measurePhotoSlots();
         updatePhoto(0);
+        updateFocus();
     }
 
     function destroyHorizontalScroll() {
@@ -317,7 +391,20 @@
         else destroyHorizontalScroll();
 
         syncViewportFocusability();
+        updateFocus();
     }
+
+    // 폴백(네이티브 가로 스크롤)일 때도 가운데 블록만 선명하게 유지한다
+    let focusFrame = 0;
+
+    viewport.addEventListener('scroll', () => {
+        if (focusFrame) return;
+
+        focusFrame = window.requestAnimationFrame(() => {
+            focusFrame = 0;
+            updateFocus();
+        });
+    }, { passive: true });
 
     function refreshScrollTrigger() {
         if (!canUseGsap()) return;
