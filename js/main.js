@@ -1433,6 +1433,111 @@
     character.addEventListener('mouseleave', stop);
 })();
 
+/* 페어링 게임 구간 스크롤 잠금: 카드가 화면을 가득 채운 지점에서 스크롤을 멈추고,
+   결과 모달의 Next 를 누르면 풀림. 한 번 풀리면 다시 잠기지 않음 */
+(() => {
+    const section = document.querySelector('.pairing');
+    const inner = section?.querySelector('.pairing_inner');
+    const modal = document.querySelector('[data-pairing-result-modal]');
+    const nextButton = modal?.querySelector('[data-pairing-result-next]');
+
+    if (!section || !inner || !nextButton) return;
+
+    const scrollKeys = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ', 'Spacebar']);
+
+    let lockY = 0;
+    let lastY = window.scrollY;
+    let isLocked = false;
+    let hasFinished = false;
+
+    // 결과 모달 안은 자체 스크롤(overflow-y: auto)이 있어야 해서 잠금에서 제외
+    const isInsideModal = (target) => target instanceof Element && !!target.closest('[data-pairing-result-modal]');
+
+    // .pairing_inner 가 화면 정중앙에 오는 위치. 이때 섹션이 화면을 완전히 덮음
+    function measure() {
+        const bounds = inner.getBoundingClientRect();
+        lockY = Math.round(bounds.top + window.scrollY + bounds.height / 2 - window.innerHeight / 2);
+    }
+
+    // 위치는 네이티브로 즉시 잡고, Lenis 에는 같은 값을 알려 내부 상태를 맞춤.
+    // Lenis 쪽만 쓰면 자체 rAF 틱을 기다리느라 한 프레임 늦게 반영됨.
+    // force 는 stop() 상태에서도 이동시키는 옵션
+    function jumpTo(y) {
+        const lenis = window.siteLenis;
+
+        window.scrollTo(0, y);
+        if (lenis && typeof lenis.scrollTo === 'function') lenis.scrollTo(y, { immediate: true, force: true });
+    }
+
+    function blockEvent(event) {
+        if (isInsideModal(event.target)) return;
+
+        event.preventDefault();
+    }
+
+    function blockKey(event) {
+        if (!scrollKeys.has(event.key) || isInsideModal(event.target)) return;
+
+        event.preventDefault();
+    }
+
+    // 스크롤바 드래그처럼 막을 수 없는 경로는 위치를 되돌려 붙잡음
+    function holdPosition() {
+        if (isLocked && Math.abs(window.scrollY - lockY) > 1) jumpTo(lockY);
+    }
+
+    function lock() {
+        if (isLocked) return;
+
+        isLocked = true;
+        window.siteLenis?.stop();
+        jumpTo(lockY);
+        window.addEventListener('wheel', blockEvent, { passive: false });
+        window.addEventListener('touchmove', blockEvent, { passive: false });
+        window.addEventListener('keydown', blockKey);
+        window.addEventListener('scroll', holdPosition, { passive: true });
+    }
+
+    function unlock() {
+        if (!isLocked) return;
+
+        isLocked = false;
+        hasFinished = true;
+        window.removeEventListener('wheel', blockEvent);
+        window.removeEventListener('touchmove', blockEvent);
+        window.removeEventListener('keydown', blockKey);
+        window.removeEventListener('scroll', holdPosition);
+        window.siteLenis?.start();
+    }
+
+    // 위에서 아래로 지나가는 순간만 잡음. 이미 지나친 위치에서 시작하면(새로고침 등)
+    // 뒤로 끌어당기지 않고, 다시 올라갔다 내려올 때 비로소 걸림
+    function watch() {
+        const previous = lastY;
+
+        lastY = window.scrollY;
+
+        if (isLocked || hasFinished || previous >= lockY || lastY < lockY) return;
+
+        // 이미지가 늦게 실려 lockY 가 어긋나 있을 수 있어 교차 순간에만 다시 잼
+        measure();
+        if (lastY < lockY) return;
+
+        lock();
+    }
+
+    measure();
+    lastY = window.scrollY;
+
+    window.addEventListener('scroll', watch, { passive: true });
+    window.addEventListener('resize', () => {
+        measure();
+        holdPosition();
+    }, { passive: true });
+    window.addEventListener('load', measure);
+    nextButton.addEventListener('click', unlock);
+})();
+
 /* 스크롤 스택: 브랜드 스토리를 마지막 화면에서 고정시키려면 sticky top 에 음수 오프셋이 필요한데,
    그 값이 섹션 높이에 걸려 있어 css 만으로는 못 씀. 높이를 재서 변수로 넘겨 줌 */
 (() => {

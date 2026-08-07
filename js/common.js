@@ -4,8 +4,9 @@
     if (!sideNav) return;
 
     const sideNavItems = sideNav.querySelectorAll('li');
-    const activeIcon = 'asset/icon/submenu_arrow.svg';
-    const inactiveIcon = 'asset/icon/submenu_dot.svg';
+    // 문서 기준 경로. 이 스크립트를 쓰는 페이지는 모두 html/ 안에 있어서 한 단계 위를 가리킴
+    const activeIcon = '../asset/icon/submenu_arrow.svg';
+    const inactiveIcon = '../asset/icon/submenu_dot.svg';
 
     function changeSideNavIcon(icon, iconSource) {
         if (!icon || icon.getAttribute('src') === iconSource) return;
