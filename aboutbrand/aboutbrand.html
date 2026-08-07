@@ -33,8 +33,13 @@
   <title>About Brand</title>
   <link rel="stylesheet" href="../common/reset.css">
   <link rel="stylesheet" href="../common/common.css">
+  <link rel="stylesheet" href="aboutbrand.css">
   <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js" defer></script>
   <script src="../common/common.js" defer></script>
+  <!-- GSAP core + ScrollTrigger (둘 다 무료 배포본). brand_history 가로 탐색에만 사용 -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js" defer></script>
+  <script src="aboutbrand.js" defer></script>
 </head>
 
 <body>
@@ -73,10 +78,268 @@
 
   <main>
 
+    <!-- ==================== intro (hero) ==================== -->
+    <section class="intro_section" id="hero" aria-labelledby="intro_title">
+      <h1 class="intro_title" id="intro_title" aria-label="ABOUT THE KOOKSOONDANG BRAND">
+        <span class="intro_title_line" aria-hidden="true">
+          <span class="intro_title_word">ABOUT</span>
+          <img class="intro_title_icon" src="aboutbrand_asset/icon/intro_icon.svg" alt="" aria-hidden="true" width="61"
+            height="61">
+          <span class="intro_title_word">THE</span>
+        </span>
+        <span class="intro_title_line" aria-hidden="true">
+          <span class="intro_title_word intro_title_mark">KOOKSOONDANG</span>
+          <span class="intro_title_word">BRAND</span>
+        </span>
+      </h1>
+
+      <a class="intro_arrow" href="#brand_history" aria-label="Scroll down to brand history">
+        <img src="aboutbrand_asset/icon/intro_arrow.svg" alt="" aria-hidden="true" width="35" height="41">
+      </a>
+    </section>
+
+    <!-- ==================== brand history (가로 탐색) ====================
+         시안 1920x1080 기준. 트랙 전체를 설계 픽셀 그대로 짜고
+         .history_track 에 scale() 을 걸어 화면 높이에 맞춘다.
+         마지막 vision 패널이 화면에 다 들어오면 가로 탐색이 끝나고 세로로 넘어간다. -->
+    <section class="history_section" id="brand_history" aria-labelledby="history_title">
+      <h2 class="visually_hidden" id="history_title">Brand history</h2>
+
+      <div class="history_viewport" data-history-viewport>
+        <div class="history_stage" data-history-stage>
+          <div class="history_track" data-history-track>
+
+            <!-- ---------- 두루마리 ---------- -->
+            <div class="history_year">
+              <div class="history_scroll_all">
+                <img class="history_stick history_stick_left" src="aboutbrand_asset/icon/scroll_stick.svg" alt=""
+                  aria-hidden="true" width="165" height="856">
+
+                <div class="history_scroll_inner">
+                  <div class="history_scroll_con">
+                    <div class="history_year_con">
+
+                      <!-- 네 개의 img_box 를 오가는 사진 한 장.
+                           가로 스크롤에 맞춰 자리와 크기가 바뀌고 사진이 교차된다.
+                           내용은 각 img_box 의 이미지와 같으므로 보조기기에는 숨긴다. -->
+                      <div class="history_photo" data-history-photo aria-hidden="true">
+                        <img src="aboutbrand_asset/img/brand_img_1.jpg" alt="">
+                        <img src="aboutbrand_asset/img/brand_img_2.jpg" alt="">
+                        <img src="aboutbrand_asset/img/brand_img_3.jpg" alt="">
+                        <img src="aboutbrand_asset/img/brand_img_4.jpg" alt="">
+                      </div>
+
+                      <!-- 1970~1985 -->
+                      <article class="year_block year_1">
+                        <div class="img_box img_box_1">
+                          <img src="aboutbrand_asset/img/brand_img_1.jpg"
+                            alt="Researcher working in the Kooksoondang fermentation laboratory" loading="lazy">
+                        </div>
+                        <div class="year_con">
+                          <div class="year_head">
+                            <p class="year_tit year_tit_end">1970~1985</p>
+                            <div class="year_txt year_txt_col">
+                              <p class="txt_point">Providing a strong foundation for Korea's alcoholic beverage industry
+                              </p>
+                              <p class="txt_body">through advanced enzyme and coenzyme technologies.</p>
+                            </div>
+                          </div>
+                          <ul class="year_list">
+                            <li class="year_li" style="--li_w: 473px">
+                              <p class="li_year">1970 ~ 1982</p>
+                              <p class="li_txt">Established a research institute and advanced fermentation technology.
+                              </p>
+                            </li>
+                            <li class="year_li" style="--li_w: 514px">
+                              <p class="li_year">1983~1985</p>
+                              <p class="li_txt">Founded Baehan Industrial Co., Ltd., launched enzymes for alcohol
+                                production, and developed a non-steam alcohol production technology.</p>
+                            </li>
+                          </ul>
+                        </div>
+                      </article>
+
+                      <!-- 1986~1993 -->
+                      <article class="year_block year_2">
+                        <div class="year_con">
+                          <ul class="year_list year_list_right">
+                            <li class="year_li" style="--li_w: 434px">
+                              <p class="li_year">1986~1990</p>
+                              <p class="li_txt">Built a stronger production and R&amp;D foundation with the Suwon Plant,
+                                a new research institute, and advanced alcohol production technology.</p>
+                            </li>
+                            <li class="year_li" style="--li_w: 465px">
+                              <p class="li_year">1992~1993</p>
+                              <p class="li_txt">Rebranded as Kooksoondang, launched fresh rice fermentation makgeolli,
+                                and expanded operations through a factory acquisition.</p>
+                            </li>
+                          </ul>
+                          <div class="year_head year_head_end">
+                            <div class="year_txt year_txt_row">
+                              <span class="txt_point">Created new business</span>
+                              <span class="txt_body">opportunities through technological excellence.</span>
+                            </div>
+                            <p class="year_tit year_tit_center">1986~1993</p>
+                          </div>
+                        </div>
+                        <div class="img_box img_box_2">
+                          <img src="aboutbrand_asset/img/brand_img_2.jpg"
+                            alt="Baekseju bottle and glass served on a table" loading="lazy">
+                        </div>
+                      </article>
+
+                      <!-- 1994~1999 -->
+                      <article class="year_block year_3">
+                        <div class="year_con">
+                          <div class="year_head">
+                            <p class="year_tit year_tit_center">1994~1999</p>
+                            <div class="year_txt year_txt_row">
+                              <span class="txt_body">Adapting</span>
+                              <span class="txt_point">tradition</span>
+                              <span class="txt_body">to today</span>
+                            </div>
+                          </div>
+                          <ul class="year_list year_list_right">
+                            <li class="year_li" style="--li_w: 373px">
+                              <p class="li_year">1994~1995</p>
+                              <p class="li_txt">Expanded nationwide and overseas, earning KT certification and
+                                establishing a corporate research institute.</p>
+                            </li>
+                            <li class="year_li" style="--li_w: 489px">
+                              <p class="li_year">1996~1999</p>
+                              <p class="li_txt">Strengthened product quality with the launch of canned makgeolli and
+                                Venture Business and ISO 9002 certifications.</p>
+                            </li>
+                          </ul>
+                        </div>
+                        <div class="img_box img_box_3">
+                          <img src="aboutbrand_asset/img/brand_img_3.jpg"
+                            alt="Traditional Korean earthenware jars used for brewing" loading="lazy">
+                        </div>
+                      </article>
+
+                      <!-- 2000~2026 -->
+                      <article class="year_block year_4">
+                        <div class="img_box img_box_4">
+                          <img src="aboutbrand_asset/img/brand_img_4.jpg"
+                            alt="Kooksoondang makgeolli bottles styled with spring blossoms" loading="lazy">
+                        </div>
+                        <div class="year_con year_con_overlay">
+                          <ul class="year_list year_list_right">
+                            <li class="year_li" style="--li_w: 339px">
+                              <p class="li_year">2025</p>
+                              <p class="li_txt">Reinforced brand competitiveness with the relaunch of Baekseju and a new
+                                marketing campaign.</p>
+                            </li>
+                            <li class="year_li" style="--li_w: 354px">
+                              <p class="li_year">ESG Initiatives</p>
+                              <p class="li_txt">Advanced ESG through traditional brewing preservation, community
+                                partnerships, and youth support.</p>
+                            </li>
+                          </ul>
+                          <div class="year_head year_head_end">
+                            <div class="year_txt year_txt_row">
+                              <span class="txt_body">Korean popular songs,</span>
+                              <span class="txt_point">representative songs</span>
+                            </div>
+                            <p class="year_tit year_tit_end">2000~2026</p>
+                          </div>
+                        </div>
+                      </article>
+
+                    </div>
+                  </div>
+                </div>
+
+                <img class="history_stick history_stick_right" src="aboutbrand_asset/icon/scroll_stick.svg" alt=""
+                  aria-hidden="true" width="165" height="856">
+              </div>
+            </div>
+
+            <!-- ---------- 가로 탐색의 끝: vision 진입 패널 ---------- -->
+            <div class="history_vision" id="vision_intro">
+              <div class="history_vision_inner">
+                <div class="history_vision_tit">
+                  <p class="history_vision_since">Since 1952</p>
+                  <p class="history_vision_word">
+                    VISI<span class="history_vision_o"><img src="aboutbrand_asset/icon/vision_o.svg" alt="O"
+                        width="60" height="60"></span>N
+                  </p>
+                  <p class="history_vision_lead">
+                    For over 70 years, we have transformed Korean brewing into culture.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== vision - 4 keywords (세로 스크롤 시작) ==================== -->
+    <section class="vision_section" id="vision" aria-labelledby="vision_title">
+      <h2 class="visually_hidden" id="vision_title">Vision keywords</h2>
+
+      <div class="vision_inner">
+        <ul class="vision_circles">
+          <li class="vision_circle">
+            <span class="vision_circle_name">Alcohol</span>
+          </li>
+          <li class="vision_circle">
+            <span class="vision_circle_name">Food<br>Beverages</span>
+          </li>
+          <li class="vision_circle">
+            <span class="vision_circle_name">Culture</span>
+          </li>
+          <li class="vision_circle">
+            <span class="vision_circle_name">Lead</span>
+          </li>
+        </ul>
+
+        <img class="vision_arrow" src="aboutbrand_asset/icon/vision_arrow.svg" alt="" aria-hidden="true" width="35"
+          height="64">
+
+        <p class="vision_statement">A company that creates health and culture</p>
+      </div>
+    </section>
+
+    <!-- ==================== respected company ==================== -->
+    <section class="respected_section" id="respected_company" aria-labelledby="respected_title">
+      <div class="respected_bg" aria-hidden="true">
+        <img src="aboutbrand_asset/img/respected_company.jpg" alt="" loading="lazy">
+        <span class="respected_bg_wash"></span>
+      </div>
+
+      <div class="respected_content">
+        <p class="respected_icon" aria-hidden="true">
+          <img class="respected_leaf" src="aboutbrand_asset/icon/respected_leaf.svg" alt="" width="50" height="31">
+          <img class="respected_cup" src="aboutbrand_asset/icon/respected_cup.svg" alt="" width="119" height="92">
+        </p>
+
+        <h2 class="respected_title" id="respected_title">RESPECTED COMPANY</h2>
+
+        <p class="respected_lead">
+          To be a <em class="respected_point">respected</em> company with strong
+          <em class="respected_point">competitiveness,</em> loved by customers,<br>
+          sought after by talented people, and committed to making a positive contribution to society.
+        </p>
+
+        <img class="respected_chevron" src="aboutbrand_asset/icon/respected_chevron.svg" alt="" aria-hidden="true"
+          width="36" height="15">
+
+        <ul class="respected_tags">
+          <li class="respected_tag">Future Value</li>
+          <li class="respected_tag">Principle</li>
+          <li class="respected_tag">Competitiveness</li>
+        </ul>
+      </div>
+    </section>
+
   </main>
 
   <footer class="site_footer" id="site_footer">
-    <img class="site_footer_wave" src="../asset/icon/footer_wave.svg" alt="" aria-hidden="true">
+    <img class="site_footer_wave" src="../asset/icon/footer_wave.svg" alt="" aria-hidden="true" style="fill: var(--bekseju_darker_cold);">
     <div class="site_footer_inner">
       <div class="footer_left">
         <a class="footer_logo" href="#hero" aria-label="Kooksoondang home">

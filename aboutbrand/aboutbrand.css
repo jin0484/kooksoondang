@@ -1,0 +1,940 @@
+@charset "UTF-8";
+
+/* ---------------------------------------------------------------------------
+   aboutbrand.css
+   about brand 페이지 전용. 색·타이포·간격은 common.css 의 :root 토큰을 그대로 씀.
+   common.css 에 --font-Pretendard 변수는 있지만 실제 폰트를 불러오는 곳이 없어서
+   (Albert Sans / Anek Telugu / ROH HOE-CHAN 만 로드됨) 이 페이지에서 함께 불러옴.
+--------------------------------------------------------------------------- */
+
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
+
+.intro_section,
+.history_section,
+.vision_section,
+.respected_section {
+    --about_gutter: var(--gutter-x);
+    --about_max: var(--page-max);
+}
+
+/* 키보드 초점. 색만으로 구분하지 않도록 굵은 외곽선을 함께 씀 */
+.intro_section :focus-visible,
+.history_section :focus-visible,
+.vision_section :focus-visible,
+.respected_section :focus-visible {
+    outline: 3px solid var(--kooksoondang_orange);
+    outline-offset: 3px;
+    border-radius: 8px;
+}
+
+/* 가로 탐색 영역은 키보드로도 좌우 이동이 되어야 해서 초점을 받을 수 있게 함 */
+.history_viewport:focus-visible {
+    outline-offset: -3px;
+}
+
+/* 섹션 공통 - 안쪽 폭 잡기 */
+.vision_inner,
+.respected_inner {
+    width: 100%;
+    max-width: var(--about_max);
+    margin-inline: auto;
+    padding-inline: var(--about_gutter);
+}
+
+
+/* =========================================================================
+   intro (hero)
+   시안 기준: 1920 x 1080 프레임, tit 블록 1012 x 258 을 화면 정중앙에 배치.
+   타이틀 Albert Sans Regular 86px / line-height 1.3 / letter-spacing -2%.
+   ========================================================================= */
+
+.intro_section {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100svh;
+    padding-inline: var(--about_gutter);
+    /* 시안: rgba(234,223,216,0.3) 11.058% -> #FFFFFF */
+    background:
+        linear-gradient(180deg,
+            color-mix(in srgb, var(--makgeolli_light1) 30%, transparent) 11.058%,
+            var(--makgeolli_White) 100%);
+    overflow: hidden;
+}
+
+.intro_title {
+    /* 86 / 1920 = 4.479vw. 360px 에서도 한 줄이 넘치지 않도록 하한을 둠 */
+    font-family: var(--font-Albert_Sans);
+    font-weight: 400;
+    font-size: clamp(1.5rem, 4.479vw, 5.375rem);
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    text-align: center;
+    color: var(--bekseju_darker_cold);
+}
+
+.intro_title_line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2em;
+    white-space: nowrap;
+}
+
+/* 시안: 61px 아이콘이 첫 줄 가운데에 놓임 (61 / 86 = 0.709em) */
+.intro_title_icon {
+    width: 0.709em;
+    height: 0.709em;
+    flex: none;
+}
+
+/* KOOKSOONDANG 뒤 오렌지 하이라이트.
+   시안 사각형 721 x 95, 텍스트 줄상자(1.3em) 안에서 위 0.084em 부터 1.105em 높이 */
+.intro_title_mark {
+    padding-inline: 0.1em;
+    margin-inline: -0.1em;
+    background-image: linear-gradient(color-mix(in srgb, var(--kooksoondang_orange) 50%, transparent),
+            color-mix(in srgb, var(--kooksoondang_orange) 50%, transparent));
+    background-repeat: no-repeat;
+    background-size: 100% 1.105em;
+    background-position: 0 0.084em;
+}
+
+
+/* ---------- 타이틀 등장 애니메이션 ----------
+   문자 하나씩 왼쪽에서 밀려 들어오며 나타난다.
+   .is_reveal_ready 는 JS 가 글자를 쪼갠 뒤에만 붙으므로,
+   JS 가 없거나 모션 최소화 설정이면 처음부터 그냥 보인다. */
+
+.reveal_char {
+    display: inline-block;
+    opacity: 0;
+    white-space: pre;
+}
+
+.intro_title.is_reveal_ready .intro_title_icon {
+    opacity: 0;
+}
+
+/* 하이라이트 바도 글자와 같은 방향으로 왼쪽에서 채워진다.
+   transition 을 쓰면 클래스가 붙는 시점에 100% -> 0% 로 한 번 되감겨
+   주황 바가 깜빡이므로, 글자와 똑같이 animation forwards 로 처리한다. */
+.intro_title.is_reveal_ready .intro_title_mark {
+    background-size: 0% 1.105em;
+}
+
+.intro_title.is_reveal_ready .intro_title_mark.is_revealed {
+    animation: intro_mark_wipe 0.5s ease-in-out forwards;
+}
+
+@keyframes intro_mark_wipe {
+    from {
+        background-size: 0% 1.105em;
+    }
+
+    to {
+        background-size: 100% 1.105em;
+    }
+}
+
+.reveal_char.is_revealed,
+.intro_title.is_reveal_ready .intro_title_icon.is_revealed {
+    animation: intro_text_reveal 0.5s ease-in-out forwards;
+}
+
+@keyframes intro_text_reveal {
+    from {
+        transform: translateX(-0.35em);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* 글자가 다 나온 뒤부터 아이콘이 90도씩 끊어서 계속 돈다.
+   90도 회전 0.6s + 정지 0.5s = 1.1s 가 한 칸, 네 칸(360도) 4.4s 를 무한 반복.
+   등장 애니메이션의 transform 을 넘겨받는 자리라 opacity 도 여기서 다시 잡아 준다. */
+.intro_title.is_reveal_ready .intro_title_icon.is_spinning {
+    opacity: 1;
+    animation: intro_icon_spin 4.4s ease-in-out infinite;
+}
+
+@keyframes intro_icon_spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    /* 0.6s 동안 90도 회전한 뒤 0.5s 정지 (13.64% = 0.6s, 25% = 1.1s) */
+    13.64%,
+    25% {
+        transform: rotate(90deg);
+    }
+
+    38.64%,
+    50% {
+        transform: rotate(180deg);
+    }
+
+    63.64%,
+    75% {
+        transform: rotate(270deg);
+    }
+
+    88.64%,
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* 시안: 35 x 41 화살표, 가로 정중앙 / 아래에서 100px (1080 기준 9.26%) */
+.intro_arrow {
+    position: absolute;
+    left: 50%;
+    bottom: clamp(2.5rem, 9.26vh, 6.25rem);
+    transform: translateX(-50%);
+    display: block;
+    width: clamp(1.5rem, 1.82vw, 2.1875rem);
+}
+
+.intro_arrow img {
+    width: 100%;
+    height: auto;
+    animation: intro_arrow_bob 2.4s ease-in-out infinite;
+}
+
+@keyframes intro_arrow_bob {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(0.375rem);
+    }
+}
+
+
+/* =========================================================================
+   brand history (가로 탐색)
+
+   시안이 1920 x 1080 고정 캔버스라 안쪽 값은 전부 시안 픽셀 그대로 쓰고,
+   .history_track 에 scale(--history_scale) 을 걸어 화면 높이에 맞춘다.
+   (--history_scale 은 aboutbrand.js 가 뷰포트 높이 / 1080 으로 계산해 넣음)
+   .history_stage 는 스케일된 실제 크기를 레이아웃에 알려 주는 상자.
+   ========================================================================= */
+
+.history_section {
+    /* --history_track_w / --history_scale / --history_vw 는 aboutbrand.js 가 넣는다.
+       트랙 폭은 vision 패널이 화면 폭에 따라 늘어나므로 실측해서 받아온다. */
+    --history_track_w: 8116px;
+    --history_track_h: 1080px;
+    --history_scale: 1;
+    --history_vw: 100vw;
+    position: relative;
+    background: var(--makgeolli_White);
+}
+
+.history_viewport {
+    display: flex;
+    align-items: center;
+    height: 100svh;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* GSAP 이 제어할 때는 네이티브 스크롤을 끄고 transform 으로만 움직임 */
+.history_section.is_history_pinned .history_viewport {
+    overflow: hidden;
+}
+
+.history_stage {
+    position: relative;
+    flex: none;
+    width: calc(var(--history_track_w) * var(--history_scale));
+    height: calc(var(--history_track_h) * var(--history_scale));
+}
+
+.history_track {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: flex;
+    align-items: center;
+    width: max-content;
+    height: var(--history_track_h);
+    transform: scale(var(--history_scale));
+    transform-origin: 0 0;
+}
+
+/* ---------- 두루마리 ---------- */
+
+.history_year {
+    flex: none;
+    display: flex;
+    align-items: center;
+    width: 6196px;
+    height: 1080px;
+    padding-inline: 160px;
+    background: var(--makgeolli_White);
+}
+
+.history_scroll_all {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding-left: 120px;
+}
+
+.history_stick {
+    flex: none;
+    width: 161px;
+    height: 852px;
+}
+
+.history_stick_left {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.history_stick_right {
+    margin-left: 0;
+}
+
+.history_scroll_inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-right: -40px;
+    padding: 40px 8px;
+    border: 4px solid var(--kooksoondang_orange);
+    background: #FFFDE6;
+}
+
+.history_scroll_con {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    border: 4px solid var(--kooksoondang_orange);
+    background: var(--makgeolli_White);
+}
+
+.history_year_con {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 280px;
+    height: 684px;
+    padding: 40px 80px;
+}
+
+/* ---------- 연혁 블록 공통 ---------- */
+
+.year_block {
+    position: relative;
+    /* 이동하는 사진(z-index 0) 보다 글자가 위에 오도록 */
+    z-index: 1;
+    align-self: stretch;
+    display: flex;
+}
+
+.year_con {
+    display: flex;
+    flex-direction: column;
+}
+
+.year_tit {
+    font-family: var(--font-Pretendard);
+    font-weight: 700;
+    font-size: 150px;
+    line-height: 1;
+    letter-spacing: -1.65px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--bekseju_dark1);
+}
+
+.year_head {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.year_tit_end {
+    align-self: flex-end;
+}
+
+.year_tit_center {
+    align-self: center;
+}
+
+.year_txt {
+    font-size: 20px;
+    line-height: 1.3;
+}
+
+.year_txt_col {
+    display: flex;
+    flex-direction: column;
+}
+
+.year_txt_row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    line-height: 1.7;
+    white-space: nowrap;
+}
+
+.year_3 .year_txt_row {
+    gap: 4px;
+}
+
+.txt_point {
+    font-family: var(--font-Pretendard);
+    font-weight: 600;
+    color: var(--kooksoondang_orange);
+}
+
+.txt_body {
+    font-family: var(--font-Pretendard);
+    font-weight: 300;
+    color: var(--bekseju_dark1);
+}
+
+.year_list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.year_list_right {
+    align-items: flex-end;
+    text-align: right;
+}
+
+.year_li {
+    width: var(--li_w, auto);
+    line-height: 1.7;
+}
+
+.li_year {
+    font-family: var(--font-ROH_HOE-CHAN);
+    font-size: 16px;
+    color: var(--kooksoondang_orange);
+}
+
+.li_txt {
+    font-family: var(--font-Pretendard);
+    font-weight: 300;
+    font-size: 15px;
+    letter-spacing: -0.15px;
+    color: var(--bekseju_dark1);
+}
+
+.year_list_right .li_year,
+.year_list_right .li_txt {
+    font-size: 14px;
+    letter-spacing: 0;
+}
+
+/* ---------- 이미지 상자 (오렌지 오버레이) ---------- */
+
+.img_box {
+    position: relative;
+    flex: none;
+    overflow: hidden;
+    border-radius: 10px;
+}
+
+.img_box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.img_box::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--kooksoondang_orange) 30%, transparent);
+}
+
+.img_box_1 {
+    width: 200px;
+    height: 200px;
+}
+
+.img_box_1::after {
+    background: color-mix(in srgb, var(--kooksoondang_orange) 35%, transparent);
+}
+
+.img_box_2 {
+    width: 576px;
+    align-self: stretch;
+}
+
+.img_box_3 {
+    width: 280px;
+    height: 280px;
+}
+
+.img_box_4 {
+    width: 602px;
+    height: 285px;
+}
+
+/* ---------- 네 자리를 오가는 사진 한 장 ----------
+   가로 탐색(pin)이 걸렸을 때만 동작한다. GSAP 이 없거나 모바일 폴백일 때는
+   원래대로 img_box 안의 사진이 제자리에 그대로 보인다. */
+
+.history_photo {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 0;
+    overflow: hidden;
+    border-radius: 10px;
+}
+
+.history_photo img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+}
+
+.history_photo img:first-child {
+    opacity: 1;
+}
+
+.history_photo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, var(--kooksoondang_orange) 30%, transparent);
+}
+
+.history_section.is_history_pinned .history_photo {
+    display: block;
+}
+
+/* 이동하는 사진이 대신 보여 주므로 제자리 사진과 오렌지 오버레이는 감춘다.
+   (alt 텍스트는 남겨 두려고 지우지 않고 투명하게만 처리) */
+.history_section.is_history_pinned .img_box img,
+.history_section.is_history_pinned .img_box::after {
+    opacity: 0;
+}
+
+/* ---------- 블록별 배치 ---------- */
+
+.year_1 {
+    gap: 17px;
+    align-items: flex-end;
+}
+
+.year_1 .year_con {
+    gap: 242px;
+    align-items: flex-end;
+    width: 917px;
+}
+
+.year_1 .year_head {
+    width: 789px;
+}
+
+.year_2 {
+    gap: 20px;
+    align-items: center;
+}
+
+.year_2 .year_con {
+    align-items: flex-end;
+    justify-content: space-between;
+    width: 804px;
+    height: 100%;
+}
+
+.year_2 .year_head {
+    align-items: flex-end;
+    width: 100%;
+}
+
+.year_3 {
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.year_3 .year_con {
+    gap: 245px;
+    align-items: flex-end;
+    width: 806px;
+}
+
+.year_3 .year_head {
+    align-items: flex-start;
+    width: 100%;
+}
+
+.year_4 {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    width: 968px;
+    position: relative;
+}
+
+.year_con_overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    justify-content: space-between;
+    width: 968px;
+    height: 601px;
+}
+
+.year_4 .year_list {
+    align-self: flex-start;
+}
+
+.year_4 .year_head {
+    align-items: flex-end;
+    width: 100%;
+}
+
+/* ---------- 가로 탐색의 끝: vision 진입 패널 ---------- */
+
+/* 시안 폭은 1950 이지만, 화면이 (높이 대비) 가로로 넓으면 1950 * scale 이
+   화면 폭보다 좁아져서 검정 패널이 화면을 다 덮기 전에 가로 탐색이 끝나 버린다.
+   그래서 "화면 폭을 설계 단위로 환산한 값" 을 최소 폭으로 준다.
+   여기에 왼쪽 띠(30px)까지 더해야 둥근 모서리가 화면 밖으로 완전히 빠져서
+   안쪽 면(#272625)만 남는다. */
+.history_vision {
+    position: relative;
+    flex: none;
+    width: 1950px;
+    /* 30px = 왼쪽 띠, 6px = scale·반올림으로 생기는 서브픽셀 틈을 덮는 여유 */
+    min-width: calc(var(--history_vw) / var(--history_scale) + 36px);
+    height: 1080px;
+    margin-left: -30px;
+    border-radius: 20px 0 0 20px;
+    background: var(--bekseju_darker_cold);
+    overflow: hidden;
+}
+
+.history_vision_inner {
+    position: absolute;
+    inset: 0 0 0 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bekseju_darker_warm);
+    overflow: hidden;
+}
+
+/* 시안의 노이즈 이펙트 근사치 */
+.history_vision_inner::after,
+.vision_section::after,
+.respected_section::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.32'/%3E%3C/svg%3E");
+}
+
+.history_vision_tit {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+    width: 609px;
+    text-align: center;
+}
+
+.history_vision_since,
+.history_vision_lead {
+    font-family: var(--font-Pretendard);
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 1.7;
+    color: var(--makgeolli_light1);
+}
+
+.history_vision_word {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-Albert_Sans);
+    font-weight: 400;
+    font-size: 86px;
+    line-height: 1.3;
+    letter-spacing: -1.72px;
+    color: var(--makgeolli_White);
+}
+
+.history_vision_o {
+    display: inline-flex;
+    width: 60px;
+    height: 60px;
+    margin-inline: 6px;
+}
+
+.history_vision_o img {
+    width: 100%;
+    height: 100%;
+}
+
+
+/* =========================================================================
+   vision - 4 keywords (여기부터 다시 세로 스크롤)
+   원 4개는 전용 에셋이 없어 CSS(배경 + 0.5px 보더 + border-radius)로 구현.
+   ========================================================================= */
+
+.vision_section {
+    position: relative;
+    padding-block: clamp(6rem, 23.3vh, 15.75rem) clamp(6rem, 25.5vh, 17.25rem);
+    background: var(--bekseju_darker_cold);
+    overflow: hidden;
+}
+
+.vision_inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(2rem, 3vw, 3.6875rem);
+}
+
+.vision_circles {
+    /* 시안: 지름 315.867, 원끼리 27.871 겹침 (지름의 8.824%).
+       퍼센트 마진은 원이 아니라 이 줄의 폭을 기준으로 계산되므로
+       겹침도 지름 변수에서 직접 계산한다. */
+    --vision_circle_size: clamp(6.5rem, 16.45vw, 19.75rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vision_circle {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--vision_circle_size);
+    aspect-ratio: 1;
+    margin-right: calc(var(--vision_circle_size) * -0.08824);
+    border: 0.5px solid var(--bekseju_dark3);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bekseju_dark2) 30%, transparent);
+    text-align: center;
+}
+
+.vision_circle:last-child {
+    margin-right: 0;
+}
+
+.vision_circle_name {
+    font-family: var(--font-Pretendard);
+    font-weight: 600;
+    font-size: clamp(0.875rem, 1.56vw, 1.875rem);
+    line-height: 1.5;
+    letter-spacing: -0.011em;
+    color: var(--makgeolli_light1);
+}
+
+.vision_arrow {
+    width: clamp(1.25rem, 1.82vw, 2.1875rem);
+    height: auto;
+}
+
+.vision_statement {
+    font-family: var(--font-Pretendard);
+    font-weight: 600;
+    font-size: clamp(1.125rem, 1.875vw, 2.25rem);
+    line-height: 1.5;
+    letter-spacing: -0.011em;
+    text-align: center;
+    color: var(--makgeolli_light1);
+}
+
+
+/* =========================================================================
+   respected company
+   ========================================================================= */
+
+.respected_section {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: clamp(40rem, 62.7vw, 75.1875rem);
+    padding-block: clamp(4rem, 8vw, 8rem);
+    padding-inline: var(--about_gutter);
+    overflow: hidden;
+}
+
+.respected_bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.respected_bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 시안의 2단 그라디언트 워시 */
+.respected_bg_wash {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(180deg, rgba(35, 35, 35, 0.2) 0%, rgba(59, 65, 2, 0.12) 66%, rgba(190, 208, 9, 0.06) 100%),
+        linear-gradient(180deg, rgb(35, 35, 35) 0%, rgba(56, 48, 40, 0.7) 100%);
+}
+
+.respected_content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(1.75rem, 3.125vw, 3.75rem);
+    width: 100%;
+    max-width: 63.875rem;
+    text-align: center;
+}
+
+.respected_icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.respected_leaf {
+    width: clamp(1.75rem, 2.6vw, 3.10625rem);
+    height: auto;
+}
+
+.respected_cup {
+    width: clamp(4.25rem, 6.18vw, 7.41125rem);
+    height: auto;
+}
+
+.respected_title {
+    font-family: var(--font-Albert_Sans);
+    font-weight: 400;
+    font-size: clamp(1.75rem, 3.33vw, 4rem);
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    color: var(--makgeolli_White);
+}
+
+.respected_lead {
+    font-family: var(--font-Pretendard);
+    font-weight: 300;
+    font-size: clamp(0.9375rem, 1.25vw, 1.5rem);
+    line-height: 1.3;
+    color: var(--makgeolli_White);
+}
+
+.respected_point {
+    font-style: normal;
+    color: var(--kooksoondang_green);
+}
+
+.respected_chevron {
+    width: clamp(1.5rem, 1.875vw, 2.25rem);
+    height: auto;
+}
+
+.respected_tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(0.625rem, 1.04vw, 1.25rem);
+}
+
+.respected_tag {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(8rem, 12.5vw, 15rem);
+    padding-block: 1rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    font-family: var(--font-Pretendard);
+    font-weight: 200;
+    font-size: clamp(0.875rem, 1.04vw, 1.25rem);
+    line-height: 1.7;
+    color: var(--makgeolli_White);
+}
+
+
+/* =========================================================================
+   유틸
+   ========================================================================= */
+
+.visually_hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    clip-path: inset(50%);
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+
+/* =========================================================================
+   반응형
+   ========================================================================= */
+
+@media (max-width: 767px) {
+    /* 4개가 한 줄에 들어가지 않아 2 x 2 로 접고, 겹침은 그대로 유지 */
+    .vision_circles {
+        --vision_circle_size: min(42vw, 11rem);
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .vision_circle:nth-child(2n) {
+        margin-right: 0;
+    }
+
+    .vision_circle:nth-child(n + 3) {
+        margin-top: calc(var(--vision_circle_size) * -0.08824);
+    }
+}
+
+
+/* =========================================================================
+   모션 최소화 설정
+   ========================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .intro_arrow img {
+        animation: none;
+    }
+}
