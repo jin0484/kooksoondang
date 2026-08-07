@@ -1,0 +1,60 @@
+/* 페이지 사이를 오갈 때 쓰는 공통 전환.
+   배경색 덮개를 걷어 내며 들어오고(페이드 인), 덮으며 나가므로 두 페이지가 이어져 보임.
+
+   들어오는 쪽은 css 만으로 동작함: 첫 프레임부터 덮여 있어야 화면이 번쩍이지 않으므로
+   js 가 클래스를 붙여 주기를 기다리지 않고 여기서 바로 애니메이션을 시작함.
+   나가는 쪽은 page_transition.js 가 html 에 is_page_leaving 을 붙여 준다.
+
+   덮개는 가장 위 레이어(모달 등)보다 높게 두고, 클릭을 가로채지 않도록 pointer-events 를 뺌 */
+html::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: var(--bg_color, #FAF8F7);
+    pointer-events: none;
+    animation: page_transition_in 600ms ease forwards;
+}
+
+/* 애니메이션이 아예 걸리지 않는 환경에서 덮개가 화면을 가린 채 남지 않도록 하는 안전장치.
+   page_transition.js 가 걷어 내는 애니메이션이 없다고 판단했을 때만 붙음 */
+html.is_page_entered:not(.is_page_leaving)::before {
+    animation: none;
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* 나갈 때는 같은 덮개를 반대 방향으로 씀. 뒤에 선언해 들어올 때의 애니메이션을 덮어씀 */
+html.is_page_leaving::before {
+    animation: page_transition_out 420ms ease forwards;
+}
+
+@keyframes page_transition_in {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+        /* 다 걷힌 뒤에는 레이어 자체를 빼서 위에 얹힌 요소들에 영향을 주지 않게 함 */
+        visibility: hidden;
+    }
+}
+
+@keyframes page_transition_out {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html::before,
+    html.is_page_leaving::before {
+        animation: none;
+        content: none;
+    }
+}

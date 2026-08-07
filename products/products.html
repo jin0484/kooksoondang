@@ -33,11 +33,14 @@
   <title>Products</title>
   <link rel="stylesheet" href="../common/reset.css">
   <link rel="stylesheet" href="../common/common.css">
+  <!-- 페이지 전환 덮개. 첫 프레임부터 덮여 있어야 하므로 다른 스타일보다 먼저 읽어 둠 -->
+  <link rel="stylesheet" href="../common/page_transition.css">
   <!-- common.css 의 --font-Pretendard 는 선언만 되어 있고 로드되는 곳이 없어서 이 페이지에서 받아 씀 -->
   <link rel="stylesheet"
     href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
   <link rel="stylesheet" href="products.css">
   <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js" defer></script>
+  <script src="../common/page_transition.js" defer></script>
   <script src="../common/common.js" defer></script>
   <script src="products.js" defer></script>
 </head>
@@ -370,10 +373,21 @@
         <small>COPYRIGHT&copy; 2026 by KOOKSOONDANG BREWERY CO.LTD | ALL RIGHTS RESERVED</small>
       </div>
       <div class="footer_right">
-        <button type="button" class="family_site_button" aria-haspopup="listbox" aria-expanded="false">
-          Family Site
-          <img src="../asset/icon/chevron_down_3.svg" alt="" aria-hidden="true">
-        </button>
+        <!-- 목록이 버튼 위로 열림. 버튼보다 앞에 두면 겹칠 때 목록이 위에 오고, 위치는 css 가 버튼 기준으로 잡음 -->
+        <div class="family_site" data-family-site>
+          <ul class="family_site_list" id="family_site_list">
+            <li><button type="button" disabled>Beopgochangsin</button></li>
+            <li><button type="button" disabled>Bekseju Village</button></li>
+            <li><button type="button" disabled>Yedam</button></li>
+            <li><button type="button" disabled>Juhyangro</button></li>
+            <li><button type="button" disabled>Woorisool Areumteo</button></li>
+          </ul>
+          <button type="button" class="family_site_button" aria-haspopup="true" aria-expanded="false"
+            aria-controls="family_site_list" data-family-site-toggle>
+            Family Site
+            <img src="../asset/icon/chevron_down_3.svg" alt="" aria-hidden="true">
+          </button>
+        </div>
         <address>
           <p>641, Bongeunsa-ro, Gangnam-gu, Seoul, Republic of Korea</p>
           <p>Tel : +82 02-513-8572</p>

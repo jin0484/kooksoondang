@@ -1139,7 +1139,9 @@
     color: #AEA49F;
 }
 
-.family_site_button {
+/* 이 페이지는 푸터가 어두워서 버튼 색을 따로 씀. 위로 열리는 목록도 같은 색이어야 한 덩이로 보임 */
+.family_site_button,
+.family_site_list {
     background: #413E3B;
 }
 
