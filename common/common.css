@@ -537,6 +537,10 @@ html.lenis body {
     max-width: 29.5rem;
 }
 
+.family_site {
+    position: relative;
+}
+
 .family_site_button {
     display: inline-flex;
     align-items: center;
@@ -551,6 +555,72 @@ html.lenis body {
 
 .family_site_button img {
     width: 1.125rem;
+    transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.family_site.is_family_open .family_site_button img {
+    transform: rotate(180deg);
+}
+
+/* 패밀리 사이트 목록: 버튼 위로 열림.
+   아래쪽을 축으로 접어 뒀다가 펴지므로 버튼에서 자라 나오는 것처럼 보임.
+   모서리는 버튼(아래가 둥근 모양)과 위아래 대칭이 되게 위쪽을 둥글게 둠 */
+.family_site_list {
+    position: absolute;
+    /* 버튼 폭에 가두면 긴 이름이 넘쳐서 그 줄만 오른쪽으로 밀려 보임.
+       버튼 오른쪽 끝에 붙인 채 가장 긴 이름에 맞춰 넓어지게 두면 다섯 줄이 같은 중심에 놓임 */
+    right: 0;
+    left: auto;
+    width: max-content;
+    min-width: 100%;
+    bottom: calc(100% + 0.5rem);
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem 0;
+    border-radius: 2rem 2rem 0.25rem 0.25rem;
+    background: var(--btn-check);
+    opacity: 0;
+    transform: translateY(0.75rem) scaleY(0.7);
+    transform-origin: bottom center;
+    /* 닫힐 때는 다 접힌 뒤에 사라져야 마지막 프레임이 튀지 않음 */
+    visibility: hidden;
+    transition: opacity 240ms ease,
+        transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+        visibility 0s linear 320ms;
+}
+
+.family_site.is_family_open .family_site_list {
+    opacity: 1;
+    transform: none;
+    visibility: visible;
+    transition: opacity 240ms ease,
+        transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+        visibility 0s;
+}
+
+.family_site_list button {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 1.75rem;
+    color: var(--makgeolli_light4);
+    font-size: 1rem;
+    text-align: center;
+    white-space: nowrap;
+    transition: color 200ms ease;
+}
+
+/* 아직 연결된 주소가 없는 항목이라 푸터의 다른 준비 중 링크와 같은 톤으로 둠 */
+.family_site_list button:disabled {
+    color: var(--bekseju_dark4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .family_site_list,
+    .family_site.is_family_open .family_site_list,
+    .family_site_button img {
+        transition: none;
+    }
 }
 
 .footer_right address {

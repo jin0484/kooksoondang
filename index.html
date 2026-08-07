@@ -1,12 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>kooksoondang</title>
-    
+    <link rel="stylesheet" href="common/reset.css">
+    <style>
+        /* 인트로 영상 한 장만 있는 화면. 화면 높이에 꽉 채우고 넘치는 쪽은 잘라 냄 */
+        .intro {
+            position: relative;
+        }
+
+        /* 영상 위에 얹히는 버튼이라 배경이 밝든 어둡든 읽히도록 어두운 반투명 칩으로 둠.
+           모서리는 사이트 공통 규칙(위 평평 / 아래 둥금)을 따름 */
+        .intro_skip {
+            position: absolute;
+            top: clamp(1rem, 2.5vw, 2rem);
+            right: clamp(1rem, 2.5vw, 2rem);
+            z-index: 1;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.5rem 1.125rem;
+            border-radius: 0.25rem 0.25rem 1rem 1rem;
+            background: rgba(35, 35, 35, 0.45);
+            color: #FAF8F7;
+            font-size: 0.875rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            backdrop-filter: blur(6px);
+            transition: background 220ms ease, transform 220ms ease;
+        }
+
+        .intro_skip:hover {
+            background: rgba(35, 35, 35, 0.7);
+            transform: translateY(-0.1rem);
+        }
+
+        .intro_skip:focus-visible {
+            outline: 2px solid #F29556;
+            outline-offset: 3px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .intro_skip {
+                transition: none;
+            }
+
+            .intro_skip:hover {
+                transform: none;
+            }
+        }
+
+        .intro_video {
+            display: block;
+            width: 100%;
+            /* 주소창이 접혔다 펴지는 모바일에서 100vh 가 튀므로 지원하면 100dvh 를 씀 */
+            height: 100vh;
+            height: 100dvh;
+            object-fit: cover;
+            background: var(--bg_color, #FAF8F7);
+        }
+    </style>
 </head>
+
 <body>
-    
+    <div class="intro">
+        <!-- muted 가 있어야 브라우저가 자동 재생을 허용하고, playsinline 이 있어야 ios 에서 전체 화면으로 튀지 않음.
+             끝나면 메인으로 넘어가야 하므로 loop 는 두지 않음 -->
+        <video class="intro_video" src="asset/video/kooksoondang_intro.mp4" autoplay muted playsinline
+            preload="auto"></video>
+        <a class="intro_skip" href="main/main.html">Skip &rsaquo;</a>
+    </div>
+
+    <script>
+        (() => {
+            const video = document.querySelector('.intro_video');
+            const target = document.querySelector('.intro_skip')?.getAttribute('href');
+
+            if (!video || !target) return;
+
+            // replace 라 뒤로 가기를 눌러도 인트로가 다시 뜨지 않음
+            const goToMain = () => window.location.replace(target);
+
+            video.addEventListener('ended', goToMain);
+            // 자동 재생이 막히거나 파일을 못 읽으면 마지막 화면에 갇히므로 그때도 넘겨 줌
+            video.addEventListener('error', goToMain);
+        })();
+    </script>
 </body>
+
 </html>

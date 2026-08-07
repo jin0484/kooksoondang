@@ -1777,6 +1777,8 @@
     const inner = section?.querySelector('.pairing_inner');
     const modal = document.querySelector('[data-pairing-result-modal]');
     const nextButton = modal?.querySelector('[data-pairing-result-next]');
+    // 결과 창을 닫는 것도 게임을 끝냈다는 뜻이라 Next 와 같이 잠금을 풀어 줌
+    const closeButtons = modal ? [...modal.querySelectorAll('[data-pairing-result-close]')] : [];
 
     if (!section || !inner || !nextButton) return;
 
@@ -1835,6 +1837,13 @@
         window.addEventListener('scroll', holdPosition, { passive: true });
     }
 
+    // 미니 메뉴로 구간을 고르는 건 게임을 건너뛰겠다는 뜻이므로 다시 걸리지 않게 함.
+    // 아직 잠기기 전에 눌렀더라도 이동 도중 잠금 지점을 지나며 붙잡히면 안 되므로 표시부터 세움
+    function release() {
+        hasFinished = true;
+        unlock();
+    }
+
     function unlock() {
         if (!isLocked) return;
 
@@ -1873,6 +1882,13 @@
     }, { passive: true });
     window.addEventListener('load', measure);
     nextButton.addEventListener('click', unlock);
+    closeButtons.forEach((button) => button.addEventListener('click', unlock));
+
+    // 링크가 하나씩 늘어도 따라오도록 목록에 위임해 둠.
+    // 아이콘이나 여백이 아니라 글자(.side_nav_label)를 눌렀을 때만 풀림
+    document.querySelector('.side_nav')?.addEventListener('click', (event) => {
+        if (event.target instanceof Element && event.target.closest('.side_nav_label')) release();
+    });
 })();
 
 /* 스크롤 스택: 브랜드 스토리를 마지막 화면에서 고정시키려면 sticky top 에 음수 오프셋이 필요한데,
@@ -1993,7 +2009,7 @@
 
     // 원본(codepen xxmaNYj)은 stagger 0.04s. 이 문단은 글자가 137 자라 그대로 쓰면
     // 글자 수가 많아 간격이 조금만 넓어도 마지막 글자가 한참 뒤에 들어옴. 슬라이드 인은 균일한 간격이라 문장부호 쉼은 두지 않음
-    const charStep = 10;
+    const charStep = 14;
 
     // <br> 로 줄을 나누고, 들여쓰기 때문에 생긴 공백은 브라우저가 렌더링하는 대로 하나로 접음
     const lines = [...desc.childNodes]
