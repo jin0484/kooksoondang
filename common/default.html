@@ -92,10 +92,21 @@
         <small>COPYRIGHT&copy; 2026 by KOOKSOONDANG BREWERY CO.LTD | ALL RIGHTS RESERVED</small>
       </div>
       <div class="footer_right">
-        <button type="button" class="family_site_button" aria-haspopup="listbox" aria-expanded="false">
-          Family Site
-          <img src="../asset/icon/chevron_down_3.svg" alt="" aria-hidden="true">
-        </button>
+        <!-- 목록이 버튼 위로 열림. 버튼보다 앞에 두면 겹칠 때 목록이 위에 오고, 위치는 css 가 버튼 기준으로 잡음 -->
+        <div class="family_site" data-family-site>
+          <ul class="family_site_list" id="family_site_list">
+            <li><button type="button" disabled>Beopgochangsin</button></li>
+            <li><button type="button" disabled>Bekseju Village</button></li>
+            <li><button type="button" disabled>Yedam</button></li>
+            <li><button type="button" disabled>Juhyangro</button></li>
+            <li><button type="button" disabled>Woorisool Areumteo</button></li>
+          </ul>
+          <button type="button" class="family_site_button" aria-haspopup="true" aria-expanded="false"
+            aria-controls="family_site_list" data-family-site-toggle>
+            Family Site
+            <img src="../asset/icon/chevron_down_3.svg" alt="" aria-hidden="true">
+          </button>
+        </div>
         <address>
           <p>641, Bongeunsa-ro, Gangnam-gu, Seoul, Republic of Korea</p>
           <p>Tel : +82 02-513-8572</p>

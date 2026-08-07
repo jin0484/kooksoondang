@@ -125,6 +125,38 @@
     }
 })();
 
+/* 푸터 패밀리 사이트: 버튼을 누르면 목록이 위로 열림.
+   여닫는 모습은 css 가 맡고 여기서는 상태 클래스와 aria 만 바꿈 */
+(() => {
+    const root = document.querySelector('[data-family-site]');
+    const toggle = root?.querySelector('[data-family-site-toggle]');
+
+    if (!root || !toggle) return;
+
+    function setOpen(isOpen) {
+        root.classList.toggle('is_family_open', isOpen);
+        toggle.setAttribute('aria-expanded', String(isOpen));
+    }
+
+    toggle.addEventListener('click', () => {
+        setOpen(!root.classList.contains('is_family_open'));
+    });
+
+    // 바깥을 누르면 닫힘. 목록 안(버튼 포함)을 누른 경우는 위 토글이 처리함
+    document.addEventListener('click', (event) => {
+        if (event.target instanceof Element && root.contains(event.target)) return;
+
+        setOpen(false);
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape' || !root.classList.contains('is_family_open')) return;
+
+        setOpen(false);
+        toggle.focus();
+    });
+})();
+
 (() => {
     // CDN 이 막히면 그냥 기본 스크롤로 동작하도록 존재 여부를 확인
     if (typeof Lenis === 'undefined') return;
