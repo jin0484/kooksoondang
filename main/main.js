@@ -734,6 +734,7 @@
     let revealTimer = 0;
     let hintTimer = 0;
     let hintPositionFrame = 0;
+    let scoreCountFrame = 0;
     let hasRevealed = false;
     let dragState = null;
     let suppressTapUntil = 0;
@@ -976,7 +977,45 @@
         return 'A brand-new pairing!';
     }
 
+    function stopScoreCount() {
+        if (!scoreCountFrame) return;
+
+        window.cancelAnimationFrame(scoreCountFrame);
+        scoreCountFrame = 0;
+    }
+
+    // 1 에서 최종 점수까지 세어 올림. 끝으로 갈수록 느려져 마지막 숫자가 눈에 들어옴
+    function countScore(target) {
+        if (!resultScore) return;
+
+        stopScoreCount();
+
+        // 모션을 껐거나 셀 구간이 없으면 결과만 바로 보여 줌
+        if (!isMotionEnabled() || target <= 1) {
+            resultScore.textContent = target;
+            return;
+        }
+
+        const duration = 900;
+        const startTime = performance.now();
+
+        resultScore.textContent = 1;
+
+        const step = (now) => {
+            const progress = Math.min((now - startTime) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+
+            resultScore.textContent = Math.round(1 + (target - 1) * eased);
+            scoreCountFrame = progress < 1 ? window.requestAnimationFrame(step) : 0;
+        };
+
+        scoreCountFrame = window.requestAnimationFrame(step);
+    }
+
     function closeResult() {
+        // 세는 도중에 닫으면 멈춰 둬야 다음에 열 때 이전 카운트가 이어지지 않음
+        stopScoreCount();
+
         if (resultModal) resultModal.hidden = true;
     }
 
@@ -1012,7 +1051,7 @@
         }
 
         renderResultCards();
-        if (resultScore) resultScore.textContent = result.score;
+        countScore(result.score);
         if (resultTitle) resultTitle.textContent = resultTitleFor(result.score);
         if (resultDescription) resultDescription.textContent = result.description;
 
