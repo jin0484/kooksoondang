@@ -247,6 +247,58 @@ section[id] {
   transform: none;
 }
 
+/* 인트로 영상과 오가는 전환. 두 페이지가 같은 배경색으로 덮였다 걷히므로 이어져 보임.
+   is_page_fade 는 인트로에서 들어올 때(head 의 인라인 스크립트가 주소로 판단),
+   is_page_leaving 은 인트로로 나갈 때 js 가 붙임.
+   가장 위 레이어(모달 300)보다 높게 두고, 클릭을 가로채지 않도록 pointer-events 를 뺌 */
+html.is_page_fade::before,
+html.is_page_leaving::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--bg_color);
+  pointer-events: none;
+}
+
+html.is_page_fade::before {
+  animation: page_fade_in 700ms ease forwards;
+}
+
+html.is_page_leaving::before {
+  animation: page_fade_out 520ms ease forwards;
+}
+
+@keyframes page_fade_in {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes page_fade_out {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  html.is_page_fade::before,
+  html.is_page_leaving::before {
+    animation: none;
+    content: none;
+  }
+}
+
 .pill {
   display: inline-flex;
   align-items: center;

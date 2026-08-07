@@ -1730,6 +1730,44 @@
     updateMode();
 })();
 
+/* 인트로로 나갈 때도 들어올 때와 같은 규칙으로 넘김: 배경색으로 화면을 덮은 뒤에 이동.
+   덮는 색과 인트로의 바탕색이 같아 두 페이지가 이어져 보임 */
+(() => {
+    const link = document.querySelector('[data-action="open-intro"]');
+    const target = link?.getAttribute('href');
+
+    if (!link || !target) return;
+
+    // css 의 page_fade_out 과 같은 값. 다 덮인 뒤에 이동해야 화면이 툭 끊기지 않음
+    const leaveDuration = 520;
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    let isLeaving = false;
+
+    link.addEventListener('click', (event) => {
+        // 새 탭·새 창으로 여는 경우는 브라우저에 맡김
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+
+        event.preventDefault();
+
+        if (isLeaving) return;
+
+        isLeaving = true;
+
+        if (reducedMotionQuery.matches) {
+            window.location.href = target;
+            return;
+        }
+
+        // 들어올 때 쓴 덮개가 아직 남아 있으면 서로 다른 애니메이션이 겹치므로 먼저 떼어 냄
+        document.documentElement.classList.remove('is_page_fade');
+        document.documentElement.classList.add('is_page_leaving');
+        window.setTimeout(() => {
+            window.location.href = target;
+        }, leaveDuration);
+    });
+})();
+
 (() => {
     const character = document.querySelector('.hero_character:not(.hero_character_frame)');
     const frames = [...document.querySelectorAll('[data-hero-frame]')];
