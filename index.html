@@ -52,29 +52,31 @@
             opacity: 0;
         }
 
-        /* 영상 위에 얹히는 버튼이라 배경이 밝든 어둡든 읽히도록 어두운 반투명 칩으로 둠.
-           모서리는 사이트 공통 규칙(위 평평 / 아래 둥금)을 따름 */
+        /* 모서리는 사이트 공통 규칙(위 평평 / 아래 둥금)을 따름.
+           이 파일은 common.css 를 쓰지 않아 변수를 못 읽으므로 색을 직접 적음
+           (#FFD7BB = --kooksoondang_lighter, #F29556 = --kooksoondang_orange, #232323 = --bekseju_darker_cold) */
         .intro_skip {
             position: absolute;
             top: clamp(1rem, 2.5vw, 2rem);
-            right: clamp(1rem, 2.5vw, 2rem);
+            right: 100px;
             z-index: 1;
             display: inline-flex;
             align-items: center;
             gap: 0.375rem;
-            padding: 0.5rem 1.125rem;
+            /* 글자 크기는 그대로 두고 여백만 늘려 칩 크기를 10% 키움 (74.6x30 -> 82.1x33) */
+            padding: 0.594rem 1.36rem;
             border-radius: 0.25rem 0.25rem 1rem 1rem;
-            background: rgba(35, 35, 35, 0.45);
-            color: #FAF8F7;
+            background: #FFD7BB;
+            /* 두 배경 모두 밝은 톤이라 글자는 어두운 쪽이어야 읽힘 */
+            color: #232323;
             font-size: 0.875rem;
             font-weight: 500;
             letter-spacing: 0.02em;
-            backdrop-filter: blur(6px);
             transition: background 220ms ease, transform 220ms ease;
         }
 
         .intro_skip:hover {
-            background: rgba(35, 35, 35, 0.7);
+            background: #F29556;
             transform: translateY(-0.1rem);
         }
 

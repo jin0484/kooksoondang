@@ -1453,15 +1453,13 @@ html.is_page_leaving::before {
   --pairing-food-image-transform: translateX(-50%);
 }
 
-/* 카드 패딩(10px) 사이로 카드 배경색이 테두리처럼 비쳐서, 위·좌·우는 끝까지 채움 */
+/* 카드 패딩(10px) 사이로 카드 배경색이 테두리처럼 비쳐서, 위·좌·우는 끝까지 채움.
+   배경으로 깔던 drink_bg_*.svg 는 흰 사각형에 병 그림자 타원 하나뿐이라, 그림자를 빼면서 함께 걷어 냄 */
 .pairing_card_drink .pairing_card_media {
   width: auto;
   margin: -7px -7px 0;
   border-radius: 0.35rem 0.35rem 0 0;
   background-color: var(--makgeolli_White);
-  background-image: var(--card-shadow, none);
-  background-size: cover;
-  background-position: center;
 }
 
 /* 그림자는 흐름에서 빠져 있어야 병이 가운데 정렬됨.
