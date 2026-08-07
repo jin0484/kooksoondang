@@ -29,7 +29,7 @@
     position: relative;
     min-height: clamp(26.25rem, 36.458vw, 43.75rem);
     overflow: hidden;
-    background: #eee1cc url("./pairing_asset/img/hero_pairing.png") center center / cover no-repeat;
+    background: #eee1cc url("./pairing_asset/img/hero_pairing.png") center top / cover no-repeat;
 }
 
 .pairing_page .pairing_hero_content {
@@ -982,7 +982,7 @@
 
     .pairing_page .pairing_hero {
         min-height: 28rem;
-        background-position: 60% center;
+        background-position: 60% top;
     }
 
     .pairing_page .pairing_hero_content {
