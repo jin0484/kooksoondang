@@ -789,6 +789,9 @@
    3) respected / competitiveness 가 흰색에서 초록으로 칠해지고
    4) 마지막 물방울로부터 1초 뒤, 아래 태그가 차례로 물결처럼 차오른다.
 
+   태그의 차오름만 스크롤 방향을 따라간다. 위로 되돌아 나가면 다시 빠지고,
+   내려오면 또 차오른다. (칠하기는 한 번만)
+
    움직이는 모습은 전부 CSS 가 그리고, 여기서는 시점만 잡는다.
 --------------------------------------------------------------------------- */
 
@@ -825,6 +828,8 @@
     const PAINT_STEP_MS = 180;  // 강조 단어끼리
     const TAG_GAP_MS = 1000;    // 마지막 물방울 뒤
     const TAG_STEP_MS = 160;    // 태그끼리
+    // 빠질 때는 기다리지 않고 바로, 차오를 때보다 촘촘하게 (되돌아 나가는 길이 짧다)
+    const TAG_DRAIN_STEP_MS = 90;
 
     const lastDropMs = DROP_LEAD_MS + Math.max(0, drops.length - 1) * DROP_STEP_MS;
 
@@ -835,6 +840,45 @@
     function addLater(items, stepMs, doneClass, delayMs) {
         items.forEach((item, index) => {
             window.setTimeout(() => item.classList.add(doneClass), delayMs + index * stepMs);
+        });
+    }
+
+    /* ---- 태그 차오름 / 빠짐 ----
+       스크롤 방향을 따라 몇 번이든 다시 재생되므로, 반대 방향으로 바뀌었을 때
+       예약만 되어 있던 타이머가 뒤늦게 터지지 않도록 매번 걷어 낸다. */
+    let tagTimers = [];
+    let isTagFilled = false;
+
+    function clearTagTimers() {
+        tagTimers.forEach(window.clearTimeout);
+        tagTimers = [];
+    }
+
+    function fillTags() {
+        if (isTagFilled) return;
+
+        isTagFilled = true;
+        clearTagTimers();
+
+        // 물방울이 다 튄 뒤 왼쪽부터 차례로
+        tags.forEach((tag, index) => {
+            tagTimers.push(window.setTimeout(() => {
+                tag.classList.add('is_filled');
+            }, lastDropMs + TAG_GAP_MS + index * TAG_STEP_MS));
+        });
+    }
+
+    function drainTags() {
+        if (!isTagFilled) return;
+
+        isTagFilled = false;
+        clearTagTimers();
+
+        // 나중에 찬 오른쪽 태그부터 빠진다 (차오름의 역순)
+        [...tags].reverse().forEach((tag, index) => {
+            tagTimers.push(window.setTimeout(() => {
+                tag.classList.remove('is_filled');
+            }, index * TAG_DRAIN_STEP_MS));
         });
     }
 
@@ -864,16 +908,16 @@
 
     // 스크롤이 걸려 멈추는 순간 컵이 흔들린다. "여기서 멈췄다" 는 신호라
     // 되돌아 올라와 다시 걸릴 때도 매번 흔들린다.
-    // 칠하기·태그 차오름은 한 번만 보여 준다.
+    // 태그도 그때마다 다시 차오른다. 칠하기만 한 번이다.
     function playSequence() {
         splash();
+        fillTags();
 
         if (hasPlayed) return;
 
         hasPlayed = true;
 
         addLater(points, PAINT_STEP_MS, 'is_painted', PAINT_DELAY_MS);
-        addLater(tags, TAG_STEP_MS, 'is_filled', lastDropMs + TAG_GAP_MS);
     }
 
     // 컵에 마우스를 올릴 때마다 한 번씩 흔들린다.
@@ -912,6 +956,9 @@
             invalidateOnRefresh: true,
             onEnter: playSequence,
             onEnterBack: playSequence,
+            // 위로 되돌아 나가면 태그가 다시 빠진다. 내려오면 onEnter 로 또 찬다.
+            // (아래로 지나간 경우는 이미 다 본 자리라 채운 채로 둔다)
+            onLeaveBack: drainTags,
             // 이미 지나온 자리에서 페이지가 열린 경우
             onRefresh: (self) => {
                 if (self.progress > 0) playSequence();
@@ -921,13 +968,12 @@
         return;
     }
 
-    // GSAP 이 없으면 붙잡아 두지는 못해도 순서는 그대로 보여 준다
+    // GSAP 이 없으면 붙잡아 두지는 못해도 순서는 그대로 보여 준다.
+    // 관찰을 끊지 않아서, 화면 가운데를 드나들 때마다 태그가 차고 빠진다.
     const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
-            if (!entry.isIntersecting) return;
-
-            observer.disconnect();
-            playSequence();
+            if (entry.isIntersecting) playSequence();
+            else drainTags();
         });
     }, { rootMargin: '-25% 0px -25% 0px' });
 
