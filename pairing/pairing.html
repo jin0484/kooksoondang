@@ -33,15 +33,17 @@
   <title>Pairing</title>
   <link rel="stylesheet" href="../common/reset.css">
   <link rel="stylesheet" href="../common/common.css">
+  <link rel="stylesheet" href="./pairing.css">
   <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js" defer></script>
   <script src="../common/common.js" defer></script>
+  <script src="./pairing.js" defer></script>
 </head>
 
-<body>
+<body class="pairing_page">
   <header class="site_header" id="site_header">
     <div class="site_header_inner">
       <div class="site_header_left">
-        <a class="site_logo" href="#hero" aria-label="Kooksoondang home">
+        <a class="site_logo" href="#pairing_hero" aria-label="Kooksoondang home">
           <svg class="site_logo_mark" width="270" height="33.0299" viewBox="0 0 270 33.0299" aria-hidden="true"
             focusable="false">
             <use href="../asset/icon/header_logo.svg#en_logo_wordmark"></use>
@@ -52,7 +54,7 @@
           <ul>
             <li><a href="../aboutbrand/aboutbrand.html">ABOUT BRAND</a></li>
             <li><a href="../products/products.html">PRODUCTS</a></li>
-            <li><a href="../pairing/pairing.html">PAIRING</a></li>
+            <li><a href="./pairing.html" aria-current="page">PAIRING</a></li>
             <li><span class="is_disabled" aria-disabled="true">EVENT/PROMOTION</span></li>
             <li><span class="is_disabled" aria-disabled="true">CONTACT US</span></li>
           </ul>
@@ -70,15 +72,90 @@
   </header>
 
 
-  <main>
+  <main class="pairing_main">
+    <section class="pairing_hero" id="pairing_hero" aria-labelledby="pairing_hero_title">
+      <div class="pairing_hero_content">
+        <h1 class="pairing_hero_title" id="pairing_hero_title">
+          <span>Find Your Perfect</span>
+          <strong>pairing</strong>
+        </h1>
+        <p class="pairing_hero_description">Discover the best makgeolli and food<br>combinations that match your taste.</p>
+      </div>
+    </section>
 
+    <section class="pairing_section pairing_drink_finder" id="find_your_drink" aria-labelledby="pairing_finder_title">
+      <div class="pairing_container">
+        <header class="pairing_section_heading">
+          <h2 id="pairing_finder_title">Find Your Drink</h2>
+          <p>Find the Kooksoondang drink that best matches your taste.</p>
+        </header>
+
+        <div class="pairing_questionnaire" id="pairing_questionnaire" aria-live="polite"></div>
+
+        <div class="pairing_result_action">
+          <button class="pairing_result_button" id="pairing_result_button" type="button" disabled>
+            RESULT
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="pairing_section pairing_food_section" id="food_pairing" aria-labelledby="pairing_food_title">
+      <div class="pairing_container">
+        <header class="pairing_section_heading">
+          <h2 id="pairing_food_title">Food Pairing</h2>
+          <p>Discover foods that pair perfectly with your recommended drink.</p>
+        </header>
+
+        <div class="pairing_food_explorer">
+          <div class="pairing_food_tabs" role="tablist" aria-label="Food pairing categories">
+            <button class="pairing_food_tab" type="button" role="tab" aria-selected="false" data-food-category="popular">Popular Picks</button>
+            <button class="pairing_food_tab is_active" type="button" role="tab" aria-selected="true" data-food-category="korean">Korean Food</button>
+            <button class="pairing_food_tab" type="button" role="tab" aria-selected="false" data-food-category="global">Global Food</button>
+          </div>
+
+          <div class="pairing_food_carousel">
+            <button class="pairing_carousel_arrow pairing_food_previous" type="button" aria-label="Show previous food cards">
+              <img src="./pairing_asset/icon/icon_left.svg" alt="" aria-hidden="true">
+            </button>
+            <div class="pairing_food_track" id="pairing_food_track" role="region" aria-label="Food pairing cards" tabindex="0"></div>
+            <button class="pairing_carousel_arrow pairing_food_next" type="button" aria-label="Show next food cards">
+              <img src="./pairing_asset/icon/icon_right.svg" alt="" aria-hidden="true">
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pairing_section pairing_recipes_section" id="drink_recipes" aria-labelledby="pairing_recipes_title">
+      <div class="pairing_container">
+        <header class="pairing_recipes_heading">
+          <div class="pairing_section_heading">
+            <h2 id="pairing_recipes_title">Drink Recipes</h2>
+            <p>Try it in a refreshing recipe</p>
+          </div>
+
+          <div class="pairing_recipe_controls" aria-label="Choose a drink recipe">
+            <button class="pairing_recipe_arrow" id="pairing_recipe_previous" type="button" aria-label="Show previous recipe">
+              <img src="./pairing_asset/icon/icon_left.svg" alt="" aria-hidden="true">
+            </button>
+            <div class="pairing_recipe_picker_list" id="pairing_recipe_picker_list"></div>
+            <button class="pairing_recipe_arrow" id="pairing_recipe_next" type="button" aria-label="Show next recipe">
+              <img src="./pairing_asset/icon/icon_right.svg" alt="" aria-hidden="true">
+            </button>
+          </div>
+        </header>
+
+        <div class="pairing_recipe_viewport" id="pairing_recipe_viewport" tabindex="0" aria-label="Selected drink recipe"></div>
+      </div>
+    </section>
   </main>
 
   <footer class="site_footer" id="site_footer">
     <img class="site_footer_wave" src="../asset/icon/footer_wave.svg" alt="" aria-hidden="true">
     <div class="site_footer_inner">
       <div class="footer_left">
-        <a class="footer_logo" href="#hero" aria-label="Kooksoondang home">
+        <a class="footer_logo" href="#pairing_hero" aria-label="Kooksoondang home">
           <img src="../asset/icon/footer_logo_mark.svg" alt="KOOKSOONDANG">
         </a>
         <ul class="footer_links">
@@ -109,6 +186,14 @@
     </div>
   </footer>
 
+
+
+  <dialog class="pairing_result_modal" id="pairing_result_modal" aria-labelledby="pairing_result_modal_title">
+    <div class="pairing_result_modal_surface">
+      <button class="pairing_modal_close" id="pairing_modal_close" type="button" aria-label="Close recommendation">&times;</button>
+      <div class="pairing_result_modal_content" id="pairing_result_modal_content"></div>
+    </div>
+  </dialog>
 
 </body>
 
