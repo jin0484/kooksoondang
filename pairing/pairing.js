@@ -411,9 +411,17 @@
         const activeQuestion = questions[state.activeQuestionIndex];
         if (!activeQuestion) return;
 
-        const focusOption = () => questionnaire
-            .querySelector(`#${getQuestionPanelId(activeQuestion)} [data-question-answer]`)
-            ?.focus();
+        const focusOption = () => {
+            const option = questionnaire
+                .querySelector(`#${getQuestionPanelId(activeQuestion)} [data-question-answer]`);
+            if (!option) return;
+
+            try {
+                option.focus({ preventScroll: true });
+            } catch {
+                option.focus();
+            }
+        };
 
         if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
             window.requestAnimationFrame(focusOption);

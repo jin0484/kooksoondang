@@ -103,9 +103,11 @@
     --pairing-question-tab-width: clamp(5.25rem, 7.813vw, 9.375rem);
     display: flex;
     align-items: stretch;
+    width: min(90%, 96.75rem);
     min-height: clamp(29rem, 35.208vw, 42.25rem);
-    margin-top: clamp(2.5rem, 3.125vw, 3.75rem);
+    margin: clamp(2.5rem, 3.125vw, 3.75rem) auto 0;
     overflow: hidden;
+    overflow-anchor: none;
     border: 2px solid var(--pairing-line);
     border-radius: clamp(1.75rem, 2.604vw, 3.125rem);
     background: var(--pairing-paper);
@@ -207,7 +209,7 @@
     background: var(--makgeolli_White);
     color: var(--pairing-copy);
     text-align: left;
-    transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease, transform 180ms ease;
+    transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease, color 180ms ease, transform 180ms ease;
 }
 
 .pairing_page .pairing_question_option:hover {
@@ -216,7 +218,8 @@
 }
 
 .pairing_page .pairing_question_option.is_selected {
-    border: 2px solid var(--pairing-question-color);
+    border-color: var(--pairing-question-color);
+    box-shadow: inset 0 0 0 1px var(--pairing-question-color);
     background: var(--pairing-question-tint);
     color: var(--pairing-question-color);
 }
@@ -1012,6 +1015,7 @@
 
     .pairing_page .pairing_questionnaire {
         display: block;
+        width: 100%;
         min-height: 0;
         margin-top: 2rem;
         border-radius: 1.75rem;
