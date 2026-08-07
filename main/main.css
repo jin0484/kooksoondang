@@ -379,17 +379,16 @@ section[id] {
 /* 제목 채우기: 페이지에 들어올 때 한 번, 잔에 술이 차오르듯 아래에서 위로 색이 채워짐.
    세 줄을 한 덩어리로 보이게 하려고 제목 전체에 배경 하나를 깔고 글자 모양으로 오려 냄.
    배경 이미지를 글자 높이의 두 배로 잡아 위 절반(투명)에서 아래 절반(글자색)으로 밀어 올리는 방식.
-   경계의 얇은 주황 띠가 액체 표면 역할을 함.
+   경계는 일자 대신 물결 곡선이라 실제 액체 표면처럼 보이고, 주황 선이 그 표면 역할을 함.
+   가로로는 반 폭짜리 물결을 반복해 깔아 두고 차오르는 동안 옆으로도 한 칸 흘려서 출렁이게 함.
+   (data URI 안에서는 CSS 변수를 못 쓰므로 색은 --bekseju_darker_cold / --kooksoondang_orange 와 같은 값을 직접 적음)
    재생이 끝나면 js 가 클래스를 떼어 평범하게 칠해진 글자로 되돌림 */
 @supports ((background-clip: text) or (-webkit-background-clip: text)) {
   .hero_title.is_pour_ready {
-    background-image: linear-gradient(to top,
-        var(--bekseju_darker_cold) 0 49.4%,
-        var(--kooksoondang_orange) 49.4% 50%,
-        transparent 50%);
-    background-repeat: no-repeat;
-    background-size: 100% 200%;
-    background-position: 50% 0%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 200' preserveAspectRatio='none'%3E%3Cpath d='M0 100Q12.5 95.5 25 100T50 100T75 100T100 100V200H0Z' fill='%23232323'/%3E%3Cpath d='M0 100Q12.5 95.5 25 100T50 100T75 100T100 100' fill='none' stroke='%23F29556' stroke-width='1.2'/%3E%3C/svg%3E");
+    background-repeat: repeat-x;
+    background-size: 50% 200%;
+    background-position: 0% 0%;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -405,11 +404,11 @@ section[id] {
 
 @keyframes hero_title_pour {
   from {
-    background-position: 50% 0%;
+    background-position: 0% 0%;
   }
 
   to {
-    background-position: 50% 100%;
+    background-position: 100% 100%;
   }
 }
 
