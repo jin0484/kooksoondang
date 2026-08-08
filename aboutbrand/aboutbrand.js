@@ -1436,13 +1436,19 @@
             return Math.round(Math.min(screen * 0.15, slack + headroom));
         };
 
+        // pin 은 걸지 않는다.
+        //
+        // pin 을 걸면 ScrollTrigger 가 섹션을 pin-spacer 로 감싸고 붙잡는 거리만큼
+        // 여백을 넣는데, 그 여백이 그대로 "섹션 끝 ~ 푸터 사이의 빈 구간" 이 된다.
+        // (실측: 768px. 붙잡는 거리를 줄여도 그만큼 빈 구간이 남을 뿐이다.)
+        //
+        // 이 섹션의 등장 순서는 스크롤에 묶인 게 아니라 시간(setTimeout)으로 도는
+        // 연출이라 붙잡아 둘 이유도 없다. 섹션 자체가 화면을 꽉 채우는 높이여서
+        // 그냥 지나가도 한 화면 분량의 스크롤 동안 머문다.
         ScrollTrigger.create({
             trigger: section,
             start: () => 'top -' + pinOffset(),
-            end: () => '+=' + Math.round(document.documentElement.clientHeight * 0.75),
-            pin: true,
-            // 빠르게 굴려 들어와도 붙잡히는 순간이 튀지 않게 미리 준비시킨다
-            anticipatePin: 1,
+            end: () => '+=' + Math.round(document.documentElement.clientHeight * 0.4),
             invalidateOnRefresh: true,
             onEnter: playSequence,
             onEnterBack: playSequence,

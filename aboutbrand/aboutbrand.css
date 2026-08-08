@@ -872,6 +872,17 @@
    원 4개는 전용 에셋이 없어 CSS(배경 + 0.5px 보더 + border-radius)로 구현.
    ========================================================================= */
 
+/* ScrollTrigger 는 pin 을 걸 때 섹션을 .pin-spacer 로 감싸고, 고정된 거리만큼
+   그 상자에 여백을 준다. 이 상자에는 배경이 없어서(투명) 섹션이 덮지 못하는
+   부분마다 body 의 흰색이 그대로 드러난다.
+   - 고정이 풀린 뒤 섹션 아래에 흰 여백
+   - 어두운 두 섹션이 이어지는 자리에 흰 선
+   둘 다 같은 원인이라, 감싸는 상자에 같은 색을 깔아 막는다.
+   (흰 섹션인 intro / brand history 는 흰 바탕이라 티가 나지 않아 그대로 둔다) */
+.pin-spacer:has(> .vision_section) {
+    background: var(--bekseju_darker_cold);
+}
+
 /* 스크롤이 고정(pin)되는 구간이라 반드시 화면을 꽉 채워야 한다.
    내용 높이에만 맡기면 태블릿(768 x 1024)에서 794px 밖에 안 돼,
    고정된 동안 위아래로 흰 배경이 드러난다. */
@@ -1338,7 +1349,62 @@
     }
 
     .vision_statement {
-        font-size: 1.4375rem;
+        font-size: 1.625rem;
+    }
+
+    /* year_2 는 이미지(576)가 넓어서 덩어리 폭이 1400 이나 된다.
+       네 덩어리 중 혼자만 화면을 넘어(910 > 753) 연도와 문구가 잘린 채 지나간다.
+       300 으로 줄이면 1124 가 되어 화면 안에 들어온다.
+       (340 은 757 로 3px 모자라 여전히 넘친다 — 실측으로 잡은 값)
+       세로는 align-self: stretch 라 그대로, 사진은 object-fit: cover 로 잘린다. */
+    .img_box_2 {
+        width: 300px;
+    }
+
+    /* 연혁 목록 글자 키우기.
+       트랙이 0.65 로 줄어들어 15px 짜리가 화면에서 9.8px 밖에 안 된다.
+
+       year_1 / year_3 는 con 안쪽 높이(604)를 고정 gap(242 / 245)이 이미 꽉
+       채우고 있어서, 글자를 키우면 곧바로 넘친다. gap 을 space-between 으로
+       바꿔 남는 자리를 자동으로 나눠 갖게 한 뒤에 키운다.
+       (year_2 / year_4 는 원래 space-between 이라 그대로 둔다) */
+    .year_1 .year_con,
+    .year_3 .year_con {
+        gap: 0;
+        justify-content: space-between;
+    }
+
+    /* year_txt(20px, 기본값 그대로)보다 작아야 위계가 산다.
+       나머지는 시안의 비율(li_year 16 / li_txt 15 / 오른쪽 목록 14)을
+       그대로 키운 값이다. */
+    .li_txt {
+        font-size: 18px;
+    }
+
+    .li_year {
+        font-size: 19px;
+    }
+
+    .year_list_right .li_txt,
+    .year_list_right .li_year {
+        font-size: 17px;
+    }
+
+    /* respected 도 원 4개와 같은 좌우 여백(20px)으로 맞춘다 */
+    .respected_section {
+        padding-inline: 1.25rem;
+    }
+
+    /* 태그는 폭이 고정(clamp 하한 128px)이라 좌우가 크게 비어 보인다.
+       남는 폭을 셋이 나눠 쓰되, 시안 최대치(240px)는 넘기지 않는다. */
+    .respected_tags {
+        width: 100%;
+    }
+
+    .respected_tag {
+        flex: 1 1 0;
+        width: auto;
+        max-width: 15rem;
     }
 }
 
