@@ -310,6 +310,11 @@
     // 모션 최소화 설정이면 말지 않는다 (처음부터 펼쳐진 채로 보인다)
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
+    // 768px 미만은 두루마리가 세로로 눕는다. 좌 -> 우로 펼치는 연출이 성립하지
+    // 않을 뿐 아니라, 막대에 걸리는 translateX 가 눕히는 rotate 를 덮어써서
+    // 막대가 화면 밖으로 날아간다. 그 구간에서는 아예 손대지 않는다.
+    const desktopQuery = window.matchMedia('(min-width: 768px)');
+
     // 펼쳐졌을 때 오른쪽 막대가 종이 오른쪽 끝을 물고 있는 만큼(margin-right: -40px).
     // 말렸을 때도 같은 만큼 물려 있어야 종이 끝이 막대 밖으로 삐져나오지 않는다.
     const GRIP = 40;
@@ -425,13 +430,56 @@
         settleOpen();
     }
 
+    // 모바일 구간에서는 말아 둔 흔적을 전부 걷어 내 CSS 의 세로 배치에 맡긴다
+    function clearRoll() {
+        settleToken++;
+        isRolled = false;
+        all.classList.remove('is_rolled', 'is_unroll_instant', 'is_unroll_ready');
+        all.style.removeProperty('--unroll_shift');
+        all.style.removeProperty('--unroll_clip');
+    }
+
     // 펼쳐진 모습이 CSS 의 기본값이라, 시작할 때 한 번 말아 둔다 (과정 없이)
-    all.classList.add('is_unroll_ready');
-    rollInstant();
+    function syncMode() {
+        if (!desktopQuery.matches) {
+            clearRoll();
+            return;
+        }
+
+        if (all.classList.contains('is_unroll_ready')) return;
+
+        all.classList.add('is_unroll_ready');
+        rollInstant();
+    }
+
+    desktopQuery.addEventListener('change', syncMode);
+    syncMode();
 
     // 말려 있는 동안 종이 폭이 달라지면 잘라 낼 폭도 달라진다
     document.fonts?.ready.then(() => {
         if (isRolled) rollInstant();
+    });
+
+    // 창 크기가 바뀌면 종이 폭이 달라진다.
+    // 태블릿 구간은 img_box_2 를 좁히기 때문에 종이가 5695 -> 5419 로 줄어드는데,
+    // 다시 재지 않으면 데스크톱에서 잰 값(-5614)이 그대로 남아 막대가 엉뚱한
+    // 자리에 서고 종이도 잘못된 폭으로 잘린다.
+    let resizeTimer = 0;
+
+    window.addEventListener('resize', () => {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(() => {
+            syncMode();
+
+            if (!desktopQuery.matches || !measure()) return;
+
+            // 말려 있는 상태라면 새 값으로 다시 확정한다.
+            // 펼쳐진 상태면 다음에 말릴 때 measure() 가 다시 도니 둘 필요가 없다.
+            if (isRolled) {
+                apply(closedAt);
+                commit();
+            }
+        }, 200);
     });
 
     if (!('IntersectionObserver' in window)) {
@@ -449,6 +497,9 @@
     const EPSILON = 0.01;
 
     const observer = new IntersectionObserver((entries) => {
+        // 모바일에서는 두루마리가 눕기 때문에 말고 펼치는 개념이 없다
+        if (!desktopQuery.matches) return;
+
         entries.forEach((entry) => {
             // 80% 넘게 보이면 펼친다
             if (entry.intersectionRatio >= OPEN_AT - EPSILON) unroll();
@@ -514,6 +565,16 @@
     // 화면 높이에 트랙을 맞춘다. 시안 높이 1080 을 1 로 본다.
     // vision 패널이 화면 폭만큼 늘어날 수 있어서 트랙 폭은 실측해 stage 에 전달한다.
     function applyScale() {
+        // 768px 미만은 가로 탐색을 접고 보통의 세로 흐름으로 보여 준다.
+        // 시안 캔버스를 축소해 쓰는 방식(scale + stage 폭)을 통째로 걷어 내야
+        // CSS 가 세로 배치를 잡을 수 있다.
+        if (!desktopQuery.matches) {
+            section.style.setProperty('--history_scale', '1');
+            section.style.setProperty('--history_vw', screenWidth() + 'px');
+            stage.style.removeProperty('width');
+            return;
+        }
+
         const byHeight = screenHeight() / DESIGN_HEIGHT;
         const widest = widestBlock();
 
@@ -641,6 +702,13 @@
     function updateFocus() {
         // 가로 탐색 중에는 사진 위치가 기준이므로 여기서 덮어쓰지 않는다
         if (isPinned && photoSlots.length > 1) return;
+
+        // 세로로 흐르는 모바일에서는 "화면 가운데에서 가로로 얼마나 먼가" 가
+        // 의미가 없다. 전부 또렷하게 두고 흐림 연출은 쓰지 않는다.
+        if (!desktopQuery.matches) {
+            applyFocus(yearBlockPairs.map(() => 1));
+            return;
+        }
 
         const width = screenWidth();
         const centerLine = width / 2;
@@ -1418,24 +1486,6 @@
     const canUseGsap = typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined';
 
     if (canUseGsap) {
-        // 이 섹션은 그냥 두면 한 번에 지나가 버려서 순서대로 나오는 걸 볼 틈이 없다.
-        // 화면을 꽉 채운 동안 잠깐 붙잡아 두고, 다 보여 준 뒤 놓아 준다.
-        // 붙잡는 자리를 화면의 15% 만큼 더 내린다.
-        // 다만 섹션이 화면보다 큰 만큼(여유분)과 콘텐츠 위 빈 공간까지만 쓴다.
-        // 그 이상 내리면 맨 위의 컵이 화면 밖으로 잘려 나간다.
-        const BREATH_PX = 48;   // 컵 위에 남겨 둘 자리
-        const content = section.querySelector('.respected_content');
-
-        const pinOffset = () => {
-            const screen = document.documentElement.clientHeight;
-            const slack = Math.max(0, section.offsetHeight - screen);
-            const headroom = content
-                ? Math.max(0, content.offsetTop - BREATH_PX)
-                : 0;
-
-            return Math.round(Math.min(screen * 0.15, slack + headroom));
-        };
-
         // pin 은 걸지 않는다.
         //
         // pin 을 걸면 ScrollTrigger 가 섹션을 pin-spacer 로 감싸고 붙잡는 거리만큼
@@ -1447,7 +1497,10 @@
         // 그냥 지나가도 한 화면 분량의 스크롤 동안 머문다.
         ScrollTrigger.create({
             trigger: section,
-            start: () => 'top -' + pinOffset(),
+            // 섹션 위가 화면 한가운데를 지날 때 = 화면의 절반이 이 섹션일 때.
+            // 예전에는 섹션이 화면 위로 더 올라간 뒤에야(top -N) 시작해서
+            // 컵이 한참 뒤에 흔들렸다.
+            start: 'top 50%',
             end: () => '+=' + Math.round(document.documentElement.clientHeight * 0.4),
             invalidateOnRefresh: true,
             onEnter: playSequence,

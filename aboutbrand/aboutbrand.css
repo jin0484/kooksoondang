@@ -417,6 +417,11 @@
     opacity: var(--year_dim, 1);
     transition: filter 220ms cubic-bezier(0.22, 1, 0.36, 1),
         opacity 220ms cubic-bezier(0.22, 1, 0.36, 1);
+    /* 흐림·투명도가 제자리로 돌아오는 순간(blur 0, opacity 1) 브라우저가
+       합성 레이어를 걷어 낸다. 그때 글자 안티에일리어싱이 회색조 -> 서브픽셀로
+       바뀌면서 굵기와 위치가 살짝 달라져, 스크롤이 멈추는 자리마다 글자가
+       꿀렁이는 것처럼 보인다. 레이어를 계속 붙잡아 두어 그 전환 자체를 없앤다. */
+    will-change: filter, opacity;
 }
 
 .year_con {
@@ -1305,8 +1310,7 @@
    시안 비율(4.479vw) 을 그대로 두면 768px 에서 34px 밖에 안 돼 허전하다.
    화면이 좁을수록 글자는 상대적으로 커야 하므로 비율을 키운다.
    상한 3.25rem 은 1280px 에서 넘어가는 기본값(약 57px)보다 낮게 잡아,
-   화면이 넓어질수록 글자가 커지는 순서가 뒤집히지 않게 한다.
-   (767px 이하는 줄이 넘칠 수 있어 건드리지 않는다) */
+   화면이 넓어질수록 글자가 커지는 순서가 뒤집히지 않게 한다. */
 @media (min-width: 768px) and (max-width: 1279px) {
     .intro_title {
         font-size: clamp(2.5rem, 6.8vw, 3.25rem);
@@ -1370,6 +1374,13 @@
        (year_2 / year_4 는 원래 space-between 이라 그대로 둔다) */
     .year_1 .year_con,
     .year_3 .year_con {
+        /* year_1 / year_3 은 바깥이 align-items: flex-end 라 con 이 늘어나지 않고
+           내용 높이만큼만 잡힌다. 고정 gap 일 때는 그 높이가 우연히 블록을 거의
+           채워서 티가 안 났지만, space-between 으로 바꾸면 con 이 확 줄어들면서
+           바닥 정렬 때문에 글자가 통째로 아래로 내려간다.
+           늘려 놓아야 space-between 이 블록 전체를 기준으로 나눈다.
+           (year_2 는 이미 height: 100% 라 그대로 둔다) */
+        align-self: stretch;
         gap: 0;
         justify-content: space-between;
     }
@@ -1409,6 +1420,360 @@
 }
 
 @media (max-width: 767px) {
+    /* ---------- intro ----------
+       360px 에서 기본값(clamp 하한 24px)이면 줄 폭이 282px 라 좌우로 39px 씩 남아
+       허전하다. 좌우 14px 만 남기고 채우면 28px 정도가 된다.
+       7.8vw = 360px 에서 28.1px -> 줄 폭 330px, 좌우 15px.
+       상한 2.75rem(44px)은 768px 에서 넘어가는 값(52px)보다 낮게 잡아
+       화면이 넓어질수록 커지는 순서를 지킨다. */
+    .intro_title {
+        font-size: clamp(1.75rem, 7.75vw, 2.75rem);
+    }
+
+    /* 글자를 키운 만큼 섹션 여백도 줄여야 줄이 padding 밖으로 넘치지 않는다
+       (.intro_title_line 은 nowrap 이라 줄바꿈으로 도망갈 수 없다).
+       세로는 화면을 다 쓰지 않고 400px 로 줄인다. */
+    .intro_section {
+        min-height: 25rem;
+        padding-inline: 1rem;
+    }
+
+    /* ---------- respected 태그 ----------
+       기본값은 태그 폭이 고정(clamp 하한 128px)이라
+       128 x 3 + gap 20 = 404px > 쓸 수 있는 폭 312px 가 되어 두 줄로 접힌다.
+       여백·간격·글자를 함께 줄여 한 줄에 넣는다. */
+    .respected_section {
+        padding-inline: 1rem;
+    }
+
+    /* 15px 은 모바일에서 너무 작다 */
+    .respected_lead {
+        font-size: 1.125rem;
+    }
+
+    .respected_tags {
+        width: 100%;
+        /* 접히지 않게 못 박는다 */
+        flex-wrap: nowrap;
+        gap: 0.375rem;
+    }
+
+    .respected_tag {
+        /* 남는 폭을 셋이 똑같이 나눠 갖는다 (각 106px).
+           min-width: 0 이 없으면 내용 폭 아래로 줄어들지 않아 다시 넘친다. */
+        flex: 1 1 0;
+        width: auto;
+        min-width: 0;
+        /* 767px 쪽에서는 나눠 갖는 폭이 240px 를 넘어가므로 시안 최대치로 막는다 */
+        max-width: 15rem;
+        /* 가장 긴 Competitiveness 가 13px 에서 95px.
+           106px 안에 좌우 6px 씩 남기고 한 줄로 들어간다. */
+        font-size: 0.8125rem;
+    }
+
+    /* =====================================================================
+       brand history - 가로 탐색을 접고 세로로 흐르게 한다
+
+       데스크톱은 1920 x 1080 시안 캔버스를 통째로 축소해 좌우로 미는 구조다.
+       모바일은 그 캔버스를 버리고(JS 가 scale 과 stage 폭을 걷어 낸다)
+       보통의 세로 문서 흐름으로 되돌린다.
+       ===================================================================== */
+
+    .history_viewport {
+        display: block;
+        height: auto;
+        overflow: visible;
+    }
+
+    .history_stage,
+    .history_track {
+        position: static;
+        display: block;
+        width: auto;
+        height: auto;
+        transform: none;
+    }
+
+    .history_year {
+        display: block;
+        width: auto;
+        height: auto;
+        padding: 1.5rem 1rem;
+    }
+
+    /* ---------- 족자봉 눕히기 ----------
+       세로 막대(161 x 852)를 90도 돌려 위아래 가로 막대로 쓴다.
+
+       회전은 레이아웃 상자를 바꾸지 않아서, 상자를 그대로 두고 돌리면
+       세로로 긴 자리를 차지한 채 그림만 눕는다. 그래서 막대는 흐름에서 빼고
+       (position: absolute) 위아래에 직접 붙인다.
+
+       돌린 뒤의 길이는 "컨테이너 폭" 이어야 하는데, 절대 위치에서 height 로는
+       폭을 가리킬 수 없다. 컨테이너 쿼리 단위 100cqw 가 정확히 그 값이다. */
+    .history_scroll_all {
+        container-type: inline-size;
+        position: relative;
+        display: block;
+        /* 봉이 차지할 자리. 세로 padding 의 % 는 "컨테이너 폭" 기준이다.
+           (컨테이너 자신은 자기 cqw 를 못 쓰기 때문에 % 로 우회한다)
+
+           봉 두께는 폭의 19.3%(165/856) 인데, 그만큼 다 비우면 봉과 종이가
+           떨어져 따로 논다. PC 는 margin-right: -40px 로 봉(161)의 약 25% 가
+           종이를 물고 있으므로, 그 비율만큼 덜 비워서 겹치게 한다.
+           다만 25% 를 다 물리면 봉 아래로 노란 띠가 거의 남지 않아 봉과 흰
+           상자가 붙어 버린다. 띠가 보일 만큼만 물린다 (두께의 13%). */
+        padding-block: 16.8%;
+        padding-left: 0;
+    }
+
+    .history_stick {
+        /* SVG 원래 비율(165 x 856)을 그대로 지킨다. 두께를 임의로 눌러 놓으면
+           양 끝 마구리가 뭉개져 빈약해 보인다.
+
+           길이는 컨테이너 폭에 딱 맞춘다. .history_year 의 좌우 padding 이
+           16px 이므로 봉의 좌우 여백도 그대로 16px 이 되고, 화면 밖으로
+           잘려 나가지 않는다. 종이가 봉보다 좁아지는 쪽으로 맞춘다. */
+        --len: 100cqw;
+        --thick: calc(var(--len) * 165 / 856);
+        position: absolute;
+        left: 50%;
+        /* 돌리기 전 상자: 두께(가로) x 길이(세로) */
+        width: var(--thick);
+        height: var(--len);
+        margin: 0;
+    }
+
+    .history_stick_left {
+        top: calc(var(--thick) / 2);
+        transform: translate(-50%, -50%) rotate(90deg);
+    }
+
+    .history_stick_right {
+        top: auto;
+        bottom: calc(var(--thick) / 2);
+        transform: translate(-50%, 50%) rotate(90deg);
+    }
+
+    /* ---------- 종이 ---------- */
+    /* 종이는 봉보다 좁아야 봉이 좌우로 나온다.
+       시안 비율 그대로: 종이 772 / 봉 852 = 90.6% */
+    .history_scroll_inner {
+        width: 90.6%;
+        margin-inline: auto;
+        margin-right: auto;
+        /* 노란 띠. 세로·가로 padding 의 % 는 둘 다 컨테이너 폭 기준이라
+           폭을 따라 같은 비율로 자란다.
+           위아래는 얇게, 좌우는 넓게 (위가 두꺼우면 봉과 겹쳐 답답해진다) */
+        padding: 5% 10%;
+        border-width: var(--paper_line);
+    }
+
+    .history_scroll_con {
+        align-items: stretch;
+        border-width: var(--paper_line);
+    }
+
+    /* 외곽선도 두루마리 폭을 따라 굵어진다.
+       태블릿 직전(767px)에 시안 값 4px 에 닿는다. */
+    .history_scroll_inner,
+    .history_scroll_con {
+        --paper_line: clamp(2px, 0.55cqw, 4px);
+    }
+
+    /* 네 시기를 위에서 아래로 쌓는다.
+       간격이 좁으면 네 시기가 한 덩어리로 읽혀서 넉넉히 벌린다 */
+    .history_year_con {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 7.5rem;
+        height: auto;
+        padding: 1.25rem 1rem;
+    }
+
+    /* ---------- 시기 하나하나 ----------
+       시안의 고정 폭(917 / 804 / 806 / 968)은 모바일 폭을 한참 넘는다.
+       전부 폭에 맡기고 사진 -> 글 순서로 세로로 쌓는다. */
+    .year_block,
+    .year_con,
+    .year_head,
+    .year_list,
+    .year_li {
+        width: auto;
+        max-width: none;
+    }
+
+    /* 시안의 고정 폭·간격은 .year_1 .year_con 처럼 명시도가 한 단계 높아서
+       위의 한 줄짜리 선택자로는 지워지지 않는다. 같은 모양으로 되짚어 준다. */
+    .year_1 .year_con,
+    .year_2 .year_con,
+    .year_3 .year_con,
+    .year_4 .year_con,
+    .year_1 .year_head,
+    .year_2 .year_head,
+    .year_3 .year_head,
+    .year_4 .year_head {
+        width: auto;
+        height: auto;
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    /* 목록 항목의 시안 폭(--li_w, 최대 514px)도 지운다 */
+    .year_li {
+        width: auto;
+        align-self: stretch;
+    }
+
+    .year_block {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    /* ---------- 순서 통일 ----------
+       사진 -> 연도 -> 간단 설명 -> 세부 설명.
+
+       시안은 시기마다 배치가 달라서 DOM 순서가 제각각이다.
+       (year_2 는 사진이 뒤, year_2 / year_4 는 연도가 설명 뒤,
+        year_4 는 세부 설명이 연도보다 앞)
+       HTML 은 그대로 두고 order 로만 바로잡는다. */
+    .year_block > .img_box {
+        order: 0;
+    }
+
+    .year_block > .year_con {
+        order: 1;
+    }
+
+    .year_con > .year_head {
+        order: 0;
+    }
+
+    .year_con > .year_list {
+        order: 1;
+    }
+
+    .year_head > .year_tit {
+        order: 0;
+    }
+
+    .year_head > .year_txt {
+        order: 1;
+    }
+
+    .year_con {
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    /* 오른쪽 정렬로 흘리던 것들도 전부 왼쪽으로 모은다.
+       align-items 는 stretch 여야 한다. flex-start 로 두면 목록 항목이
+       내용 폭(max-content)만큼 벌어져서, 긴 문장 하나가 블록을 660px 까지
+       늘려 버린다. 늘려 놓고 글자만 왼쪽으로 붙인다. */
+    .year_head,
+    .year_list,
+    .year_list_right {
+        align-items: stretch;
+        align-self: stretch;
+        text-align: left;
+    }
+
+    .year_tit,
+    .year_tit_end,
+    .year_tit_center {
+        align-self: flex-start;
+        font-size: clamp(2.25rem, 13vw, 3.5rem);
+        letter-spacing: -0.02em;
+    }
+
+    /* 한 줄로 못 박혀 있어서 모바일에서는 화면 밖으로 나간다 */
+    .year_txt_row {
+        flex-wrap: wrap;
+        white-space: normal;
+    }
+
+    /* 기본 1.7 은 모바일에서 줄이 뚝뚝 떨어져 보인다 */
+    .year_txt,
+    .year_txt_row,
+    .year_txt_col {
+        font-size: 1rem;
+        line-height: 1.2;
+    }
+
+    .li_txt,
+    .year_list_right .li_txt {
+        font-size: 0.9375rem;
+    }
+
+    .li_year,
+    .year_list_right .li_year {
+        font-size: 1rem;
+    }
+
+    /* 사진은 폭을 채우고, 네 시기 모두 같은 크기(4:3)로 통일한다.
+       시안은 시기마다 크기가 제각각(200x200 / 576 / 280x280 / 602x285)이지만
+       세로로 쌓이면 크기가 들쭉날쭉해 읽는 리듬이 끊긴다.
+       비율이 바뀌는 만큼은 object-fit: cover 가 잘라 맞춘다. */
+    .img_box,
+    .img_box_1,
+    .img_box_2,
+    .img_box_3,
+    .img_box_4 {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 4 / 3;
+        align-self: stretch;
+    }
+
+    /* year_4 는 글이 사진 위에 겹쳐 있었다. 세로로 쌓이면 겹칠 이유가 없다 */
+    .year_4 {
+        position: static;
+    }
+
+    .year_con_overlay {
+        position: static;
+        width: auto;
+        height: auto;
+    }
+
+    /* ---------- 마지막 VISION 패널 ---------- */
+    .history_vision {
+        width: auto;
+        min-width: 0;
+        height: auto;
+        min-height: 100svh;
+        margin-left: 0;
+        border-radius: 0;
+    }
+
+    .history_vision_inner {
+        position: static;
+        inset: auto;
+        min-height: 100svh;
+        padding: 3rem 1rem;
+    }
+
+    .history_vision_tit {
+        width: auto;
+        max-width: 100%;
+    }
+
+    .history_vision_word {
+        font-size: clamp(2.5rem, 15vw, 4rem);
+        letter-spacing: -0.02em;
+    }
+
+    .history_vision_o {
+        width: 0.7em;
+        height: 0.7em;
+        margin-inline: 0.06em;
+    }
+
+    /* 한 줄 고정이라 모바일에서 넘친다 */
+    .history_vision_lead {
+        white-space: normal;
+    }
+
     /* 4개가 한 줄에 들어가지 않아 2 x 2 로 접고, 겹침은 그대로 유지 */
     .vision_circles {
         --vision_circle_size: min(42vw, 11rem);
