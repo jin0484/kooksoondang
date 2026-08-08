@@ -147,6 +147,8 @@
                     <h2 id="best_title">Everyday Classics in the Glass</h2>
                     <p>Rice, Culture, and Best Drops</p>
                 </header>
+                <!-- 태블릿(768px)에서만 가로 스크롤 틀로 바뀜. 그 외 폭에서는 display:contents 라 없는 것과 같음 -->
+                <div class="best_collage_scroll" data-collage-scroll>
                 <div class="best_collage" data-momentum-init>
                     <a class="best_card best_card_bekseju" href="../products/products.html" data-momentum>
                         <span class="best_card_label">Bekseju</span>
@@ -168,6 +170,7 @@
                     <img class="best_deco best_deco_cup2" src="../asset/icon/best_cup2.svg" alt="" data-momentum>
                     <img class="best_deco best_deco_bottle" src="../asset/icon/best_bottle.svg" alt="" data-momentum>
                     <img class="best_deco best_deco_bottle2" src="../asset/icon/best_bottle2.svg" alt="" data-momentum>
+                </div>
                 </div>
             </div>
         </section>
@@ -412,15 +415,26 @@
 
                     <!-- 태블릿 전용 룰렛 조작부. 드래그 대신 카드를 한 장씩 넘겨 고름 -->
                     <div class="pairing_roulette" data-pairing-roulette>
+                        <!-- 버튼을 누르면 위쪽으로 목록이 열림. 목록 항목은 main.js 가 카드에서 만들어 채움 -->
                         <div class="pairing_roulette_swaps">
-                            <button type="button" class="pairing_swap" data-pairing-swap="food">
-                                Other food
-                                <img src="../asset/icon/chevron_down_3.svg" alt="" aria-hidden="true">
-                            </button>
-                            <button type="button" class="pairing_swap" data-pairing-swap="drink">
-                                Other drink
-                                <img src="../asset/icon/chevron_down_3.svg" alt="" aria-hidden="true">
-                            </button>
+                            <div class="pairing_swap_field" data-pairing-swap-field="food">
+                                <button type="button" class="pairing_swap" data-pairing-swap="food"
+                                    aria-haspopup="listbox" aria-expanded="false" aria-controls="pairing_swap_menu_food">
+                                    <span class="pairing_swap_text">Other food</span>
+                                    <img src="../asset/icon/chevron_down_3.svg" alt="" aria-hidden="true">
+                                </button>
+                                <ul class="pairing_swap_menu" id="pairing_swap_menu_food" role="listbox"
+                                    aria-label="Choose a food card" data-pairing-swap-menu="food" hidden></ul>
+                            </div>
+                            <div class="pairing_swap_field" data-pairing-swap-field="drink">
+                                <button type="button" class="pairing_swap" data-pairing-swap="drink"
+                                    aria-haspopup="listbox" aria-expanded="false" aria-controls="pairing_swap_menu_drink">
+                                    <span class="pairing_swap_text">Other drink</span>
+                                    <img src="../asset/icon/chevron_down_3.svg" alt="" aria-hidden="true">
+                                </button>
+                                <ul class="pairing_swap_menu" id="pairing_swap_menu_drink" role="listbox"
+                                    aria-label="Choose a drink card" data-pairing-swap-menu="drink" hidden></ul>
+                            </div>
                         </div>
                         <!-- 모바일 시안은 문구가 더 김. 폭에 맞는 쪽만 css 가 보여 줌 -->
                         <button type="button" class="btn_pill pairing_roulette_check" data-pairing-roulette-check>

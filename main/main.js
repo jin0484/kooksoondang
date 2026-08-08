@@ -895,6 +895,11 @@
     const resultNextButton = resultModal?.querySelector('[data-pairing-result-next]');
     const roulette = section?.querySelector('[data-pairing-roulette]');
     const swapButtons = roulette ? [...roulette.querySelectorAll('[data-pairing-swap]')] : [];
+    const swapButtonsByType = Object.fromEntries(swapButtons.map((button) => [button.dataset.pairingSwap, button]));
+    const swapMenus = {
+        food: roulette?.querySelector('[data-pairing-swap-menu="food"]') || null,
+        drink: roulette?.querySelector('[data-pairing-swap-menu="drink"]') || null
+    };
     const rouletteCheckButton = roulette?.querySelector('[data-pairing-roulette-check]');
 
     if (!section || !cards.length || !foodCards.length || !drinkCards.length || plates.length < 2 || !checkButton) return;
@@ -1152,6 +1157,8 @@
                 list[(rouletteIndex[type] + offset) % list.length]?.classList.add(className);
             });
             selectedCards[type] = card;
+            // 카드를 직접 눌러 넘겼을 때도 열려 있는 목록의 표시가 따라가야 함
+            syncSwapMenu(type);
         });
 
         plates.forEach(syncPlate);
@@ -1165,6 +1172,89 @@
 
         rouletteIndex[type] = (rouletteIndex[type] + 1) % list.length;
         renderRoulette();
+    }
+
+    /* "Other food / Other drink" 는 다음 장으로 넘기는 대신 목록을 위로 펼쳐 바로 고르게 함.
+       카드가 5장이라 원하는 걸 찾으려면 최대 4번을 눌러야 했음.
+       항목은 카드 순서 그대로 만들고, 고르면 그 인덱스를 룰렛에 그대로 넣음 */
+    function buildSwapMenu(type) {
+        const menu = swapMenus[type];
+        const list = rouletteCards[type];
+
+        if (!menu || !list?.length) return;
+
+        menu.textContent = '';
+
+        list.forEach((card, index) => {
+            const item = document.createElement('li');
+            const option = document.createElement('button');
+
+            option.type = 'button';
+            option.className = 'pairing_swap_option';
+            option.setAttribute('role', 'option');
+            option.textContent = labelFor(card);
+            option.dataset.pairingSwapIndex = String(index);
+            item.appendChild(option);
+            menu.appendChild(item);
+        });
+    }
+
+    function syncSwapMenu(type) {
+        const menu = swapMenus[type];
+
+        if (!menu) return;
+
+        const current = rouletteIndex[type] % rouletteCards[type].length;
+
+        menu.querySelectorAll('.pairing_swap_option').forEach((option) => {
+            option.setAttribute('aria-selected', option.dataset.pairingSwapIndex === String(current) ? 'true' : 'false');
+        });
+    }
+
+    function closeSwapMenu(type) {
+        const menu = swapMenus[type];
+        const button = swapButtonsByType[type];
+
+        if (!menu || menu.hidden) return;
+
+        menu.hidden = true;
+        button?.setAttribute('aria-expanded', 'false');
+    }
+
+    function closeAllSwapMenus() {
+        Object.keys(swapMenus).forEach(closeSwapMenu);
+    }
+
+    function openSwapMenu(type) {
+        const menu = swapMenus[type];
+        const button = swapButtonsByType[type];
+
+        if (!menu) return;
+
+        // 한 번에 하나만 열려 있어야 두 목록이 겹치지 않음
+        closeAllSwapMenus();
+        buildSwapMenu(type);
+        syncSwapMenu(type);
+        menu.hidden = false;
+        button?.setAttribute('aria-expanded', 'true');
+        // 지금 고른 항목이 바로 보이도록 목록을 그 자리로 옮겨 둠
+        menu.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest' });
+    }
+
+    function toggleSwapMenu(type) {
+        if (swapMenus[type]?.hidden === false) closeSwapMenu(type);
+        else openSwapMenu(type);
+    }
+
+    function pickSwapOption(type, index) {
+        const list = rouletteCards[type];
+
+        if (!list?.length) return;
+
+        rouletteIndex[type] = index % list.length;
+        renderRoulette();
+        closeSwapMenu(type);
+        swapButtonsByType[type]?.focus();
     }
 
     function runCheck() {
@@ -1540,6 +1630,8 @@
 
     function updateMode() {
         resetMotion();
+        // 데스크톱으로 넘어가면 룰렛 자체가 사라지므로 열린 목록도 같이 닫음
+        closeAllSwapMenus();
         renderRoulette();
 
         if (!isMotionEnabled()) return;
@@ -1572,7 +1664,28 @@
     checkButton.addEventListener('click', runCheck);
     rouletteCheckButton?.addEventListener('click', runCheck);
     swapButtons.forEach((button) => {
-        button.addEventListener('click', () => swapRoulette(button.dataset.pairingSwap));
+        button.addEventListener('click', () => toggleSwapMenu(button.dataset.pairingSwap));
+    });
+
+    Object.entries(swapMenus).forEach(([type, menu]) => {
+        menu?.addEventListener('click', (event) => {
+            const option = event.target.closest('.pairing_swap_option');
+
+            if (!option) return;
+
+            pickSwapOption(type, Number(option.dataset.pairingSwapIndex));
+        });
+    });
+
+    // 목록 밖을 누르거나 Esc 를 누르면 닫힘. 결과 모달의 Esc 처리와는 서로 건드리지 않음
+    document.addEventListener('pointerdown', (event) => {
+        if (event.target.closest('[data-pairing-swap-field]')) return;
+
+        closeAllSwapMenus();
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeAllSwapMenus();
     });
 
     resultCloseButtons.forEach((button) => button.addEventListener('click', closeResult));
@@ -2204,4 +2317,54 @@
     }, { threshold: [0, revealRatio, 1] });
 
     revealObserver.observe(divider);
+})();
+
+/* ---------- best 콜라주 가로 스크롤 (태블릿 전용) ---------- */
+/* 콜라주가 화면보다 넓게(201%) 깔려 있어 태블릿에서는 좌우가 잘림.
+   css 로 바깥에 스크롤 틀을 뒀는데, 스크롤은 항상 왼쪽 끝에서 시작하므로
+   기존에 보이던 가운데 구도를 그대로 두려면 시작 위치를 여기서 잡아 줘야 함 */
+
+(() => {
+    const scroller = document.querySelector('[data-collage-scroll]');
+
+    if (!scroller) return;
+
+    const tabletQuery = window.matchMedia('(min-width: 30.0625rem) and (max-width: 48rem)');
+
+    // 사용자가 한 번이라도 밀었으면 그 위치를 존중함. 방향 전환(회전) 때만 다시 가운데로 둠
+    let touched = false;
+
+    function center() {
+        const overflow = scroller.scrollWidth - scroller.clientWidth;
+
+        if (overflow <= 0) return;
+
+        scroller.scrollLeft = overflow / 2;
+    }
+
+    function sync() {
+        if (!tabletQuery.matches) return;
+
+        touched = false;
+        // 레이아웃이 확정된 뒤에 재야 scrollWidth 가 제 값으로 나옴
+        window.requestAnimationFrame(center);
+    }
+
+    scroller.addEventListener('scroll', () => { touched = true; }, { passive: true });
+
+    window.addEventListener('resize', () => {
+        if (touched && tabletQuery.matches) return;
+        sync();
+    });
+
+    if (tabletQuery.matches) sync();
+
+    if (typeof tabletQuery.addEventListener === 'function') {
+        tabletQuery.addEventListener('change', sync);
+    } else {
+        tabletQuery.addListener(sync);
+    }
+
+    // 이미지가 늦게 들어와 콜라주 폭이 바뀌는 경우까지 맞춰 둠
+    window.addEventListener('load', sync);
 })();
