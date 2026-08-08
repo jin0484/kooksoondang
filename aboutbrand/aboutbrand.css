@@ -313,6 +313,62 @@
     margin-left: 0;
 }
 
+/* ---------- 두루마리 펼치기 ----------
+   화면에 들어오면, 좌우 막대가 맞붙어 있던 상태에서 오른쪽 막대가 밀려나며
+   종이가 좌 -> 우로 펼쳐진다.
+
+   종이는 clip-path 로 잘라 내고 막대는 transform 으로 민다. 둘 다 레이아웃을
+   바꾸지 않는 방식이라, 트랙 폭을 실측해 가로 탐색 거리를 잡는 기존 계산이
+   흔들리지 않는다. (종이 폭을 실제로 줄이면 트랙 폭이 같이 줄어 버린다)
+
+   --unroll_shift / --unroll_clip 은 aboutbrand.js 가 실측해서 넣는다.
+   두 값의 이동 거리가 같아서, 잘린 종이 끝이 늘 오른쪽 막대에 붙어 따라온다. */
+
+/* 두 전환은 길이와 이징이 반드시 같아야 종이 끝이 막대에 붙어 따라온다.
+   따로 적으면 한쪽만 고치다 어긋나기 쉬워서 변수로 묶어 둔다.
+
+   이징을 ease-out 계열로 두면 안 된다. 거리가 5600px 이 넘어서,
+   앞이 몰린 곡선(easeOutQuint 는 시간의 앞 30% 에 거리의 83% 를 쓴다)에서는
+   막대가 튕겨 나갔다가 끝에서 기어가는 꼴이 된다.
+   밀려 나가는 느낌은 앞뒤가 고른 ease-in-out 이어야 나온다. */
+.history_scroll_all {
+    --unroll_ms: 1300ms;
+    --unroll_ease: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* 펼쳐진 상태(기본값).
+   전환은 여기에만 적는다. 아래 .is_rolled 규칙은 값만 덮어쓰므로 전환은 그대로
+   남아, 펼칠 때와 닫을 때가 같은 --unroll_ms / --unroll_ease 를 탄다. */
+.history_scroll_all.is_unroll_ready .history_scroll_inner {
+    clip-path: inset(0 0 0 0);
+    transition: clip-path var(--unroll_ms) var(--unroll_ease);
+}
+
+.history_scroll_all.is_unroll_ready .history_stick_right {
+    transform: translateX(0);
+    transition: transform var(--unroll_ms) var(--unroll_ease);
+}
+
+/* 말려 있는 상태. 오른쪽 막대가 왼쪽 막대에 맞붙고 종이는 그 뒤로 숨는다 */
+.history_scroll_all.is_unroll_ready.is_rolled .history_scroll_inner {
+    clip-path: inset(0 var(--unroll_clip, 0px) 0 0);
+}
+
+.history_scroll_all.is_unroll_ready.is_rolled .history_stick_right {
+    transform: translateX(var(--unroll_shift, 0px));
+}
+
+/* 과정을 보여 주지 않고 한순간에 처음 상태로 되돌릴 때 JS 가 잠깐 붙였다 뗀다.
+   - 섹션이 화면에서 완전히 사라졌을 때: 안 보이는 곳에서 천천히 닫힐 이유가 없다
+   - 시작할 때 한 번 말아 둘 때: 화면에 이미 들어와 있는 채로 페이지가 열려도
+     말림 전환 위에 펼침이 얹혀 펼쳐짐이 통째로 생략되는 일이 없다
+
+   위 규칙들과 명시도가 같으므로 반드시 뒤에 와야 이긴다. */
+.history_scroll_all.is_unroll_instant .history_scroll_inner,
+.history_scroll_all.is_unroll_instant .history_stick_right {
+    transition: none;
+}
+
 .history_scroll_inner {
     display: flex;
     flex-direction: column;
@@ -681,18 +737,29 @@
    화면 폭보다 좁아져서 검정 패널이 화면을 다 덮기 전에 가로 탐색이 끝나 버린다.
    그래서 "화면 폭을 설계 단위로 환산한 값" 을 최소 폭으로 준다.
    여기에 왼쪽 띠(30px)까지 더해야 둥근 모서리가 화면 밖으로 완전히 빠져서
-   안쪽 면(#272625)만 남는다. */
+   안쪽 면만 남는다.
+
+   색은 뒤이어 오는 .vision_section / .site_footer 와 같은 --bekseju_darker_cold.
+   여기만 warm(#272625) 이면 가로 탐색이 끝나고 세로로 넘어가는 경계에서
+   #272625 -> #232323 으로 색이 한 번 갈라져 보인다. */
 .history_vision {
     position: relative;
     flex: none;
-    width: 1950px;
-    /* 30px = 왼쪽 띠, 6px = scale·반올림으로 생기는 서브픽셀 틈을 덮는 여유 */
-    min-width: calc(var(--history_vw) / var(--history_scale) + 36px);
-    height: 1080px;
+    /* 시안 폭은 1950 이지만 그 값을 고정으로 쓰면 안 된다.
+       화면보다 넓어지는 순간(태블릿에서 1950 x 0.65 = 1268 > 768) 가운데 정렬한
+       문구가 화면 밖으로 밀려 잘린다. 언제나 "화면 한 폭" 이 되게 계산한다.
+       30px = 왼쪽 띠, 6px = scale·반올림으로 생기는 서브픽셀 틈을 덮는 여유.
+       (1920 화면에서 1956 이 되어 시안 값과 사실상 같다) */
+    width: calc(var(--history_vw) / var(--history_scale) + 36px);
+    /* 높이도 마찬가지. 1080 고정이면 트랙이 축소된 만큼(태블릿에서 702)
+       화면 높이에 못 미쳐 위아래로 흰 배경이 드러난다.
+       화면 높이를 설계 단위로 환산해 언제나 화면을 꽉 채운다.
+       (트랙이 높이에 맞는 화면에서는 이 값이 정확히 1080 이 된다) */
+    height: calc(100svh / var(--history_scale, 1));
     margin-left: -30px;
     border-radius: 20px 0 0 20px;
     /* 안쪽 면과 같은 색이어야 왼쪽 띠에서 색이 갈라져 보이지 않는다 */
-    background: var(--bekseju_darker_warm);
+    background: var(--bekseju_darker_cold);
     overflow: hidden;
 }
 
@@ -702,12 +769,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--bekseju_darker_warm);
+    background: var(--bekseju_darker_cold);
     overflow: hidden;
 }
 
-/* 시안의 노이즈 이펙트 근사치 */
-.history_vision_inner::after,
+/* 시안의 노이즈 이펙트 근사치.
+   패널 쪽은 .history_vision_inner 이 아니라 .history_vision 에 건다.
+   inner 는 left:30px 부터라, inner 에 걸면 왼쪽 띠 30px 만 노이즈 없이 매끈해져서
+   가로 탐색이 vision 으로 넘어가는 경계에 결이 다른 세로줄이 남는다. */
+.history_vision::after,
 .vision_section::after,
 .respected_section::after {
     content: "";
@@ -758,11 +828,37 @@
     color: var(--makgeolli_White);
 }
 
+/* 70 years 만 초록으로 강조 */
+.history_vision_point {
+    font-style: normal;
+    color: var(--kooksoondang_green);
+}
+
 .history_vision_o {
     display: inline-flex;
     width: 60px;
     height: 60px;
     margin-inline: 6px;
+}
+
+/* VISION 도 intro 타이틀과 같은 방식으로 글자가 하나씩 밀려 들어온다.
+   글자는 .reveal_char 로 쪼개지고, 가운데 O 는 이미지라 통째로 한 칸이 된다.
+   (.reveal_char 의 opacity:0 은 그대로 받고, display 만 원래 값을 지킨다)
+   쪼개는 일은 JS 가 하므로 JS 가 없거나 모션 최소화 설정이면 처음부터 그냥 보인다. */
+.history_vision_o.reveal_char {
+    display: inline-flex;
+}
+
+/* 아래 문구도 같은 방식으로 글자가 하나씩 나온다.
+   VISION 이 다 나온 뒤에 이어서 시작하고, 패널이 화면 밖으로 나가면
+   되돌아갔다가 다시 들어올 때 또 재생된다. (시점은 JS 가 잡는다)
+
+   글자를 한 자씩 inline-block 으로 쪼개면 칸마다 반올림이 붙어 줄 폭이 몇 px 넓어진다.
+   그만큼이 tit 폭(609px)을 넘겨 두 줄이 되고, inline-block 사이에는 낱말 한가운데에도
+   줄바꿈 자리가 생겨서 cultur / e 처럼 끊긴다. 원래대로 한 줄로 고정한다.
+   (intro 타이틀의 .intro_title_line 과 같은 처리) */
+.history_vision_lead {
+    white-space: nowrap;
 }
 
 .history_vision_o img {
@@ -776,8 +872,15 @@
    원 4개는 전용 에셋이 없어 CSS(배경 + 0.5px 보더 + border-radius)로 구현.
    ========================================================================= */
 
+/* 스크롤이 고정(pin)되는 구간이라 반드시 화면을 꽉 채워야 한다.
+   내용 높이에만 맡기면 태블릿(768 x 1024)에서 794px 밖에 안 돼,
+   고정된 동안 위아래로 흰 배경이 드러난다. */
 .vision_section {
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100svh;
     padding-block: clamp(6rem, 23.3vh, 15.75rem) clamp(6rem, 25.5vh, 17.25rem);
     background: var(--bekseju_darker_cold);
     overflow: hidden;
@@ -854,7 +957,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: clamp(40rem, 62.7vw, 75.1875rem);
+    /* 여기도 pin 이 걸리는 구간이라 화면보다 작아지면 안 된다.
+       시안 비율(62.7vw)은 화면이 넓을 때만 화면보다 커서,
+       태블릿에서는 640px(= 하한)에 머물러 아래로 흰 배경이 드러난다. */
+    min-height: max(100svh, clamp(40rem, 62.7vw, 75.1875rem));
     padding-block: clamp(4rem, 8vw, 8rem);
     padding-inline: var(--about_gutter);
     overflow: hidden;
@@ -1184,6 +1290,58 @@
    반응형
    ========================================================================= */
 
+/* 태블릿(768 ~ 1279).
+   시안 비율(4.479vw) 을 그대로 두면 768px 에서 34px 밖에 안 돼 허전하다.
+   화면이 좁을수록 글자는 상대적으로 커야 하므로 비율을 키운다.
+   상한 3.25rem 은 1280px 에서 넘어가는 기본값(약 57px)보다 낮게 잡아,
+   화면이 넓어질수록 글자가 커지는 순서가 뒤집히지 않게 한다.
+   (767px 이하는 줄이 넘칠 수 있어 건드리지 않는다) */
+@media (min-width: 768px) and (max-width: 1279px) {
+    .intro_title {
+        font-size: clamp(2.5rem, 6.8vw, 3.25rem);
+    }
+
+    /* VISION 패널 글자 30% 키우기.
+       이 안쪽은 트랙과 함께 축소되는 설계 단위라, 768px 에서 scale 이 0.65 까지
+       내려가면 20px 짜리 본문이 화면에서 13px 이 된다. 설계 값을 미리 키워 둔다. */
+    .history_vision_since,
+    .history_vision_lead {
+        font-size: 26px;
+    }
+
+    .history_vision_word {
+        font-size: 112px;
+        letter-spacing: -2.24px;
+    }
+
+    .history_vision_o {
+        width: 78px;
+        height: 78px;
+        margin-inline: 8px;
+    }
+
+    /* 원 4개는 좌우 여백만 남기고 폭을 채운다.
+       시안 비율(16.45vw)은 화면이 좁아도 폭의 62% 만 써서 양옆이 허전하다.
+
+       4개 총폭 = 지름 * (4 - 3 * 0.08824) = 지름 * 3.73528  (겹침 8.824%)
+       거꾸로 풀면 "남는 폭을 다 쓰는 지름" 이 나온다. 4rem 은 좌우 여백 몫.
+
+       상한 13.5rem(216px)은 1280px 에서 넘어가는 기본값(약 210px)과 거의 같아서,
+       구간을 벗어날 때 크기가 튀지 않는다. */
+    .vision_circles {
+        --vision_circle_size: min(13.5rem, calc((100vw - 4rem) / 3.73528));
+    }
+
+    /* 아래 두 값도 1280px 기본값(각각 20px, 24px)과 이어지도록 잡았다 */
+    .vision_circle_name {
+        font-size: 1.1875rem;
+    }
+
+    .vision_statement {
+        font-size: 1.4375rem;
+    }
+}
+
 @media (max-width: 767px) {
     /* 4개가 한 줄에 들어가지 않아 2 x 2 로 접고, 겹침은 그대로 유지 */
     .vision_circles {
@@ -1209,6 +1367,12 @@
 @media (prefers-reduced-motion: reduce) {
     .intro_arrow img {
         animation: none;
+    }
+
+    /* 두루마리는 펼쳐지는 과정 없이 펼쳐진 결과만 보여 준다 */
+    .history_scroll_all.is_unroll_ready .history_scroll_inner,
+    .history_scroll_all.is_unroll_ready .history_stick_right {
+        transition: none;
     }
 
     /* 차오르고 튀어오르는 과정 없이 결과만 보여 준다 */
