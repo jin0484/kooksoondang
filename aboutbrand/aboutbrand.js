@@ -131,6 +131,9 @@
     // 모션 최소화 설정이면 쪼개지 않고 그대로 둔다 (글자는 처음부터 보임)
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
+    // 되감기를 할지 말지가 갈리는 지점 (아래 관찰자 주석 참고)
+    const desktopQuery = window.matchMedia('(min-width: 768px)');
+
     const lead = document.querySelector('.history_vision_lead');
 
     // VISION 은 여섯 칸뿐이라 또박또박, 문구는 예순 자가 넘어 촘촘하게
@@ -278,8 +281,20 @@
     // 실제로 그려진 자리를 보므로 그대로 쓸 수 있다.
     const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
-            if (entry.isIntersecting) play();
-            else reset();
+            if (entry.isIntersecting) {
+                play();
+                return;
+            }
+
+            /* 모바일에서는 되돌리지 않는다.
+
+               가로일 때는 이 덩어리가 화면 밖으로 통째로 밀려 나갔다가 다시
+               들어오므로 되감아도 보이지 않는다. 반면 세로로 흐를 때는 스크롤을
+               내리면 위로 천천히 빠져나가는데, 교차 비율이 0.6 아래로 떨어지는
+               순간 아직 화면에 남아 있는 글자까지 함께 지워져 버린다. */
+            if (!desktopQuery.matches) return;
+
+            reset();
         });
     }, { threshold: 0.6 });
 
@@ -1188,6 +1203,9 @@
 
     // 원이 다 흩어지는 시점
     const SPREAD_SPAN = 0.5;
+    // 원이 떠오르는 구간. 모여 있는 원이 미리 떠 있으면 스크롤로 들어올 때
+    // 덩그러니 놓여 있어 어색하다. 흩어지기 시작할 때 함께 나타나게 한다.
+    const APPEAR_SPAN = 0.25;
     // 원 안 글자. 흩어지는 도중부터 왼쪽 원부터 차례로
     const NAME_START = 0.3;
     const NAME_SPAN = 0.25;
@@ -1247,6 +1265,7 @@
         const progress = scrollProxy.progress;
         const spread = phase(progress, 0, SPREAD_SPAN);
         const gathered = 1 - spread;
+        const appear = phase(progress, 0, APPEAR_SPAN);
 
         circles.forEach((circle, index) => {
             const slot = slots[index];
@@ -1256,7 +1275,8 @@
             gsap.set(circle, {
                 x: slot.x * gathered,
                 y: slot.y * gathered,
-                scale: GATHER_SCALE + (1 - GATHER_SCALE) * spread
+                scale: GATHER_SCALE + (1 - GATHER_SCALE) * spread,
+                opacity: appear
             });
         });
 
@@ -1336,7 +1356,7 @@
         tween.kill();
         tween = null;
 
-        gsap.set(circles, { clearProps: 'transform' });
+        gsap.set(circles, { clearProps: 'transform,opacity' });
         [...names, arrow, statement].forEach((target) => {
             if (target) gsap.set(target, { clearProps: 'opacity,transform' });
         });
