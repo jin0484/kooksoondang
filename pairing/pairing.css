@@ -143,7 +143,7 @@
     flex-direction: column;
     justify-content: center;
     min-width: 0;
-    padding: clamp(2.5rem, 3.125vw, 3.75rem) clamp(2.25rem, 10.417vw, 12.5rem);
+    padding: clamp(1.5rem, 2.083vw, 2.5rem) clamp(2.25rem, 10.417vw, 12.5rem);
     overflow: hidden;
     opacity: 0;
     visibility: hidden;
@@ -192,15 +192,15 @@
 .pairing_page .pairing_question_options {
     display: grid;
     width: 100%;
-    gap: 0.75rem;
-    margin-top: clamp(1.5rem, 1.563vw, 1.875rem);
+    gap: 0.5rem;
+    margin-top: clamp(0.875rem, 1.042vw, 1.25rem);
 }
 
 .pairing_page .pairing_question_option {
     display: flex;
     align-items: center;
     width: 100%;
-    min-height: clamp(4.25rem, 4.167vw, 5rem);
+    min-height: clamp(3.5rem, 3.5vw, 4.25rem);
     gap: clamp(1rem, 2.604vw, 3.125rem);
     padding: clamp(0.875rem, 1.042vw, 1.25rem) clamp(1rem, 1.302vw, 1.563rem);
     overflow: hidden;
@@ -235,6 +235,57 @@
     font-size: clamp(1rem, 1.25vw, 1.5rem);
     font-weight: 600;
     line-height: 1.3;
+}
+
+.pairing_page .pairing_question_navigation {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    gap: clamp(0.75rem, 1.042vw, 1.25rem);
+    margin-top: clamp(0.75rem, 1.042vw, 1.25rem);
+}
+
+.pairing_page .pairing_question_nav_button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: clamp(2.5rem, 2.604vw, 3rem);
+    padding: 0.625rem 1rem;
+    border: 1px solid var(--pairing-question-color);
+    border-radius: 0.5rem 0.5rem 1.25rem 1.25rem;
+    background: var(--makgeolli_White);
+    color: var(--pairing-question-color);
+    font-size: clamp(0.875rem, 1.042vw, 1.125rem);
+    font-weight: 700;
+    line-height: 1.2;
+    transition: transform 180ms ease, background-color 180ms ease, color 180ms ease, opacity 180ms ease;
+}
+
+.pairing_page .pairing_question_nav_button:not(:disabled):hover {
+    transform: translateY(-0.125rem);
+}
+
+.pairing_page .pairing_question_next {
+    background: var(--makgeolli_White);
+    color: var(--pairing-question-color);
+}
+
+.pairing_page .pairing_question_next:not(:disabled) {
+    border-color: var(--pairing-orange);
+    background: var(--pairing-orange);
+    color: var(--makgeolli_White);
+    box-shadow: 0 0.25rem 0.75rem rgba(242, 149, 86, 0.24);
+}
+
+.pairing_page .pairing_question_nav_button:disabled {
+    cursor: not-allowed;
+    opacity: 0.38;
+}
+
+@media (min-width: 80rem) {
+    .pairing_page .pairing_questionnaire {
+        min-height: clamp(32rem, 39vw, 46rem);
+    }
 }
 
 .pairing_page .pairing_question_tab {
@@ -2073,5 +2124,338 @@
 
     .pairing_page .footer_sns {
         justify-content: flex-start;
+    }
+}
+
+/* Keep the recipe copy and its photograph together within a compact phone card. */
+@media (max-width: 47.9375rem) {
+    .pairing_page .pairing_recipe_content {
+        padding: 1.25rem 1rem 1.125rem;
+    }
+
+    .pairing_page .pairing_recipe_inner,
+    .pairing_page .pairing_recipe_details {
+        gap: 0.875rem;
+    }
+
+    .pairing_page .pairing_recipe_intro {
+        gap: 0.25rem;
+    }
+
+    .pairing_page .pairing_recipe_title {
+        font-size: clamp(1.55rem, 8vw, 1.9rem);
+        line-height: 1.2;
+    }
+
+    .pairing_page .pairing_recipe_meta {
+        gap: 0.25rem 0.375rem;
+        font-size: 0.75rem;
+        line-height: 1.35;
+    }
+
+    .pairing_page .pairing_recipe_meta_item {
+        gap: 0.25rem;
+        padding: 0.125rem;
+    }
+
+    .pairing_page .pairing_recipe_meta_item img {
+        width: 0.9375rem;
+        height: 0.9375rem;
+    }
+
+    .pairing_page .pairing_recipe_columns {
+        row-gap: 0.875rem;
+    }
+
+    .pairing_page .pairing_recipe_step_section {
+        padding-top: 0.875rem;
+    }
+
+    .pairing_page .pairing_recipe_columns h4 {
+        margin-bottom: 0.375rem;
+        font-size: 0.875rem;
+    }
+
+    .pairing_page .pairing_recipe_ingredient_list,
+    .pairing_page .pairing_recipe_step_list {
+        gap: 0.25rem;
+        padding-inline-start: 1rem;
+        font-size: 0.75rem;
+        line-height: 1.45;
+    }
+
+    .pairing_page .pairing_recipe_tip {
+        padding-inline: 0;
+        font-size: 0.75rem;
+        line-height: 1.45;
+    }
+
+    .pairing_page .pairing_recipe_media {
+        height: clamp(9.5rem, 43vw, 11rem);
+    }
+}
+
+/* Center the recipe selector and make each drink easier to tap on phones. */
+@media (max-width: 47.9375rem) {
+    .pairing_page .pairing_recipe_controls {
+        align-items: center;
+        justify-content: center;
+    }
+
+    .pairing_page .pairing_recipe_picker_list {
+        --pairing-recipe-picker-size: clamp(2.25rem, 11vw, 2.75rem);
+        justify-content: center;
+        margin-inline: auto;
+        padding-inline: 0.25rem;
+    }
+}
+
+@media (max-width: 22.5rem) {
+    .pairing_page .pairing_recipe_picker_list {
+        --pairing-recipe-picker-size: 2.125rem;
+        gap: 0.375rem;
+    }
+}
+
+/* Give each food card enough space for the dish and its labels on phones. */
+@media (max-width: 47.9375rem) {
+    .pairing_page .pairing_food_track {
+        grid-auto-columns: min(76vw, 19rem);
+        gap: 1rem;
+    }
+
+    .pairing_page .pairing_food_card {
+        min-height: 20.5rem;
+        gap: 0.875rem;
+        padding: 1.125rem;
+    }
+
+    .pairing_page .pairing_food_card_image {
+        height: clamp(10.5rem, 51vw, 12.25rem);
+    }
+
+    .pairing_page .pairing_food_card h3 {
+        font-size: 1.125rem;
+        line-height: 1.4;
+    }
+
+    .pairing_page .pairing_food_card p {
+        font-size: 0.9375rem;
+        line-height: 1.5;
+    }
+}
+
+/* Mobile recipe card: photo-led composition matching the Figma strawberry reference. */
+@media (max-width: 47.9375rem) {
+    .pairing_page .pairing_recipe_card {
+        display: grid;
+        grid-template-rows: clamp(19rem, 108vw, 25.25rem) auto;
+        position: relative;
+        border-radius: 0.75rem;
+        background: var(--pairing-copy);
+    }
+
+    .pairing_page .pairing_recipe_card::before {
+        position: absolute;
+        z-index: 1;
+        top: calc(clamp(19rem, 108vw, 25.25rem) - clamp(11rem, 47vw, 12.5rem));
+        right: 0;
+        left: 0;
+        height: clamp(12rem, 52vw, 14rem);
+        background: linear-gradient(180deg, rgba(93, 80, 74, 0) 0%, rgba(93, 80, 74, 0.12) 18%, rgba(93, 80, 74, 0.4) 42%, rgba(93, 80, 74, 0.78) 70%, var(--pairing-copy) 100%);
+        content: "";
+        pointer-events: none;
+    }
+
+    .pairing_page .pairing_recipe_media {
+        position: relative;
+        z-index: 0;
+        grid-row: 1;
+        height: clamp(19rem, 108vw, 25.25rem);
+        background: var(--pairing-copy);
+        -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 58%, rgba(0, 0, 0, 0.72) 74%, rgba(0, 0, 0, 0.28) 88%, transparent 100%);
+        mask-image: linear-gradient(180deg, #000 0%, #000 58%, rgba(0, 0, 0, 0.72) 74%, rgba(0, 0, 0, 0.28) 88%, transparent 100%);
+    }
+
+    .pairing_page .pairing_recipe_image {
+        object-position: center;
+    }
+
+    .pairing_page .pairing_recipe_content {
+        z-index: 2;
+        grid-row: 2;
+        align-self: start;
+        margin-top: clamp(-6.5rem, -26vw, -5rem);
+        padding: clamp(4.5rem, 20vw, 5.5rem) 1.125rem 1.25rem;
+        background: transparent;
+    }
+
+    .pairing_page .pairing_recipe_inner {
+        gap: 0.875rem;
+    }
+
+    .pairing_page .pairing_recipe_title {
+        font-size: clamp(1.45rem, 7vw, 1.75rem);
+        line-height: 1.22;
+    }
+
+    .pairing_page .pairing_recipe_meta {
+        flex-wrap: nowrap;
+        gap: 0.125rem;
+        font-size: 0.6875rem;
+    }
+
+    .pairing_page .pairing_recipe_meta_item {
+        gap: 0.1875rem;
+        padding: 0.125rem 0;
+    }
+
+    .pairing_page .pairing_recipe_meta_item img {
+        width: 0.875rem;
+        height: 0.875rem;
+    }
+
+    .pairing_page .pairing_recipe_details {
+        gap: 0.75rem;
+    }
+
+    .pairing_page .pairing_recipe_columns {
+        grid-template-columns: minmax(0, 0.9fr) 1px minmax(0, 1.1fr);
+        column-gap: 0.75rem;
+        row-gap: 0;
+    }
+
+    .pairing_page .pairing_recipe_divider {
+        display: block;
+    }
+
+    .pairing_page .pairing_recipe_step_section {
+        padding-top: 0;
+        padding-left: 0;
+        border-top: 0;
+    }
+
+    .pairing_page .pairing_recipe_columns h4 {
+        margin-bottom: 0.3125rem;
+        font-size: 0.8125rem;
+    }
+
+    .pairing_page .pairing_recipe_ingredient_list,
+    .pairing_page .pairing_recipe_step_list {
+        gap: 0.1875rem;
+        padding-inline-start: 0.875rem;
+        font-size: 0.6875rem;
+        line-height: 1.45;
+    }
+
+    .pairing_page .pairing_recipe_tip {
+        gap: 0;
+        padding-inline: 0;
+        font-size: 0.6875rem;
+        line-height: 1.42;
+    }
+}
+
+/* Small, state-driven feedback for controls and content selection. */
+@media (prefers-reduced-motion: no-preference) {
+    @keyframes pairing_option_selected {
+        0% {
+            transform: scale(0.985);
+        }
+
+        65% {
+            transform: scale(1.012);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    @keyframes pairing_action_ready {
+        0% {
+            box-shadow: 0 0 0 0 rgba(242, 149, 86, 0.42);
+        }
+
+        70% {
+            box-shadow: 0 0 0 0.5rem rgba(242, 149, 86, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(242, 149, 86, 0);
+        }
+    }
+
+    @keyframes pairing_picker_selected {
+        0% {
+            transform: scale(0.9);
+        }
+
+        72% {
+            transform: scale(1.08);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .pairing_page .pairing_question_option.is_selected {
+        animation: pairing_option_selected 300ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .pairing_page .pairing_question_next:not(:disabled),
+    .pairing_page .pairing_result_button:not(:disabled) {
+        animation: pairing_action_ready 420ms ease-out;
+    }
+
+    .pairing_page .pairing_recipe_picker.is_active {
+        animation: pairing_picker_selected 280ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .pairing_page .pairing_recipe_picker,
+    .pairing_page .pairing_carousel_arrow img,
+    .pairing_page .pairing_recipe_arrow img,
+    .pairing_page .pairing_food_card,
+    .pairing_page .pairing_food_card_image {
+        transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .pairing_page .pairing_question_option:hover {
+            box-shadow: 0 0.5rem 1rem rgba(93, 80, 74, 0.08);
+        }
+
+        .pairing_page .pairing_food_card:hover {
+            transform: translateY(-0.375rem);
+            box-shadow: 0 0.875rem 1.75rem rgba(93, 80, 74, 0.12);
+        }
+
+        .pairing_page .pairing_food_card:hover .pairing_food_card_image {
+            transform: scale(1.035);
+            filter: saturate(1.06);
+        }
+
+        .pairing_page .pairing_recipe_picker:hover:not(.is_active) {
+            transform: scale(1.07);
+        }
+
+        .pairing_page .pairing_food_previous:hover img,
+        .pairing_page #pairing_recipe_previous:hover img {
+            transform: translateX(-0.125rem);
+        }
+
+        .pairing_page .pairing_food_next:hover img,
+        .pairing_page #pairing_recipe_next:hover img {
+            transform: translateX(0.125rem);
+        }
+    }
+
+    .pairing_page .pairing_question_option:active,
+    .pairing_page .pairing_question_nav_button:not(:disabled):active,
+    .pairing_page .pairing_result_button:not(:disabled):active,
+    .pairing_page .pairing_food_tab:active,
+    .pairing_page .pairing_recipe_picker:active {
+        transform: scale(0.975);
     }
 }

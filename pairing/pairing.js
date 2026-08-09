@@ -334,6 +334,10 @@
     function getQuestionPanelMarkup(question, questionIndex) {
         const isOpen = questionIndex === state.activeQuestionIndex;
         const selectedAnswer = state.answers[question.id];
+        const isFirstQuestion = questionIndex === 0;
+        const isLastQuestion = questionIndex === questions.length - 1;
+        const canShowResult = questions.every((item) => Boolean(state.answers[item.id]));
+        const canContinue = isLastQuestion ? canShowResult : Boolean(selectedAnswer);
         const panelId = getQuestionPanelId(question);
         const contentId = getQuestionContentId(question);
         const headingId = `pairing_question_heading_${question.id}`;
@@ -361,6 +365,10 @@
                     <div class="pairing_question_options" role="radiogroup" aria-label="${escapeHtml(question.prompt)}">
                         ${optionMarkup}
                     </div>
+                    <div class="pairing_question_navigation" aria-label="Question navigation">
+                        <button class="pairing_question_nav_button pairing_question_previous" type="button" data-question-previous="${questionIndex}"${isFirstQuestion ? ' disabled aria-disabled="true"' : ''}>Previous</button>
+                        <button class="pairing_question_nav_button pairing_question_next" type="button" data-question-next="${questionIndex}"${canContinue ? '' : ' disabled aria-disabled="true"'}>${isLastQuestion ? 'View Result' : 'Next'}</button>
+                    </div>
                 </div>
             </section>`;
     }
@@ -380,6 +388,12 @@
             const selectedAnswer = state.answers[question.id];
             const tab = panel.querySelector('[data-question-open]');
             const content = panel.querySelector('.pairing_question_content');
+            const previousButton = panel.querySelector('[data-question-previous]');
+            const nextButton = panel.querySelector('[data-question-next]');
+            const isFirstQuestion = questionIndex === 0;
+            const isLastQuestion = questionIndex === questions.length - 1;
+            const canShowResult = questions.every((item) => Boolean(state.answers[item.id]));
+            const canContinue = isLastQuestion ? canShowResult : Boolean(selectedAnswer);
 
             panel.classList.toggle('is_open', isOpen);
             panel.classList.toggle('is_collapsed', !isOpen);
@@ -404,6 +418,17 @@
                 option.classList.toggle('is_selected', isSelected);
                 option.setAttribute('aria-checked', String(isSelected));
             });
+
+            if (previousButton) {
+                previousButton.disabled = isFirstQuestion;
+                previousButton.setAttribute('aria-disabled', String(isFirstQuestion));
+            }
+
+            if (nextButton) {
+                nextButton.disabled = !canContinue;
+                nextButton.setAttribute('aria-disabled', String(!canContinue));
+                nextButton.textContent = isLastQuestion ? 'View Result' : 'Next';
+            }
         });
     }
 
@@ -413,7 +438,7 @@
 
         const focusOption = () => {
             const option = questionnaire
-                .querySelector(`#${getQuestionPanelId(activeQuestion)} [data-question-answer]`);
+                .querySelector(`#${getQuestionPanelId(activeQuestion)} [data-question-answer].is_selected, #${getQuestionPanelId(activeQuestion)} [data-question-answer]`);
             if (!option) return;
 
             try {
@@ -439,21 +464,43 @@
     function handleQuestionnaireClick(event) {
         const answerButton = event.target.closest('[data-question-answer]');
         const questionTab = event.target.closest('[data-question-open]');
+        const previousButton = event.target.closest('[data-question-previous]');
+        const nextButton = event.target.closest('[data-question-next]');
 
         if (answerButton) {
             const questionId = answerButton.dataset.questionAnswer;
             const answerValue = answerButton.dataset.answerValue;
-            const answeredQuestionIndex = questions.findIndex((question) => question.id === questionId);
             state.answers[questionId] = answerValue;
-
-            const nextUnansweredIndex = questions.findIndex((question) => !state.answers[question.id]);
-            const nextQuestionIndex = nextUnansweredIndex === -1 ? answeredQuestionIndex : nextUnansweredIndex;
-            const shouldMoveFocus = nextQuestionIndex !== state.activeQuestionIndex;
-            state.activeQuestionIndex = nextQuestionIndex;
-
             renderQuestionnaire();
             updateResultButton();
-            if (shouldMoveFocus) focusActiveQuestionOption();
+            return;
+        }
+
+        if (previousButton) {
+            const currentQuestionIndex = Number(previousButton.dataset.questionPrevious);
+            if (!Number.isInteger(currentQuestionIndex) || currentQuestionIndex <= 0) return;
+
+            state.activeQuestionIndex = currentQuestionIndex - 1;
+            renderQuestionnaire();
+            focusActiveQuestionOption();
+            return;
+        }
+
+        if (nextButton) {
+            const currentQuestionIndex = Number(nextButton.dataset.questionNext);
+            const currentQuestion = questions[currentQuestionIndex];
+            if (!currentQuestion || nextButton.disabled) return;
+
+            if (currentQuestionIndex === questions.length - 1) {
+                resultButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                resultButton.focus({ preventScroll: true });
+                return;
+            }
+
+            if (!state.answers[currentQuestion.id]) return;
+            state.activeQuestionIndex = currentQuestionIndex + 1;
+            renderQuestionnaire();
+            focusActiveQuestionOption();
             return;
         }
 
