@@ -62,7 +62,7 @@
 
     const foodData = {
         korean: [
-            { title: 'Pajeon', description: '(Korean Scallion Pancake)', tag: 'Savory · Nutty', image: 'figma/korean_pajeon.png', imagePosition: '50% 74%' },
+            { title: 'Pajeon', description: '(Korean Scallion Pancake)', tag: 'Savory · Nutty', image: 'figma/korean_pajeon.png', imagePosition: '50% 50%' },
             { title: 'Bossam', description: '(Boiled Pork Wraps)', tag: 'Rich · Savory', image: 'figma/korean_bossam.png', imagePosition: '50% 50%' },
             { title: 'Bulgogi', description: '(Korean Barbecue Beef)', tag: 'Sweet · Savory', image: 'figma/korean_bulgogi.png', imagePosition: '50% 50%' },
             { title: 'Dakgalbi', description: '(Spicy Stir-Fried Chicken)', tag: 'Spicy · Sweet', image: 'figma/korean_dakgalbi.png', imagePosition: '50% 50%' },
@@ -72,11 +72,11 @@
             { title: 'Dubu Kimchi', description: '(Tofu with Stir-Fried Kimchi)', tag: 'Spicy · Tangy', image: 'figma/korean_dubu_kimchi.png', imagePosition: '50% 50%' }
         ],
         global: [
-            { title: 'Margherita Pizza', description: '(Italian)', tag: 'Savory · Tangy', image: 'figma/world_margherita_pizza.png', imagePosition: '50% 50%' },
+            { title: 'Margherita Pizza', description: '(Italian)', tag: 'Savory · Tangy', image: 'Margherita Pizza.png', imagePosition: '50% 50%' },
             { title: 'Buffalo Wings', description: '(American)', tag: 'Spicy · Savory', image: 'figma/world_buffalo_wings.png', imagePosition: '50% 45%' },
             { title: 'Fish and Chips', description: '(British)', tag: 'Crispy · Savory', image: 'figma/world_fish_and_chips.png', imagePosition: '50% 50%' },
             { title: 'Spicy Beef Tacos', description: '(Mexican)', tag: 'Spicy · Fresh', image: 'figma/world_spicy_beef_tacos.png', imagePosition: '50% 50%' },
-            { title: 'Thai Green Curry', description: '(Thai)', tag: 'Spicy · Creamy', image: 'figma/world_thai_green_curry.png', imagePosition: '50% 45%' },
+            { title: 'Thai Green Curry', description: '(Thai)', tag: 'Spicy · Creamy', image: 'Thai Green Curry.png', imagePosition: '50% 50%' },
             { title: 'Japanese Gyoza', description: '(Japanese)', tag: 'Savory · Nutty', image: 'figma/world_japanese_gyoza.png', imagePosition: '50% 50%' },
             { title: 'Strawberry Cheesecake', description: '(Western Dessert)', tag: 'Sweet · Creamy', image: 'figma/world_strawberry_cheesecake.png', imagePosition: '50% 22%' },
             { title: 'Jamón with Melon', description: '(Spanish)', tag: 'Sweet · Salty', image: 'figma/world_jamon_with_melon.png', imagePosition: '50% 50%' }
@@ -84,10 +84,10 @@
     };
 
     foodData.popular = [
-        { title: 'Pajeon', description: '(Korean Scallion Pancake)', tag: 'Savory · Nutty', image: 'figma/popular_pajeon.png', imagePosition: '50% 74%' },
+        { title: 'Pajeon', description: '(Korean Scallion Pancake)', tag: 'Savory · Nutty', image: 'figma/popular_pajeon.png', imagePosition: '50% 50%' },
         { title: 'Bossam', description: '(Boiled Pork Wraps)', tag: 'Rich · Savory', image: 'figma/popular_bossam.png', imagePosition: '50% 50%' },
         { title: 'Dakgalbi', description: '(Spicy Stir-Fried Chicken)', tag: 'Spicy · Fresh', image: 'figma/popular_dakgalbi.png', imagePosition: '50% 50%' },
-        { title: 'Margherita Pizza', description: '(Italian)', tag: 'Savory · Tangy', image: 'figma/popular_margherita_pizza.png', imagePosition: '50% 50%' },
+        { title: 'Margherita Pizza', description: '(Italian)', tag: 'Savory · Tangy', image: 'Margherita Pizza.png', imagePosition: '50% 50%' },
         { title: 'Jamón with Melon', description: '(Spanish)', tag: 'Sweet · Salty', image: 'figma/popular_jamon_with_melon.png', imagePosition: '50% 50%' }
     ];
 
