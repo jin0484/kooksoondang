@@ -301,11 +301,12 @@
 
 (() => {
     const all = document.querySelector('.history_scroll_all');
+    const section = document.querySelector('.history_section');
     const leftStick = all?.querySelector('.history_stick_left');
     const paper = all?.querySelector('.history_scroll_inner');
     const rightStick = all?.querySelector('.history_stick_right');
 
-    if (!all || !leftStick || !paper || !rightStick) return;
+    if (!all || !section || !leftStick || !paper || !rightStick) return;
 
     // 모션 최소화 설정이면 말지 않는다 (처음부터 펼쳐진 채로 보인다)
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -329,7 +330,42 @@
     // 그래서 "화면에 보이는 구간" 만 움직이고, 그 바깥은 순간이동으로 건너뛴다.
     //
     // 웹폰트가 바뀌면 종이 폭도 달라지므로 상태를 바꾸기 직전에 다시 잰다.
+    /* 모바일은 두루마리가 눕는다. 위 봉은 그대로 두고 아래 봉이 세로로 내려오며
+       종이가 위에서 아래로 펼쳐진다.
+
+       봉은 rotate 로 눕힌 것이라 offsetTop / offsetHeight 는 세워져 있던 때의
+       값을 그대로 들고 있다. 그래서 여기서는 실제로 그려진 자리(rect)로 잰다. */
+    function measureVertical() {
+        const allBox = all.getBoundingClientRect();
+        const topBox = leftStick.getBoundingClientRect();
+        const bottomBox = rightStick.getBoundingClientRect();
+        const paperBox = paper.getBoundingClientRect();
+
+        if (!paperBox.height || !topBox.height) return false;
+
+        // .history_scroll_all 안에서의 세로 좌표
+        const topEnd = topBox.bottom - allBox.top;
+        const bottomStart = bottomBox.top - allBox.top;
+        const paperStart = paperBox.top - allBox.top;
+        // 위 봉이 종이를 물고 있는 만큼. 아래 봉도 같은 만큼 물린다.
+        const grip = Math.max(0, topEnd - paperStart);
+
+        // 아래 봉을 y 에 세우는 값 한 쌍
+        const at = (y) => ({
+            shift: Math.min(0, y - bottomStart),
+            clip: Math.max(0, paperBox.height - (y + grip - paperStart))
+        });
+
+        closedAt = at(topEnd);
+        // 화면 한 판만큼만 움직인다 (그 밖은 어차피 보이지 않는다)
+        awayAt = at(topEnd + document.documentElement.clientHeight);
+
+        return true;
+    }
+
     function measure() {
+        if (!desktopQuery.matches) return measureVertical();
+
         const paperWidth = paper.offsetWidth;
 
         if (!paperWidth) return false;
@@ -426,29 +462,30 @@
         if (!isRolled || !measure()) return;
 
         isRolled = false;
+
+        // 세로(모바일)는 중간에 끊지 않고 끝까지 함께 움직인다.
+        // 화면 밖 구간을 순간이동으로 건너뛰면 봉만 먼저 내려가 사라지고
+        // 종이는 마지막에 한꺼번에 드러나서, 봉이 앞서 간 것처럼 보인다.
+        // 클래스를 떼면 봉의 transform 과 종이의 clip-path 가 같은 규칙
+        // (--unroll_ms / --unroll_ease)을 타고 나란히 풀린다.
+        if (!desktopQuery.matches) {
+            all.classList.remove('is_rolled');
+            all.style.removeProperty('--unroll_shift');
+            all.style.removeProperty('--unroll_clip');
+            return;
+        }
+
         apply(awayAt);
         settleOpen();
     }
 
-    // 모바일 구간에서는 말아 둔 흔적을 전부 걷어 내 CSS 의 세로 배치에 맡긴다
-    function clearRoll() {
+    // 펼쳐진 모습이 CSS 의 기본값이라, 시작할 때 한 번 말아 둔다 (과정 없이).
+    // 가로/세로 어느 쪽이든 하는 일은 같고, 재는 축만 measure() 가 갈라 준다.
+    function syncMode() {
+        all.classList.add('is_unroll_ready');
+        // 축이 바뀌었으면 값을 다시 재서 말아 둔다
         settleToken++;
         isRolled = false;
-        all.classList.remove('is_rolled', 'is_unroll_instant', 'is_unroll_ready');
-        all.style.removeProperty('--unroll_shift');
-        all.style.removeProperty('--unroll_clip');
-    }
-
-    // 펼쳐진 모습이 CSS 의 기본값이라, 시작할 때 한 번 말아 둔다 (과정 없이)
-    function syncMode() {
-        if (!desktopQuery.matches) {
-            clearRoll();
-            return;
-        }
-
-        if (all.classList.contains('is_unroll_ready')) return;
-
-        all.classList.add('is_unroll_ready');
         rollInstant();
     }
 
@@ -469,9 +506,7 @@
     window.addEventListener('resize', () => {
         window.clearTimeout(resizeTimer);
         resizeTimer = window.setTimeout(() => {
-            syncMode();
-
-            if (!desktopQuery.matches || !measure()) return;
+            if (!measure()) return;
 
             // 말려 있는 상태라면 새 값으로 다시 확정한다.
             // 펼쳐진 상태면 다음에 말릴 때 measure() 가 다시 도니 둘 필요가 없다.
@@ -496,8 +531,8 @@
     // 임계값을 지나는 순간 보고되는 비율이 미세하게 모자랄 수 있어 여유를 둔다
     const EPSILON = 0.01;
 
-    const observer = new IntersectionObserver((entries) => {
-        // 모바일에서는 두루마리가 눕기 때문에 말고 펼치는 개념이 없다
+    // ---- 가로(데스크톱): 섹션이 80% 넘게 보이면 펼친다 ----
+    const sectionObserver = new IntersectionObserver((entries) => {
         if (!desktopQuery.matches) return;
 
         entries.forEach((entry) => {
@@ -510,7 +545,27 @@
         });
     }, { threshold: [0, OPEN_AT] });
 
-    observer.observe(document.querySelector('.history_section') || all);
+    sectionObserver.observe(section);
+
+    /* ---- 세로(모바일): 두루마리 윗머리를 본다 ----
+       모바일은 섹션이 화면보다 몇 배씩 길어서 교차 비율이 0.8 에 닿지 않는다.
+       그래서 섹션 대신 "위 봉" 이 올라왔는지로 판단한다.
+
+       다만 화면 아래 끝에 걸치자마자 펼치면, 눈이 닿기도 전에 화면 밖에서
+       끝나 버려 펼쳐지는 걸 못 본다. rootMargin 으로 아래쪽 기준선을 35%
+       끌어올려, 윗머리가 화면의 65% 지점까지 올라온 뒤에 시작하게 한다.
+
+       한 번 펼친 뒤에는 다시 말지 않는다 — 계속 내리면 윗머리가 화면 위로
+       사라지는데, 그때 되말리면 읽고 있던 콘텐츠가 눈앞에서 접혀 버린다. */
+    const stickObserver = new IntersectionObserver((entries) => {
+        if (desktopQuery.matches) return;
+
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) unroll();
+        });
+    }, { rootMargin: '0px 0px -35% 0px' });
+
+    stickObserver.observe(leftStick);
 })();
 
 
@@ -677,6 +732,9 @@
     // 화면 폭 대비. FOCUS_HOLD 까지는 완전히 선명하고, FOCUS_REACH 에서 가장 흐리다.
     const FOCUS_HOLD = 0.42;
     const FOCUS_REACH = 1.05;
+    // 세로(모바일)용. 블록이 화면 가운데를 지나 이만큼(화면 높이 대비) 더 가면
+    // 가장 흐려진다. 값이 작을수록 지나가자마자 빨리 흐려진다.
+    const FOCUS_REACH_Y = 0.45;
 
     // 블록별 "지금 사진이 얼마나 가까이 있는가"(0~1) 를 받아 선명도로 옮긴다.
     // 1 이면 완전히 선명(투명도 100%), 0 이면 가장 흐리고 옅다(투명도 50%).
@@ -703,10 +761,27 @@
         // 가로 탐색 중에는 사진 위치가 기준이므로 여기서 덮어쓰지 않는다
         if (isPinned && photoSlots.length > 1) return;
 
-        // 세로로 흐르는 모바일에서는 "화면 가운데에서 가로로 얼마나 먼가" 가
-        // 의미가 없다. 전부 또렷하게 두고 흐림 연출은 쓰지 않는다.
+        // 세로로 흐르는 모바일은 위아래 거리로 잰다.
+        //
+        // 중심끼리 재는 가로 방식을 그대로 쓰면 안 된다. 모바일에서는 블록 하나가
+        // 화면보다 커서, 화면을 꽉 채우고 있는 블록도 중심이 멀다는 이유로 흐려진다.
+        // 그래서 "화면 한가운데 선이 블록 밖으로 얼마나 나갔는가" 로 잰다.
+        // 선이 블록 안에 있으면 0 = 또렷, 블록이 지나갈수록 멀어져 흐려진다.
         if (!desktopQuery.matches) {
-            applyFocus(yearBlockPairs.map(() => 1));
+            const height = screenHeight();
+            const centerLine = height / 2;
+
+            applyFocus(yearBlockPairs.map(([block]) => {
+                const rect = block.getBoundingClientRect();
+
+                if (!rect.height) return 1;
+
+                const gap = Math.max(rect.top - centerLine, centerLine - rect.bottom, 0);
+                const ratio = gap / (height * FOCUS_REACH_Y);
+
+                return 1 - smooth(Math.min(1, Math.max(0, ratio)));
+            }));
+
             return;
         }
 
@@ -999,13 +1074,23 @@
     // 폴백(네이티브 가로 스크롤)일 때도 가운데 블록만 선명하게 유지한다
     let focusFrame = 0;
 
-    viewport.addEventListener('scroll', () => {
+    function scheduleFocus() {
         if (focusFrame) return;
 
         focusFrame = window.requestAnimationFrame(() => {
             focusFrame = 0;
             updateFocus();
         });
+    }
+
+    viewport.addEventListener('scroll', scheduleFocus, { passive: true });
+
+    // 모바일은 .history_viewport 가 스크롤되지 않는다(overflow: visible).
+    // 페이지가 스크롤되므로 창에서 받아야 흐림이 따라온다.
+    window.addEventListener('scroll', () => {
+        if (desktopQuery.matches) return;
+
+        scheduleFocus();
     }, { passive: true });
 
     function refreshScrollTrigger() {
@@ -1088,6 +1173,8 @@
     if (!circles.length) return;
 
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    // pin 을 걸지 말지가 갈리는 지점 (아래 build 주석 참고)
+    const desktopQuery = window.matchMedia('(min-width: 768px)');
 
     const canUseGsap = () => typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined';
     const shouldAnimate = () => canUseGsap() && !reducedMotionQuery.matches;
@@ -1199,6 +1286,14 @@
 
         measure();
 
+        /* 모바일에서는 붙잡지 않는다.
+
+           모바일은 이 섹션이 내용 높이만큼만(400px 안팎) 되는데, pin 을 걸면
+           ScrollTrigger 가 붙잡는 거리(1.8 화면)만큼 pin-spacer 를 늘려 놓는다.
+           짧은 섹션이 그 안에 떠 있는 꼴이라 위아래가 텅 비어 보인다.
+           대신 섹션이 화면을 지나가는 동안 그대로 스크럽한다. */
+        const isDesktop = desktopQuery.matches;
+
         tween = gsap.to(scrollProxy, {
             progress: 1,
             ease: 'none',
@@ -1206,12 +1301,18 @@
             scrollTrigger: {
                 trigger: section,
                 // 섹션이 화면 가운데에 자리 잡으면 붙잡고, 그때부터 원이 흩어진다
-                start: () => 'top ' + pinOffset() + 'px',
+                // 모바일은 섹션 위가 화면 한가운데를 지날 때부터 시작한다.
+                // 그 위로 VISION 문구가 이미 다 드러나 있어서, 문구를 읽고 난
+                // 다음에 원이 퍼지는 순서가 된다.
+                // (85% 로 두면 원이 화면에 들어오기도 전에 퍼지기 시작한다)
+                start: isDesktop ? () => 'top ' + pinOffset() + 'px' : 'top 60%',
                 // 원 -> 글자 -> 화살표 -> 문구 네 단계가 이 길이 안에서 이어진다
-                end: () => '+=' + Math.round(screenHeight() * SCROLL_SPAN),
-                pin: true,
+                end: isDesktop
+                    ? () => '+=' + Math.round(screenHeight() * SCROLL_SPAN)
+                    : 'bottom 70%',
+                pin: isDesktop,
                 // 빠르게 굴려 들어와도 붙잡히는 순간이 튀지 않게 미리 준비시킨다
-                anticipatePin: 1,
+                anticipatePin: isDesktop ? 1 : 0,
                 scrub: 1,
                 invalidateOnRefresh: true,
                 // 창 크기가 바뀌면 흩어질 거리도 달라진다.
@@ -1248,6 +1349,13 @@
 
     reducedMotionQuery.addEventListener('change', syncMode);
 
+    // pin 여부는 만들 때 한 번 정해지고 나중에 바꿀 수 없다.
+    // 구간을 넘나들면 부수고 새로 만든다.
+    desktopQuery.addEventListener('change', () => {
+        destroy();
+        syncMode();
+    });
+
     window.addEventListener('load', syncMode);
 
     // 창 크기 변화는 ScrollTrigger 가 스스로 refresh 하면서
@@ -1279,6 +1387,9 @@
     if (!section || !tit || !next) return;
     if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    // 이 연출은 가로 탐색(pin)이 있는 구간에서만 뜻이 있다
+    const desktopQuery = window.matchMedia('(min-width: 768px)');
 
     // 섹션이 올라가는 거리 중 문구가 따라 내려갈 비율. 1 이면 제자리에 붙어 있는 셈.
     const LAG = 0.5;
@@ -1318,6 +1429,17 @@
     }
 
     function render(self) {
+        /* 모바일에서는 붙들지 않는다.
+
+           이 연출은 가로 탐색이 끝나고 pin 이 풀리면서 섹션이 통째로 밀려
+           올라갈 때, 문구를 조금 더 붙잡아 두려고 넣은 것이다.
+           세로로 흐르는 모바일에는 그 pin 자체가 없고 패널도 짧아서,
+           그대로 두면 읽는 도중에 글자가 흐려지며 사라져 버린다. */
+        if (!desktopQuery.matches) {
+            gsap.set(tit, { y: 0, opacity: 1 });
+            return;
+        }
+
         gsap.set(tit, {
             y: self.progress * travel(),
             opacity: fade(self.progress)

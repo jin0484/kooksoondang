@@ -1432,9 +1432,8 @@
 
     /* 글자를 키운 만큼 섹션 여백도 줄여야 줄이 padding 밖으로 넘치지 않는다
        (.intro_title_line 은 nowrap 이라 줄바꿈으로 도망갈 수 없다).
-       세로는 화면을 다 쓰지 않고 400px 로 줄인다. */
+       세로는 기본값(100svh) 그대로 화면을 꽉 채운다. */
     .intro_section {
-        min-height: 25rem;
         padding-inline: 1rem;
     }
 
@@ -1446,9 +1445,9 @@
         padding-inline: 1rem;
     }
 
-    /* 15px 은 모바일에서 너무 작다 */
+    /* 기본 15px 은 모바일에서 너무 작다 */
     .respected_lead {
-        font-size: 1.125rem;
+        font-size: 1rem;
     }
 
     .respected_tags {
@@ -1498,7 +1497,8 @@
         display: block;
         width: auto;
         height: auto;
-        padding: 1.5rem 1rem;
+        /* 아래쪽은 vision 으로 넘어가기 전에 숨 돌릴 자리를 넉넉히 둔다 */
+        padding: 1.5rem 1rem 4rem;
     }
 
     /* ---------- 족자봉 눕히기 ----------
@@ -1554,6 +1554,36 @@
         transform: translate(-50%, 50%) rotate(90deg);
     }
 
+    /* ---------- 두루마리 펼치기 (세로) ----------
+       데스크톱은 오른쪽 봉이 가로로 밀리지만, 여기서는 아래 봉이 세로로 내려온다.
+       바깥 규칙의 transform 은 rotate 를 통째로 덮어써서 봉을 눕힌 걸 되돌려
+       버리므로, 회전을 유지한 채 이동만 얹은 규칙을 따로 쓴다.
+
+       세로는 움직이는 거리가 종이 높이(3000px 안팎)라 가로보다 훨씬 길다.
+       같은 1300ms 로 두면 화면에 걸치는 앞부분이 순식간에 지나가므로 늘려 잡는다. */
+    .history_scroll_all {
+        --unroll_ms: 2400ms;
+    }
+
+    .history_scroll_all.is_unroll_ready .history_stick_right {
+        transform: translate(-50%, 50%) rotate(90deg);
+        transition: transform var(--unroll_ms) var(--unroll_ease);
+    }
+
+    .history_scroll_all.is_unroll_ready.is_rolled .history_stick_right {
+        transform: translate(-50%, calc(50% + var(--unroll_shift, 0px))) rotate(90deg);
+    }
+
+    /* 종이는 아래쪽에서 잘라 낸다 (가로일 때는 오른쪽이었다) */
+    .history_scroll_all.is_unroll_ready .history_scroll_inner {
+        clip-path: inset(0 0 0 0);
+        transition: clip-path var(--unroll_ms) var(--unroll_ease);
+    }
+
+    .history_scroll_all.is_unroll_ready.is_rolled .history_scroll_inner {
+        clip-path: inset(0 0 var(--unroll_clip, 0px) 0);
+    }
+
     /* ---------- 종이 ---------- */
     /* 종이는 봉보다 좁아야 봉이 좌우로 나온다.
        시안 비율 그대로: 종이 772 / 봉 852 = 90.6% */
@@ -1561,10 +1591,9 @@
         width: 90.6%;
         margin-inline: auto;
         margin-right: auto;
-        /* 노란 띠. 세로·가로 padding 의 % 는 둘 다 컨테이너 폭 기준이라
-           폭을 따라 같은 비율로 자란다.
-           위아래는 얇게, 좌우는 넓게 (위가 두꺼우면 봉과 겹쳐 답답해진다) */
-        padding: 5% 10%;
+        /* 노란 띠. 네 방향 모두 컨테이너 폭 기준이라 폭을 따라 같은 비율로 자란다.
+           좌우를 10% 로 두면 양옆만 20% 를 먹어 안쪽이 답답해진다. */
+        padding: 5%;
         border-width: var(--paper_line);
     }
 
@@ -1587,7 +1616,9 @@
         align-items: stretch;
         gap: 7.5rem;
         height: auto;
-        padding: 1.25rem 1rem;
+        /* 좌우 여백은 노란 띠(10%)가 이미 충분히 잡아 준다.
+           여기서 또 16px 씩 먹으면 안쪽 콘텐츠 폭이 192px 밖에 안 남는다. */
+        padding: 1.25rem 0.5rem;
     }
 
     /* ---------- 시기 하나하나 ----------
@@ -1678,11 +1709,16 @@
         text-align: left;
     }
 
+    /* nowrap 이라 넘쳐도 줄바꿈으로 도망갈 수 없다.
+       "2000~2026" 이 가장 넓어서 폰트 1px 당 5.57px 를 차지한다.
+       노란 띠 좌우를 절반으로 줄이면서 쓸 폭이 208 -> 240px 로 늘어,
+       360px 에서 11.5vw(41.4px) 까지 올릴 수 있다 (글자폭 231px).
+       상한 3.5rem 은 넓은 화면에서 시안 크기에 가깝게 남겨 둔다. */
     .year_tit,
     .year_tit_end,
     .year_tit_center {
         align-self: flex-start;
-        font-size: clamp(2.25rem, 13vw, 3.5rem);
+        font-size: clamp(2rem, 11.5vw, 3.5rem);
         letter-spacing: -0.02em;
     }
 
@@ -1700,9 +1736,11 @@
         line-height: 1.2;
     }
 
+    /* 기본 1.7 은 모바일에서 줄 사이가 뜬다 */
     .li_txt,
     .year_list_right .li_txt {
         font-size: 0.9375rem;
+        line-height: 1.4;
     }
 
     .li_year,
@@ -1741,17 +1779,32 @@
         width: auto;
         min-width: 0;
         height: auto;
-        min-height: 100svh;
+        min-height: 0;
         margin-left: 0;
-        border-radius: 0;
+        /* 어두운 면이 둥글게 올라오는 아치.
+
+           가로 반지름을 좌우 모두 50% 로 두면 두 모서리의 호가 한가운데에서
+           정확히 만나, 폭 전체를 가로지르는 완만한 아치 하나가 된다.
+           세로 반지름이 아치의 높이다.
+           (.history_vision 의 overflow: hidden 이 안쪽 내용과 노이즈까지
+            이 모양으로 잘라 준다) */
+        --arch: clamp(1.25rem, 6vw, 2.5rem);
+        border-radius: 50% 50% 0 0 / var(--arch) var(--arch) 0 0;
+        background: var(--bekseju_darker_cold);
     }
 
     .history_vision_inner {
         position: static;
         inset: auto;
-        min-height: 100svh;
-        padding: 3rem 1rem;
+        /* 화면을 꽉 채우면 문구가 한가운데 놓이고 아래로 반 화면이 비어,
+           키워드 4개가 한참 뒤에 나온다. 내용 높이에 맡기고 여백만 준다.
+           위는 아치를 피할 만큼, 아래는 바로 키워드로 이어지게 짧게. */
+        min-height: 0;
+        padding: 8.5rem 1rem 1.5rem;
+        /* 안쪽 상자가 자기 배경을 칠하면 바깥의 아치가 가려진다 */
+        background: transparent;
     }
+
 
     .history_vision_tit {
         width: auto;
@@ -1774,9 +1827,15 @@
         white-space: normal;
     }
 
-    /* 4개가 한 줄에 들어가지 않아 2 x 2 로 접고, 겹침은 그대로 유지 */
+    /* 원 4개는 "한 줄에 4개" 아니면 "2개씩 두 줄", 둘 중 하나만 쓴다.
+       3 + 1 로 갈라지면 마지막 하나가 외따로 떨어져 보기 나쁘다.
+
+       크기는 총폭 식을 거꾸로 푼 값이다 (겹침 8.824%).
+       총폭 = 지름 x (n - (n-1) x 0.08824)
+         n=2 -> 1.91176,  n=4 -> 3.73528
+       여기서는 2개씩 두 줄이므로 1.91176 로 나눈다. */
     .vision_circles {
-        --vision_circle_size: min(42vw, 11rem);
+        --vision_circle_size: min(11rem, calc((100vw - 2 * var(--about_gutter)) / 1.91176));
         flex-wrap: wrap;
         justify-content: center;
     }
@@ -1787,6 +1846,55 @@
 
     .vision_circle:nth-child(n + 3) {
         margin-top: calc(var(--vision_circle_size) * -0.08824);
+    }
+
+    /* 기본 clamp 하한이 14px 이라 원 크기에 비해 작다 */
+    .vision_circle_name {
+        font-size: 1rem;
+    }
+
+    /* 좌우 여백을 줄여 아래 문구가 한 줄로 들어갈 폭을 벌어 준다.
+       (원 크기 계산도 이 값을 쓰므로 원도 함께 조금 커진다)
+
+       위 여백도 줄인다. VISION 문구 바로 밑에 키워드 4개가 이어져야 하는데
+       기본값(23.3vh)이면 그 사이가 한참 빈다.
+       화면을 꽉 채울 이유도 없어 min-height 도 푼다. */
+    .vision_section {
+        --about_gutter: 1rem;
+        min-height: 0;
+        padding-block: 1.5rem clamp(4rem, 12vh, 8rem);
+    }
+
+    /* 두 줄로 접히면 아래 여백이 들쭉날쭉해 보여서 한 줄로 못 박는다.
+       글자 폭이 폰트 1px 당 19.54px 라, 쓸 수 있는 폭을 20 으로 나누면
+       어느 화면에서나 한 줄에 들어간다 (나머지 0.46 은 안전 여유). */
+    .vision_statement {
+        font-size: min(2.25rem, calc((100vw - 2 * var(--about_gutter)) / 20));
+        white-space: nowrap;
+    }
+}
+
+
+/* 원 4개를 한 줄에 세울 만한 폭부터는 크기를 줄여 한 줄로 붙인다.
+   560px 미만에서 억지로 한 줄로 세우면 지름이 130px 아래로 내려가
+   "Food Beverages" 두 줄이 원 밖으로 삐져나온다. 그 아래는 2 x 2 로 둔다. */
+@media (min-width: 560px) and (max-width: 767px) {
+    .vision_circles {
+        --vision_circle_size: min(11rem, calc((100vw - 2 * var(--about_gutter)) / 3.73528));
+        flex-wrap: nowrap;
+    }
+
+    /* 두 줄용으로 껐던 겹침과 줄 간격을 되돌린다 */
+    .vision_circle:nth-child(2n) {
+        margin-right: calc(var(--vision_circle_size) * -0.08824);
+    }
+
+    .vision_circle:nth-child(n + 3) {
+        margin-top: 0;
+    }
+
+    .vision_circle:last-child {
+        margin-right: 0;
     }
 }
 
