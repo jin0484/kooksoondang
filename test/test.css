@@ -112,6 +112,129 @@ body {
     filter: brightness(1.05);
 }
 
+/* ---------- 인트로 걷는 캐릭터 ---------- */
+
+/* 화면 오른쪽 절반 조금 넘는 폭을 걷기 구간으로 씀.
+   구간 오른쪽 바깥에서 출발해 왼쪽으로 걸어와 구간 한가운데(= 절반 지점)에서 멈춤 */
+.intro_char {
+    --char_w: 340px;
+    --char_walk: 3s;
+    /* 걷기 한 사이클(3컷) 길이. --char_walk 를 이 값으로 나눈 만큼 반복시킴 */
+    --char_step: 0.5s;
+
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 55%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.intro_char_body {
+    position: absolute;
+    bottom: 6%;
+    width: var(--char_w);
+    aspect-ratio: 1;
+    left: calc(50% - var(--char_w) / 2);
+    animation: char_walk_in var(--char_walk) linear both;
+}
+
+/* 걸어 들어오는 이동. 끝나면 그 자리에 그대로 멈춤(both) */
+@keyframes char_walk_in {
+    0% {
+        left: 100%;
+        opacity: 0;
+    }
+
+    12% {
+        opacity: 1;
+    }
+
+    100% {
+        left: calc(50% - var(--char_w) / 2);
+        opacity: 1;
+    }
+}
+
+/* 3컷을 같은 자리에 겹쳐 둠. 애니메이션이 끝나면 walk1(서 있는 컷)만 남음 */
+.intro_char_frame {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    opacity: 0;
+    animation-duration: var(--char_step);
+    animation-timing-function: steps(1, end);
+    /* --char_walk / --char_step 회. 이동이 끝나는 순간 걷기도 같이 멈춤 */
+    animation-iteration-count: 6;
+}
+
+.intro_char_frame.walk1 {
+    opacity: 1;
+    animation-name: char_f1;
+}
+
+.intro_char_frame.walk2 {
+    animation-name: char_f2;
+}
+
+.intro_char_frame.walk3 {
+    animation-name: char_f3;
+}
+
+@keyframes char_f1 {
+
+    0%,
+    33.33% {
+        opacity: 1;
+    }
+
+    33.34%,
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes char_f2 {
+
+    0%,
+    33.33% {
+        opacity: 0;
+    }
+
+    33.34%,
+    66.66% {
+        opacity: 1;
+    }
+
+    66.67%,
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes char_f3 {
+
+    0%,
+    66.66% {
+        opacity: 0;
+    }
+
+    66.67%,
+    100% {
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .intro_char_body,
+    .intro_char_frame {
+        animation: none;
+    }
+}
+
 /* ===================== 문제 화면 ===================== */
 
 .screen_question {
@@ -323,6 +446,10 @@ body {
     .result_title {
         font-size: 36px;
     }
+
+    .intro_char {
+        --char_w: 240px;
+    }
 }
 
 /* 모바일 */
@@ -368,5 +495,17 @@ body {
 
     .result_title {
         font-size: 28px;
+    }
+
+    /* 폭이 좁아서 오른쪽 절반만 쓰면 캐릭터가 너무 작아짐.
+       구간을 넓히고 텍스트 아래쪽으로 내려서 겹치지 않게 함 */
+    .intro_char {
+        --char_w: 150px;
+
+        width: 70%;
+    }
+
+    .intro_char_body {
+        bottom: 4%;
     }
 }

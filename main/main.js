@@ -19,7 +19,10 @@
     if (introDecos.length !== introFrameCount || staticDecos.length !== frameCount || historyItems.length !== frameCount - introFrameCount) return;
 
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const mobileQuery = window.matchMedia('(max-width: 48rem)');
+    // 태블릿까지는 모프를 돌리고, 장식 자체가 빠지는 모바일에서만 끔.
+    // (모바일은 .history_deco 가 display:none 이라 prepareFrames 도 어차피 실패함)
+    const mobileQuery = window.matchMedia('(max-width: 30rem)');
+    const tabletQuery = window.matchMedia('(max-width: 48rem)');
     const svgNamespace = 'http://www.w3.org/2000/svg';
     const stageSize = { width: 228, height: 510 };
     const sampleCount = 240;
@@ -40,11 +43,21 @@
     const dropFallDistance = 0;
     // 원 프레임. 첫 항목이 화면 중앙에 올 때 원도 화면 중앙에 오도록 오프셋 없음
     const circleSettleDistance = 0;
-    const petOffsetRange = { min: 134, viewportRatio: 0.0835, max: 160 };
+    // 페트를 아래로 밀어내는 거리. 태블릿은 데스크톱보다 100px 덜 밀어냄
+    // (장식 열이 왼쪽으로 붙고 페트도 작아져서 같은 거리로 내리면 본문보다 한참 처짐)
+    const petOffsetRange = { min: 134, viewportRatio: 0.0835, max: 160, tablet: 34 };
     // 키프레임 간격 배율. 1 을 넘기면 기준점이 전체 중간점에서 바깥으로 밀려서
     // 항목이 화면 중앙에 왔을 때 이미 다음 모양으로 넘어가 버림(원이 원으로 안 보임).
     // 각 모양이 해당 항목 위치에서 정확히 완성되도록 1 로 둠
     const morphScrollDuration = 1;
+    /* 한 모양에서 다음 모양으로 바뀌는 데 쓰는 스크롤 거리(px).
+       구간이 이보다 길면 남는 만큼은 완성된 모양을 그대로 들고 가다가 가운데에서 빠르게 갈아탐.
+       태블릿은 사진이 한 줄을 다 써서 항목이 높은 탓에 프레임 간 거리가 1150px 까지 벌어지는데,
+       구간 전체를 쓰면 뭉개진 중간 모양만 계속 보임.
+       비율(0.45 같은 값) 대신 거리로 잡아야 짧은 구간(물방울 낙하)까지 같이 급해지지 않음.
+       null 이면 구간 전체를 써서 내내 조금씩 변함(데스크톱 기존 동작).
+       완성 지점 자체는 그대로라 장식 자리와의 정렬은 안 틀어짐 */
+    const morphTravelRange = { tablet: 420, desktop: null };
 
     let sourceShapes = [];
     let morphFrames = [];
@@ -216,10 +229,43 @@
         if (index === 1) return dropFallDistance;
         if (index === introFrameCount) return circleSettleDistance;
         if (index === frameCount - 1) {
+            if (tabletQuery.matches) return petOffsetRange.tablet;
+
             return clamp(window.innerWidth * petOffsetRange.viewportRatio, petOffsetRange.min, petOffsetRange.max);
         }
 
         return 0;
+    }
+
+    /* 페트가 다 만들어진 자리에서 무대를 멈춰 세우는 정지선.
+       sticky 는 컨테이닝 블록(레일) 아래끝을 넘지 못하므로, 레일 아래끝을 그 지점까지 끌어올리면
+       거기서 멈추고 이후로는 본문과 같이 흘러감.
+
+       sticky top 이 50vh 라 무대 박스 위끝은 항상 "화면 중앙" 과 같은 문서 좌표에 있음.
+       그래서 정지선 = (페트가 완성되는 순간의 화면 중앙) + 무대 높이.
+
+       완성 순간은 마지막 항목 중앙이 아님. windowProgress 가 변화를 구간 가운데 travel 에만
+       몰아넣기 때문에, 마지막 항목 중앙보다 (span - travel) / 2 만큼 앞에서 이미 완성되고
+       그 뒤로는 완성된 모양을 그대로 들고 내려옴. 그 "들고 내려오는" 구간을 없애는 것이 목적.
+       (centers 계산은 morphScrollDuration 이 1 이라 항목 중앙 실측과 같음)
+
+       무대 높이는 회전 transform 이 섞인 실측 대신 aspect-ratio 로 계산해야 정확함.
+       CSS 는 태블릿에서만 이 값을 쓰고, 값이 없거나 0 이면 기존처럼 타임라인 끝까지 따라옴 */
+    function measureRailEnd(bottleWidth) {
+        const centerOf = (element) => {
+            const bounds = element.getBoundingClientRect();
+            return bounds.top + bounds.height / 2;
+        };
+        const stageHeight = bottleWidth * (stageSize.height / stageSize.width);
+        const timelineBottom = historyTimeline.getBoundingClientRect().bottom;
+        const lastCenter = centerOf(historyItems[historyItems.length - 1]);
+        const span = lastCenter - centerOf(historyItems[historyItems.length - 2]);
+        const travel = tabletQuery.matches ? morphTravelRange.tablet : morphTravelRange.desktop;
+        const settleCenter = travel && travel < span
+            ? lastCenter - (span - travel) / 2
+            : lastCenter;
+
+        return Math.max(0, Math.round(timelineBottom - (settleCenter + stageHeight)));
     }
 
     function prepareFrames() {
@@ -229,6 +275,7 @@
         if (!bottleWidth) return false;
 
         historySection.style.setProperty('--history-morph-width', `${bottleWidth}px`);
+        historySection.style.setProperty('--history-morph-rail-end', `${measureRailEnd(bottleWidth)}px`);
 
         const mappedFrames = sourceShapes.map((sourceShape, index) => (
             mapToStage(sourceShape, targetRects[index], bottleWidth)
@@ -257,25 +304,42 @@
             centerPoint + (center - centerPoint) * morphScrollDuration
         ));
 
-        if (viewportCenter <= centers[0]) return { from: 0, to: 0, progress: 0 };
-        if (viewportCenter >= centers[centers.length - 1]) return { from: morphFrames.length - 1, to: morphFrames.length - 1, progress: 0 };
+        if (viewportCenter <= centers[0]) return { from: 0, to: 0, progress: 0, span: 0 };
+        if (viewportCenter >= centers[centers.length - 1]) return { from: morphFrames.length - 1, to: morphFrames.length - 1, progress: 0, span: 0 };
 
         for (let index = 0; index < centers.length - 1; index += 1) {
             if (viewportCenter <= centers[index + 1]) {
+                const span = centers[index + 1] - centers[index];
+
                 return {
                     from: index,
                     to: index + 1,
-                    progress: clamp((viewportCenter - centers[index]) / (centers[index + 1] - centers[index]), 0, 1)
+                    progress: clamp((viewportCenter - centers[index]) / span, 0, 1),
+                    span
                 };
             }
         }
 
-        return { from: 0, to: 0, progress: 0 };
+        return { from: 0, to: 0, progress: 0, span: 0 };
+    }
+
+    /* 구간(span) 가운데 travel 만큼에만 변화를 몰아넣음.
+       앞뒤 여유분은 0 / 1 로 눌려서 완성된 모양이 그대로 유지됨.
+       구간이 travel 보다 짧으면 손대지 않고 구간 전체를 그대로 씀 */
+    function windowProgress(progress, span) {
+        const travel = tabletQuery.matches ? morphTravelRange.tablet : morphTravelRange.desktop;
+
+        if (!travel || !span || travel >= span) return progress;
+
+        const ratio = travel / span;
+
+        return clamp((progress - (1 - ratio) / 2) / ratio, 0, 1);
     }
 
     function renderMorph() {
-        const { from, to, progress } = getScrollState();
-        const easedProgress = progress * progress * (3 - 2 * progress);
+        const { from, to, progress, span } = getScrollState();
+        const windowed = windowProgress(progress, span);
+        const easedProgress = windowed * windowed * (3 - 2 * windowed);
         const pathData = from === to
             ? framePaths[from]
             : createPath(interpolatePoints(morphFrames[from], morphFrames[to], easedProgress));
@@ -324,6 +388,8 @@
     window.addEventListener('resize', updateMode, { passive: true });
     listenForChanges(reducedMotionQuery, updateMode);
     listenForChanges(mobileQuery, updateMode);
+    // 폭이 바뀌면 morphWindow 도 바뀌므로 같은 스크롤 위치라도 다시 그려야 함
+    listenForChanges(tabletQuery, updateMode);
 
     Promise.all(staticDecos.map((deco) => loadShape(deco.getAttribute('src'))))
         .then((shapes) => {
@@ -377,6 +443,10 @@
     let animationFrame = 0;
     let lastTime = 0;
     let clock = 0;
+
+    // 태블릿부터는 콜라주를 끌어서 넘기는 조작이 주가 되므로,
+    // data-momentum-desktop-only 를 단 컨테이너에서는 이 폭부터 던지기를 끔
+    const tabletQuery = window.matchMedia('(max-width: 64rem)');
 
     const clamp = (value, limit) => Math.min(Math.max(value, -limit), limit);
     const isEnabled = () => hoverQuery.matches && !reducedMotionQuery.matches;
@@ -534,6 +604,7 @@
     }
 
     containers.forEach((container) => {
+        const desktopOnly = container.hasAttribute('data-momentum-desktop-only');
         const lookup = new Map();
         let pointerX = 0;
         let pointerY = 0;
@@ -651,6 +722,7 @@
             const item = target && lookup.get(target);
 
             if (!item || !isEnabled()) return;
+            if (desktopOnly && tabletQuery.matches) return;
 
             const bounds = target.getBoundingClientRect();
             const offsetX = event.clientX - (bounds.left + bounds.width / 2);
@@ -905,6 +977,9 @@
     if (!section || !cards.length || !foodCards.length || !drinkCards.length || plates.length < 2 || !checkButton) return;
 
     const desktopQuery = window.matchMedia('(min-width: 48.0625rem)');
+    // 카드 뭉치를 눌러 다음 장을 넘기는 건 모바일에서만. 태블릿은 카드가 한 장씩 떨어져 놓여서
+    // 뭉치처럼 보이지 않는 탓에, 사진을 누르면 의도치 않게 바뀌는 것으로 읽힘
+    const mobileQuery = window.matchMedia('(max-width: 30rem)');
     const finePointerQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const hintCard = foodCards[Math.min(1, foodCards.length - 1)];
@@ -1562,9 +1637,13 @@
     }
 
     function selectWithTap(card) {
-        // 룰렛에서는 앞장을 누르면 다음 장이 올라옴 (모바일 카드 뭉치)
+        // 룰렛에서는 앞장을 누르면 다음 장이 올라옴 (모바일 카드 뭉치).
+        // 태블릿은 "Other food / Other drink" 로만 바꾸므로 눌러도 반응하지 않음
         if (isRouletteEnabled()) {
-            if (card.classList.contains('is_pairing_roulette_active')) swapRoulette(typeFor(card));
+            if (mobileQuery.matches && card.classList.contains('is_pairing_roulette_active')) {
+                swapRoulette(typeFor(card));
+            }
+
             return;
         }
 
@@ -1738,7 +1817,9 @@
 
     if (!section || slides.length < 2) return;
 
-    const desktopQuery = window.matchMedia('(min-width: 48.0625rem)');
+    /* 태블릿까지는 스크롤 스토리텔링을 돌리고, 카드를 가로로 넘기는 모바일에서만 끔.
+       (모바일은 events_viewport 가 스크롤 스냅 캐러셀이라 장을 겹쳐 놓으면 안 됨) */
+    const motionQuery = window.matchMedia('(min-width: 30.0625rem)');
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
     const smoothStep = (value) => value * value * (3 - 2 * value);
@@ -1873,7 +1954,7 @@
     }
 
     function updateMode() {
-        const isEnabled = desktopQuery.matches && !reducedMotionQuery.matches;
+        const isEnabled = motionQuery.matches && !reducedMotionQuery.matches;
 
         if (!isEnabled) {
             if (animationFrame) window.cancelAnimationFrame(animationFrame);
@@ -1894,7 +1975,7 @@
 
     window.addEventListener('scroll', requestRender, { passive: true });
     window.addEventListener('resize', requestRender, { passive: true });
-    listenForChanges(desktopQuery, updateMode);
+    listenForChanges(motionQuery, updateMode);
     listenForChanges(reducedMotionQuery, updateMode);
     updateMode();
 })();
@@ -2367,4 +2448,83 @@
 
     // 이미지가 늦게 들어와 콜라주 폭이 바뀌는 경우까지 맞춰 둠
     window.addEventListener('load', sync);
+
+    /* ----- 끌어서 넘기기 -----
+       스크롤바를 숨겨 둬서 마우스로는 밀 방법이 없음. 터치는 브라우저 기본 스크롤이
+       관성까지 알아서 해 주므로 건드리지 않고 마우스일 때만 가로챔.
+       실제로 넘길 수 있는 상자는 폭에 따라 다름: 태블릿은 바깥 틀, 모바일은 콜라주 자신 */
+
+    const collage = scroller.querySelector('.best_collage') || scroller;
+    // 이만큼 움직이기 전에는 클릭으로 보고 카드 링크를 살려 둠
+    const dragThreshold = 6;
+
+    let dragTarget = null;
+    let startX = 0;
+    let startScroll = 0;
+    let dragging = false;
+    let blockClick = false;
+
+    function scrollable() {
+        if (scroller.scrollWidth > scroller.clientWidth) return scroller;
+        if (collage.scrollWidth > collage.clientWidth) return collage;
+        return null;
+    }
+
+    function endDrag() {
+        if (!dragTarget) return;
+
+        // 클릭 억제 여부는 pointerup 뒤에 오는 click 이 읽고 감
+        blockClick = dragging;
+        collage.classList.remove('is_dragging');
+        dragTarget = null;
+        dragging = false;
+    }
+
+    scroller.addEventListener('pointerdown', (event) => {
+        if (event.pointerType !== 'mouse' || event.button !== 0) return;
+
+        const target = scrollable();
+
+        if (!target) return;
+
+        dragTarget = target;
+        startX = event.clientX;
+        startScroll = target.scrollLeft;
+        dragging = false;
+        blockClick = false;
+    });
+
+    // 커서가 상자 밖으로 나가도 계속 끌리도록 window 에 붙임
+    window.addEventListener('pointermove', (event) => {
+        if (!dragTarget) return;
+
+        const delta = event.clientX - startX;
+
+        if (!dragging) {
+            if (Math.abs(delta) < dragThreshold) return;
+
+            dragging = true;
+            collage.classList.add('is_dragging');
+        }
+
+        // 드래그로 넘긴 것도 사용자가 민 것이므로 리사이즈 때 가운데로 되돌리지 않음
+        touched = true;
+        dragTarget.scrollLeft = startScroll - delta;
+    });
+
+    window.addEventListener('pointerup', endDrag);
+    window.addEventListener('pointercancel', endDrag);
+
+    // 카드가 a 태그라 끌면 브라우저 기본 링크/이미지 드래그가 먼저 걸림
+    scroller.addEventListener('dragstart', (event) => {
+        if (scrollable()) event.preventDefault();
+    });
+
+    scroller.addEventListener('click', (event) => {
+        if (!blockClick) return;
+
+        blockClick = false;
+        event.preventDefault();
+        event.stopPropagation();
+    }, true);
 })();
