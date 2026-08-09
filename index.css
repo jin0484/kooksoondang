@@ -243,8 +243,14 @@ button {
     height: auto;
 }
 
-/* 오른쪽 아래 캐릭터. 그림 파일이 없으면 index.js 가 통째로 감춤 */
+/* 오른쪽 아래 캐릭터. 그림 파일이 없으면 index.js 가 통째로 감춤.
+   인증 화면은 영상이 끝난 뒤에야 hidden 이 풀리므로, 그 순간 아래 애니메이션이
+   처음부터 시작되어 화면 오른쪽 밖에서 걸어 들어온다(말풍선도 같이 따라옴) */
 .age_gate_character {
+    --char_walk: 3.5s;
+    /* 걷기 한 컷의 길이. --char_walk 를 이 값으로 나눈 횟수만큼 3컷을 돌림 */
+    --char_step: 0.5s;
+
     position: absolute;
     z-index: 1;
     right: clamp(0.5rem, 3vw, 3rem);
@@ -255,24 +261,129 @@ button {
     align-items: flex-end;
     gap: 0.5rem;
     pointer-events: none;
+    animation: age_char_walk_in var(--char_walk) linear both;
 }
 
 .age_gate_character[hidden] {
     display: none;
 }
 
-.age_gate_character img {
-    display: block;
-    width: clamp(8rem, 17vw, 15rem);
-    height: auto;
+/* 걸어 들어오는 이동. 끝나면 제자리에 그대로 멈춤(both) */
+@keyframes age_char_walk_in {
+    0% {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+
+    12% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
-/* 캐릭터가 건네는 손글씨 한 줄 */
+/* 세 컷을 같은 자리에 겹쳐 둠. 걷기가 끝나면 walk1(서 있는 컷)만 남음 */
+.age_gate_char_body {
+    position: relative;
+    width: clamp(8rem, 17vw, 15rem);
+    aspect-ratio: 1;
+}
+
+.age_gate_char_frame {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    opacity: 0;
+    animation-duration: var(--char_step);
+    animation-timing-function: steps(1, end);
+    /* --char_walk / --char_step 회. 이동이 끝나는 순간 걷기도 같이 멈춤 */
+    animation-iteration-count: 7;
+}
+
+.age_gate_char_frame.walk1 {
+    opacity: 1;
+    animation-name: age_char_f1;
+}
+
+.age_gate_char_frame.walk2 {
+    animation-name: age_char_f2;
+}
+
+.age_gate_char_frame.walk3 {
+    animation-name: age_char_f3;
+}
+
+@keyframes age_char_f1 {
+
+    0%,
+    33.33% {
+        opacity: 1;
+    }
+
+    33.34%,
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes age_char_f2 {
+
+    0%,
+    33.33% {
+        opacity: 0;
+    }
+
+    33.34%,
+    66.66% {
+        opacity: 1;
+    }
+
+    66.67%,
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes age_char_f3 {
+
+    0%,
+    66.66% {
+        opacity: 0;
+    }
+
+    66.67%,
+    100% {
+        opacity: 1;
+    }
+}
+
+/* 캐릭터가 건네는 손글씨 한 줄.
+   다 걸어 들어와 멈춘 뒤에 말을 걸도록 --char_walk 만큼 늦게 뜸 */
 .age_gate_bubble {
     font-family: var(--font-ROH_HOE-CHAN);
     font-size: clamp(0.875rem, 1.3vw, 1.25rem);
     color: var(--bekseju_dark1);
     white-space: nowrap;
+    opacity: 0;
+    animation: age_char_bubble_in 0.5s ease-out var(--char_walk) both;
+}
+
+@keyframes age_char_bubble_in {
+    0% {
+        opacity: 0;
+        transform: translateY(0.5rem);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -290,6 +401,18 @@ button {
 
     .age_gate_view {
         animation: none;
+    }
+
+    /* 걷기와 걸어 들어오기를 모두 끄면 walk1 이 제자리에 서 있는 그림만 남음 */
+    .age_gate_character,
+    .age_gate_char_frame {
+        animation: none;
+    }
+
+    /* 말풍선은 등장 연출 없이 처음부터 떠 있음 */
+    .age_gate_bubble {
+        animation: none;
+        opacity: 1;
     }
 }
 
@@ -309,7 +432,7 @@ button {
         margin-bottom: clamp(4rem, 12vh, 7rem);
     }
 
-    .age_gate_character img {
+    .age_gate_char_body {
         width: 11rem;
     }
 }
@@ -354,7 +477,7 @@ button {
         right: 0.25rem;
     }
 
-    .age_gate_character img {
+    .age_gate_char_body {
         width: 7.5rem;
     }
 }

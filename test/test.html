@@ -30,33 +30,27 @@
                 </p>
                 <button type="button" class="btn_start" data-next="q1">TEST START</button>
             </div>
-
-            <!-- 오른쪽 걷기 구간. 왼쪽에서 걸어 들어와 구간 절반쯤에서 멈춤.
-                 walk1~3 을 겹쳐 두고 opacity 만 갈아 끼워서 걷는 동작을 만듦 -->
-            <div class="intro_char" aria-hidden="true">
-                <div class="intro_char_body">
-                    <img class="intro_char_frame walk1" src="test_asset/walk1.png" alt="">
-                    <img class="intro_char_frame walk2" src="test_asset/walk2.png" alt="">
-                    <img class="intro_char_frame walk3" src="test_asset/walk3.png" alt="">
-                </div>
-            </div>
         </section>
 
         <!-- ===================== Q1. 신분 ===================== -->
-        <section class="screen screen_question" id="q1" data-step="1">
+        <section class="screen screen_question screen_dim screen_pick" id="q1" data-step="1">
             <p class="question">Choose your desired class.</p>
-            <div class="choices">
-                <button type="button" class="choice" data-set="rank:yangban" data-next="q2_yangban">
-                    Yangban (Aristocrats)
+
+            <!-- 그림과 답 상자를 한 덩어리로 묶어 둠. 그림을 눌러도 그 답이 골라짐 -->
+            <div class="picks">
+                <button type="button" class="pick" data-set="rank:yangban" data-next="q2_yangban">
+                    <img class="pick_img" src="test_asset/Yangban1.png" alt="">
+                    <span class="choice">Yangban (Aristocrats)</span>
                 </button>
-                <button type="button" class="choice" data-set="rank:pyeongmin" data-next="q2_pyeongmin">
-                    Pyeongmin (Commoners)
+                <button type="button" class="pick" data-set="rank:pyeongmin" data-next="q2_pyeongmin">
+                    <img class="pick_img" src="test_asset/Pyeongmin1.png" alt="">
+                    <span class="choice">Pyeongmin (Commoners)</span>
                 </button>
             </div>
         </section>
 
         <!-- ===================== Q2. 동행 ===================== -->
-        <section class="screen screen_question" id="q2_yangban" data-step="2">
+        <section class="screen screen_question screen_dim" id="q2_yangban" data-step="2">
             <p class="question">
                 Welcome, traveler.<br>Thanks for coming all this way.<br><br>
                 Drinking alone today, or with companions?
@@ -71,7 +65,7 @@
             </div>
         </section>
 
-        <section class="screen screen_question" id="q2_pyeongmin" data-step="2">
+        <section class="screen screen_question screen_dim" id="q2_pyeongmin" data-step="2">
             <p class="question">
                 Welcome, traveler.<br>Thanks for coming all this way.<br><br>
                 Drinking alone today, or with companions?
@@ -87,21 +81,26 @@
         </section>
 
         <!-- ---------- 동행 선택 후 전환 컷 ---------- -->
-        <section class="screen screen_cut" id="cut_yangban_alone" data-next="q3_yangban">
+        <!-- 인물 그림은 배경과 같은 1920x1080 판이라 그대로 겹쳐 두면 제자리에 앉음 -->
+        <section class="screen screen_cut screen_dim" id="cut_yangban_alone" data-next="q3_yangban">
+            <img class="cut_actor" src="test_asset/Yangban_solo.png" alt="">
             <p class="cut_caption">양반 - 혼자 선택 시</p>
         </section>
-        <section class="screen screen_cut" id="cut_yangban_together" data-next="q3_yangban">
+        <section class="screen screen_cut screen_dim" id="cut_yangban_together" data-next="q3_yangban">
+            <img class="cut_actor" src="test_asset/Yangban_with.png" alt="">
             <p class="cut_caption">양반 - 함께 선택 시</p>
         </section>
-        <section class="screen screen_cut" id="cut_pyeongmin_alone" data-next="q3_pyeongmin">
+        <section class="screen screen_cut screen_dim" id="cut_pyeongmin_alone" data-next="q3_pyeongmin">
+            <img class="cut_actor" src="test_asset/Pyeongmin_solo.png" alt="">
             <p class="cut_caption">평민 - 혼자 선택 시</p>
         </section>
-        <section class="screen screen_cut" id="cut_pyeongmin_together" data-next="q3_pyeongmin">
+        <section class="screen screen_cut screen_dim" id="cut_pyeongmin_together" data-next="q3_pyeongmin">
+            <img class="cut_actor" src="test_asset/Pyeongmin_with.png" alt="">
             <p class="cut_caption">평민 - 함께 선택 시</p>
         </section>
 
         <!-- ===================== Q3. 술 종류 ===================== -->
-        <section class="screen screen_question" id="q3_yangban" data-step="3">
+        <section class="screen screen_question screen_dim" id="q3_yangban" data-step="3">
             <p class="question">What type of drink do you prefer?</p>
             <div class="choices">
                 <button type="button" class="choice" data-set="drink:beer" data-next="cut_beer">Beer</button>
@@ -110,7 +109,7 @@
             </div>
         </section>
 
-        <section class="screen screen_question" id="q3_pyeongmin" data-step="3">
+        <section class="screen screen_question screen_dim" id="q3_pyeongmin" data-step="3">
             <p class="question">What type of drink do you prefer?</p>
             <div class="choices">
                 <button type="button" class="choice" data-set="drink:beer" data-next="cut_beer">Beer</button>

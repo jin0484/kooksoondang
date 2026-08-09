@@ -1,8 +1,8 @@
 @charset "UTF-8";
 
 /* 스토리형 테스트.
-   배경 일러스트는 아직 없음. 나중에 각 .screen 에 background-image 만 얹으면 되도록
-   화면 하나를 통째로 덮는 구조로만 짜 둠. */
+   화면 하나가 통째로 덮이는 구조라 각 .screen 에 background-image 만 얹으면 됨.
+   지금은 q1 에만 배경 일러스트가 있고, 나머지는 아직 임시 야경 톤. */
 
 :root {
     /* 배경 깔리기 전까지 쓸 임시 야경 톤 */
@@ -12,28 +12,42 @@
     --test_dim: #B9AFA6;
     --test_label_bg: #F6F0EC;
     --test_label_ink: #272625;
+    /* 화면을 둘러싸는 종이 틀 색 */
+    --test_paper: #EFE7DB;
 }
 
 body {
-    background: var(--test_night2);
+    background: var(--test_paper);
     color: var(--test_ink);
     font-family: var(--font-Pretendard, sans-serif);
 }
 
 /* ===================== 화면 틀 ===================== */
 
-/* 화면들을 같은 자리에 겹쳐 두고 .is_on 붙은 하나만 보여 줌 */
+/* 화면들을 같은 자리에 겹쳐 두고 .is_on 붙은 하나만 보여 줌.
+   바깥쪽은 종이 틀. 틀 폭은 --frame 하나로 관리하고 화면·HUD 가 같이 참고함 */
 .test {
+    --frame: clamp(10px, 1.4vw, 22px);
+
     position: relative;
     width: 100%;
     min-height: 100vh;
     min-height: 100dvh;
     overflow: hidden;
+    background-color: var(--test_paper);
+    /* 종이 결. 아주 옅은 줄을 가로·세로로 겹쳐서 질감을 냄 */
+    background-image:
+        repeating-linear-gradient(0deg, rgba(108, 84, 60, 0.06) 0 1px, transparent 1px 3px),
+        repeating-linear-gradient(90deg, rgba(108, 84, 60, 0.05) 0 1px, transparent 1px 4px);
 }
 
+/* 틀 안쪽에 끼워 넣은 그림처럼 보이게 여백을 두고 모서리를 둥글림 */
 .screen {
     position: absolute;
-    inset: 0;
+    inset: var(--frame);
+    border-radius: clamp(8px, 0.9vw, 16px);
+    overflow: hidden;
+    box-shadow: 0 2px 16px rgba(58, 42, 30, 0.35);
     display: none;
     flex-direction: column;
     align-items: center;
@@ -69,7 +83,11 @@ body {
 
 /* ===================== 인트로 ===================== */
 
+/* 인트로만 종이 틀 없이 화면을 꽉 채움 */
 .screen_intro {
+    inset: 0;
+    border-radius: 0;
+    box-shadow: none;
     justify-content: center;
     align-items: flex-start;
     background: var(--makgeolli_light4, #FAF8F7);
@@ -112,134 +130,14 @@ body {
     filter: brightness(1.05);
 }
 
-/* ---------- 인트로 걷는 캐릭터 ---------- */
-
-/* 화면 오른쪽 절반 조금 넘는 폭을 걷기 구간으로 씀.
-   구간 오른쪽 바깥에서 출발해 왼쪽으로 걸어와 구간 한가운데(= 절반 지점)에서 멈춤 */
-.intro_char {
-    --char_w: 340px;
-    --char_walk: 3s;
-    /* 걷기 한 사이클(3컷) 길이. --char_walk 를 이 값으로 나눈 만큼 반복시킴 */
-    --char_step: 0.5s;
-
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    width: 55%;
-    height: 100%;
-    pointer-events: none;
-}
-
-.intro_char_body {
-    position: absolute;
-    bottom: 6%;
-    width: var(--char_w);
-    aspect-ratio: 1;
-    left: calc(50% - var(--char_w) / 2);
-    animation: char_walk_in var(--char_walk) linear both;
-}
-
-/* 걸어 들어오는 이동. 끝나면 그 자리에 그대로 멈춤(both) */
-@keyframes char_walk_in {
-    0% {
-        left: 100%;
-        opacity: 0;
-    }
-
-    12% {
-        opacity: 1;
-    }
-
-    100% {
-        left: calc(50% - var(--char_w) / 2);
-        opacity: 1;
-    }
-}
-
-/* 3컷을 같은 자리에 겹쳐 둠. 애니메이션이 끝나면 walk1(서 있는 컷)만 남음 */
-.intro_char_frame {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    opacity: 0;
-    animation-duration: var(--char_step);
-    animation-timing-function: steps(1, end);
-    /* --char_walk / --char_step 회. 이동이 끝나는 순간 걷기도 같이 멈춤 */
-    animation-iteration-count: 6;
-}
-
-.intro_char_frame.walk1 {
-    opacity: 1;
-    animation-name: char_f1;
-}
-
-.intro_char_frame.walk2 {
-    animation-name: char_f2;
-}
-
-.intro_char_frame.walk3 {
-    animation-name: char_f3;
-}
-
-@keyframes char_f1 {
-
-    0%,
-    33.33% {
-        opacity: 1;
-    }
-
-    33.34%,
-    100% {
-        opacity: 0;
-    }
-}
-
-@keyframes char_f2 {
-
-    0%,
-    33.33% {
-        opacity: 0;
-    }
-
-    33.34%,
-    66.66% {
-        opacity: 1;
-    }
-
-    66.67%,
-    100% {
-        opacity: 0;
-    }
-}
-
-@keyframes char_f3 {
-
-    0%,
-    66.66% {
-        opacity: 0;
-    }
-
-    66.67%,
-    100% {
-        opacity: 1;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-
-    .intro_char_body,
-    .intro_char_frame {
-        animation: none;
-    }
-}
-
 /* ===================== 문제 화면 ===================== */
 
+/* 배경 일러스트가 아직 없는 화면이 쓰는 기본 야경 톤.
+   글은 화면 위쪽에 붙임. 가운데 두면 배경 그림 속 인물 얼굴을 가려서,
+   문제 화면과 전환 컷 모두 같은 높이에서 시작하도록 통일함 */
 .screen_question {
     background: radial-gradient(120% 90% at 50% 20%, var(--test_night1) 0%, var(--test_night2) 100%);
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 .question {
@@ -274,17 +172,164 @@ body {
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
 }
 
+/* ---------- 그림이 딸린 선택지 ---------- */
+
+/* 인물 그림을 좌우로 벌려 세우고 답 상자를 그 아래에 붙임.
+   화면에 .screen_pick 을 같이 붙이면 질문은 위, 그림은 아래로 나뉘어 바닥에 선 느낌이 남 */
+.screen_pick {
+    justify-content: space-between;
+}
+
+.picks {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+    width: 100%;
+    max-width: 1100px;
+}
+
+/* 그림까지가 클릭 영역. 버튼 자체는 껍데기만 남기고 안쪽 .choice 가 답 상자 노릇을 함 */
+.pick {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+}
+
+/* 인물 png 는 배경이 비어 있어서 그림자가 사람 모양대로 따라붙음.
+   덕분에 배경 그림 위에 얹혀 있지 않고 앞에 서 있는 것처럼 보임 */
+.pick_img {
+    width: clamp(11.7rem, 34vw, 27.3rem);
+    height: auto;
+    filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.5));
+}
+
+/* 그림 쪽에 올려도 아래 답 상자가 같이 반응하게 */
+.pick:hover .choice,
+.pick:focus-visible .choice {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------- 배경 일러스트가 깔린 화면 ---------- */
+
+/* 그림 까는 법.
+   .screen_question / .screen_cut 이 background 단축 속성으로 야경 그라데이션을 깔면서
+   .screen 에 있던 크기·위치 지정까지 같이 지워 버리므로 여기서 다시 잡아 줌.
+   (안 그러면 그림이 원본 크기 그대로 왼쪽 위에 붙고 남는 자리에 반복됨)
+   .screen 을 앞에 붙인 건 그 단축 속성들보다 뒤로 밀리지 않게 하기 위함 */
+.screen.screen_dim {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #241A15;
+}
+
+/* 그림은 화면마다 다르므로 id 로 하나씩 지정.
+   그림을 깐 화면에는 .screen_dim 을 같이 붙여 어두운 막을 씌움 */
+#q1 {
+    background-image: url("test_asset/background1.png");
+}
+
+/* 주막 실내. 좌우 가구까지 다 보여야 해서 잘라내지 않고 통째로 맞춰 넣음.
+   화면 비율이 그림(16:9)과 다를 때 남는 자리는 어두운 여백으로 둠.
+   양반 갈래 전환 컷 두 장도 같은 그림을 씀 */
+#q2_yangban,
+#q3_yangban,
+#cut_yangban_alone,
+#cut_yangban_together {
+    background-size: contain;
+    background-image: url("test_asset/Yangban_background.png");
+}
+
+/* 2번 문제만 예외로 세로 가운데 정렬.
+   문구가 길어 위로 붙이면 화면이 위쪽으로 쏠려 보임 */
+#q2_yangban,
+#q2_pyeongmin {
+    justify-content: center;
+}
+
+/* 평민 갈래는 주막 마당. 같은 방식으로 문제 화면과 전환 컷들이 함께 씀 */
+#q2_pyeongmin,
+#q3_pyeongmin,
+#cut_pyeongmin_alone,
+#cut_pyeongmin_together {
+    background-size: contain;
+    background-image: url("test_asset/Pyeongmin_back.png");
+}
+
+/* 배경 그림 위에 어두운 막을 한 겹 깖.
+   그림과 인물이 같은 연한 색이라 겹쳐 보이던 걸, 그림만 뒤로 물러나게 해서 갈라 놓음.
+   위·아래를 조금 더 진하게 해서 질문과 답 상자가 놓이는 자리를 눌러 줌 */
+.screen_dim::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg,
+            rgba(36, 26, 21, 0.66) 0%,
+            rgba(36, 26, 21, 0.44) 40%,
+            rgba(36, 26, 21, 0.44) 62%,
+            rgba(36, 26, 21, 0.62) 100%);
+}
+
+/* 어두운 막 위로 내용이 올라오게 */
+.screen_dim>* {
+    position: relative;
+    z-index: 1;
+}
+
+/* 밝은 답 상자도 그림자로 한 겹 띄워 둠 */
+.screen_dim .choice {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* 전환 컷 문구는 그림 위에 놓이므로 밝게 올리고 그림자를 받쳐 줌.
+   "클릭해서 계속" 안내는 요소가 아니라 ::after 라서 어두운 막에 덮인다. 따로 올려 줌 */
+.screen_dim .cut_caption {
+    color: var(--test_ink);
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
+}
+
+.screen_dim.screen_cut::after {
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+}
+
+
 /* ===================== 전환 컷 ===================== */
 
 /* 문제 사이에 끼는 연출 화면. 아무 데나 누르면 다음으로 넘어감 */
 .screen_cut {
     background: radial-gradient(120% 90% at 50% 40%, var(--test_night1) 0%, var(--test_night2) 100%);
+    justify-content: flex-start;
     cursor: pointer;
 }
 
 .cut_caption {
     font: var(--PC-Heading2_24R, 400 24px/1.4 sans-serif);
     color: var(--test_dim);
+}
+
+/* 전환 컷의 인물 그림. 배경과 같은 1920x1080 판이라
+   object-fit: contain 으로 배경(background-size: contain)과 똑같이 앉히면 자리가 맞음.
+   어두운 막(z-index 0) 위로 올려서 인물만 또렷하게 남김.
+   .screen_dim>* 규칙보다 뒤에 둬야 position 을 뺏기지 않음 */
+.cut_actor {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
 }
 
 /* 컷 화면에만 붙는 "클릭해서 계속" 안내 */
@@ -393,9 +438,10 @@ body {
     color: var(--test_dim);
 }
 
+/* 종이 틀 바깥으로 나가지 않게 틀 폭만큼 안쪽으로 밀어 둠 */
 .btn_back {
-    top: 32px;
-    left: 40px;
+    top: calc(var(--frame) + 20px);
+    left: calc(var(--frame) + 24px);
     padding: 8px 14px;
     border: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: 999px;
@@ -408,8 +454,8 @@ body {
 }
 
 .progress {
-    top: 36px;
-    right: 40px;
+    top: calc(var(--frame) + 24px);
+    right: calc(var(--frame) + 24px);
     letter-spacing: 2px;
 }
 
@@ -446,10 +492,6 @@ body {
     .result_title {
         font-size: 36px;
     }
-
-    .intro_char {
-        --char_w: 240px;
-    }
 }
 
 /* 모바일 */
@@ -479,6 +521,31 @@ body {
         text-align: center;
     }
 
+    /* 그림이 딸린 선택지는 좌우 배치를 유지하되 반씩 나눠 가짐.
+       세로로 쌓으면 그림 두 장이 화면 밖으로 밀림 */
+    .picks {
+        gap: 12px;
+    }
+
+    .pick {
+        flex: 1;
+        gap: 10px;
+    }
+
+    .pick_img {
+        width: 100%;
+    }
+
+    /* 두 답의 글줄 수가 달라도(한쪽만 두 줄) 인물 두 명이 같은 높이에 서게 두 줄 자리를 미리 잡아 둠 */
+    .pick .choice {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 4.1em;
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+
     .btn_back {
         top: 20px;
         left: 20px;
@@ -495,17 +562,5 @@ body {
 
     .result_title {
         font-size: 28px;
-    }
-
-    /* 폭이 좁아서 오른쪽 절반만 쓰면 캐릭터가 너무 작아짐.
-       구간을 넓히고 텍스트 아래쪽으로 내려서 겹치지 않게 함 */
-    .intro_char {
-        --char_w: 150px;
-
-        width: 70%;
-    }
-
-    .intro_char_body {
-        bottom: 4%;
     }
 }
