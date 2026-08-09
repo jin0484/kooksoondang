@@ -236,11 +236,18 @@ body {
     background-image: url("test_asset/background1.png");
 }
 
+/* 결과 화면 6개는 모두 같은 주막 앞 그림.
+   .screen 을 앞에 붙인 건 .screen_result 의 background 단축 속성에 지워지지 않게 하기 위함 */
+.screen.screen_result {
+    background-image: url("test_asset/background1.png");
+}
+
 /* 주막 실내. 좌우 가구까지 다 보여야 해서 잘라내지 않고 통째로 맞춰 넣음.
    화면 비율이 그림(16:9)과 다를 때 남는 자리는 어두운 여백으로 둠.
    양반 갈래 전환 컷 두 장도 같은 그림을 씀 */
 #q2_yangban,
 #q3_yangban,
+#q4_yangban,
 #cut_yangban_alone,
 #cut_yangban_together {
     background-size: contain;
@@ -257,6 +264,7 @@ body {
 /* 평민 갈래는 주막 마당. 같은 방식으로 문제 화면과 전환 컷들이 함께 씀 */
 #q2_pyeongmin,
 #q3_pyeongmin,
+#q4_pyeongmin,
 #cut_pyeongmin_alone,
 #cut_pyeongmin_together {
     background-size: contain;
@@ -290,13 +298,100 @@ body {
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
-/* 전환 컷 문구는 그림 위에 놓이므로 밝게 올리고 그림자를 받쳐 줌.
-   "클릭해서 계속" 안내는 요소가 아니라 ::after 라서 어두운 막에 덮인다. 따로 올려 줌 */
-.screen_dim .cut_caption {
-    color: var(--test_ink);
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
+/* ---------- 배경 그림 위에 물건 올리기 ---------- */
+
+/* 배경 그림(1920x1080)이 contain 으로 앉는 자리와 똑같은 크기·위치의 빈 상자.
+   이 안에서 %로 좌표를 잡으면 그림 속 좌표(탁자 위 등)와 그대로 맞아떨어진다.
+   .screen 이 틀만큼 안쪽에 있으므로 화면 크기에서 틀 폭을 빼서 계산함.
+   .screen_dim>* 규칙에 position 을 뺏기지 않게 그 뒤에 둠 */
+.stage {
+    --sw: calc(100vw - 2 * var(--frame));
+    --sh: calc(100dvh - 2 * var(--frame));
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 1;
+    width: min(var(--sw), var(--sh) * 16 / 9);
+    height: min(var(--sh), var(--sw) * 9 / 16);
+    translate: -50% -50%;
+    pointer-events: none;
 }
 
+/* 탁자 위에 세우는 술.
+   --x 는 그림 기준 가로 위치(가운데), --y 는 바닥이 닿을 높이(아래에서부터),
+   --w 는 그림 폭 기준 크기. 화면마다 탁자 자리가 달라서 아래에서 따로 잡아 줌 */
+.drink {
+    position: absolute;
+    left: var(--x);
+    bottom: var(--y);
+    width: var(--w);
+    height: auto;
+    translate: -50% 0;
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45));
+}
+
+/* 주막 실내(양반) — 낮은 상 위 */
+#q3_yangban .drink {
+    --y: 21%;
+}
+
+#q3_yangban .drink_beer {
+    --x: 39%;
+    --w: 6.5%;
+}
+
+#q3_yangban .drink_whiskey {
+    --x: 46.5%;
+    --w: 5.5%;
+}
+
+#q3_yangban .drink_wine {
+    --x: 53%;
+    --w: 6.5%;
+}
+
+#q3_yangban .drink_wineglass {
+    --x: 58.5%;
+    --w: 3.6%;
+}
+
+#q3_yangban .drink_cocktail {
+    --x: 63.5%;
+    --w: 3.6%;
+}
+
+/* 주막 마당(평민) — 평상 위. 상판이 더 넓고 낮아서 자리와 크기를 따로 잡음 */
+#q3_pyeongmin .drink {
+    --y: 25%;
+}
+
+#q3_pyeongmin .drink_beer {
+    --x: 41%;
+    --w: 7%;
+}
+
+#q3_pyeongmin .drink_whiskey {
+    --x: 49%;
+    --w: 6%;
+}
+
+#q3_pyeongmin .drink_wine {
+    --x: 56%;
+    --w: 7%;
+}
+
+#q3_pyeongmin .drink_wineglass {
+    --x: 62%;
+    --w: 3.9%;
+}
+
+#q3_pyeongmin .drink_cocktail {
+    --x: 67.5%;
+    --w: 3.9%;
+}
+
+/* "클릭해서 계속" 안내는 요소가 아니라 ::after 라서 어두운 막에 덮인다. 따로 올려 줌 */
 .screen_dim.screen_cut::after {
     position: relative;
     z-index: 1;
@@ -313,9 +408,42 @@ body {
     cursor: pointer;
 }
 
+/* ---------- 흰 배경에 인물만 세우는 컷 ---------- */
+
+/* .screen 을 앞에 붙인 건 .screen_cut 의 background 단축 속성보다 뒤로 밀리지 않기 위함 */
+.screen.screen_white {
+    background: var(--makgeolli_White, #FFF);
+}
+
+.cut_solo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    width: clamp(14rem, 34vw, 30rem);
+    height: auto;
+}
+
+/* 흰 배경에서는 밝은 글씨가 묻히므로 안내 문구와 BACK 을 어둡게 뒤집음 */
+.screen_white.screen_cut::after {
+    color: rgba(39, 38, 37, 0.55);
+    text-shadow: none;
+}
+
+.test:has(.screen_white.is_on) .btn_back {
+    color: var(--bekseju_dark2, #5D504A);
+    border-color: rgba(39, 38, 37, 0.25);
+}
+
+.test:has(.screen_white.is_on) .btn_back:hover {
+    color: var(--bekseju_darker_warm, #272625);
+}
+
+/* 컷 문구는 어느 컷인지 적어 둔 자리표시용이라 화면에는 안 띄움.
+   그 자리에는 아래 "클릭해서 계속" 안내가 대신 들어간다.
+   (마크업은 남겨 둬야 파일에서 컷을 구분하기 쉬움) */
 .cut_caption {
-    font: var(--PC-Heading2_24R, 400 24px/1.4 sans-serif);
-    color: var(--test_dim);
+    display: none;
 }
 
 /* 전환 컷의 인물 그림. 배경과 같은 1920x1080 판이라
@@ -366,65 +494,274 @@ body {
     background: radial-gradient(120% 100% at 50% 0%, #223049 0%, var(--test_night2) 100%);
 }
 
+/* 결과 6개가 모두 같은 틀을 씀.
+   왼쪽에 유형 일러스트, 오른쪽에 유형 이름과 상세 판.
+   카드 자체는 자리만 잡고 색은 안쪽 상세 판이 냄 */
 .result_card {
-    width: min(760px, 100%);
-    padding: 48px;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 24px;
-    background: rgba(255, 255, 255, 0.06);
-    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: clamp(24px, 4vw, 64px);
+    width: min(1240px, 100%);
+    text-align: left;
+}
+
+/* ---------- 왼쪽 : 일러스트와 버튼 ---------- */
+
+.result_side {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: min(28%, 320px);
+}
+
+/* 인물 png 는 배경이 비어 있어서 그림자가 사람 모양대로 따라붙음 */
+.result_char {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.45));
+}
+
+.result_actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btn_save,
+.btn_share {
+    padding: 10px 18px;
+    border: 0;
+    border-radius: 999px;
+    color: var(--test_ink);
+    font: var(--PC-Body2_14B, 700 12px/1.2 sans-serif);
+    font-size: 12px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: transform 0.2s, filter 0.2s;
+}
+
+.btn_save {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.btn_share {
+    background: rgba(58, 42, 30, 0.75);
+}
+
+.btn_save:hover,
+.btn_share:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.12);
+}
+
+/* 다시 하기는 디자인에 없는 버튼이라 두 버튼 아래에 글자만 작게 둠 */
+.btn_restart {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--test_dim);
+    font: var(--PC-Body2_14R, 400 12px/1.4 sans-serif);
+    font-size: 12px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.btn_restart:hover {
+    color: var(--test_ink);
+}
+
+/* ---------- 오른쪽 : 유형 이름과 상세 판 ---------- */
+
+.result_main {
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 .result_label {
     font: var(--PC-Body1_16R, 400 16px/1.4 sans-serif);
-    color: var(--test_dim);
+    color: var(--test_ink);
 }
 
 .result_title {
-    margin-top: 8px;
+    margin-top: 6px;
     font: var(--PC-Display3_48B, 700 48px/1.2 sans-serif);
     letter-spacing: -1px;
 }
 
-.result_name {
-    margin-top: 12px;
-    font: var(--PC-Heading2_24R, 400 24px/1.4 sans-serif);
+/* 상세 판. 왼쪽 칸(잘 맞는 유형·음주 스타일·해시태그) / 오른쪽 칸(어울리는 술) */
+.result_panel {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: clamp(24px, 3vw, 48px);
+    margin-top: 24px;
+    padding: clamp(20px, 2.2vw, 32px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 20px;
+    background: rgba(76, 59, 51, 0.5);
+}
+
+/* 두 칸의 맨 아래 줄(해시태그 · VIEW MORE)이 같은 높이에 놓이도록 세로로 폄 */
+.panel_col {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.panel_head {
+    font: var(--PC-Body1_16R, 400 16px/1.4 sans-serif);
+    color: var(--test_ink);
+}
+
+.panel_head::before {
+    content: "♥";
+    margin-right: 8px;
+    font-size: 0.9em;
     color: var(--kooksoondang_lighter, #FFD7BB);
 }
 
+/* 한 칸에 제목이 둘 있는 경우(잘 맞는 유형 / 음주 스타일) 둘째부터 위를 띄움 */
+.panel_head~.panel_head {
+    margin-top: 28px;
+}
+
+/* ---------- 잘 맞는 유형 ---------- */
+
+.chemistry {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.chemistry li {
+    width: clamp(56px, 5.5vw, 84px);
+}
+
+.chemistry img {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35));
+}
+
+/* ---------- 음주 스타일 ---------- */
+
 .result_desc {
-    margin-top: 32px;
     display: grid;
-    gap: 10px;
-    text-align: left;
-    font: var(--PC-Body1_16R, 400 16px/1.6 sans-serif);
-    color: var(--test_dim);
+    gap: 8px;
+    margin-top: 12px;
+    font: var(--PC-Body2_14R, 400 13px/1.5 sans-serif);
+    font-size: 13px;
+    color: rgba(244, 239, 233, 0.8);
 }
 
 .result_desc li::before {
     content: "· ";
 }
 
+/* margin-top:auto 로 칸 바닥에 붙이고, 그래도 앞 글과 붙지 않게 padding 으로 사이를 벌림 */
 .result_tags {
-    margin-top: 28px;
-    font: var(--PC-Body2_14R, 400 14px/1.5 sans-serif);
-    color: var(--kooksoondang_green, #D4E400);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    margin-top: auto;
+    padding-top: 20px;
+    font: var(--PC-Body2_14R, 400 13px/1.5 sans-serif);
+    font-size: 13px;
+    color: var(--kooksoondang_orange, #F29556);
 }
 
-.btn_restart {
-    margin-top: 36px;
-    padding: 12px 28px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 999px;
-    background: transparent;
+.result_tags span {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+}
+
+/* ---------- 어울리는 술 ---------- */
+
+.liquor {
+    display: grid;
+    gap: 16px;
+    margin-top: 12px;
+    /* VIEW MORE 가 바닥에 붙어도 술 목록과 붙지 않게 */
+    margin-bottom: 20px;
+}
+
+.liquor_item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.liquor_bottle {
+    flex: 0 0 auto;
+    width: clamp(22px, 2vw, 30px);
+    height: auto;
+}
+
+.liquor_body {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.liquor_name {
+    font: var(--PC-Body2_14R, 400 13px/1.4 sans-serif);
+    font-size: 13px;
     color: var(--test_ink);
-    font: var(--PC-Body2_14R, 400 14px/1.4 sans-serif);
-    cursor: pointer;
-    transition: background 0.2s;
 }
 
-.btn_restart:hover {
-    background: rgba(255, 255, 255, 0.12);
+/* 이름 왼쪽, 막대 오른쪽. 두 줄이 아니라 한 줄씩 짝을 이루게 두 칸 격자로 둠 */
+.liquor_stat {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 6px 14px;
+    margin-top: 8px;
+}
+
+.liquor_stat dt {
+    font-size: 11px;
+    color: rgba(244, 239, 233, 0.65);
+}
+
+.liquor_stat dt::before {
+    content: "· ";
+}
+
+/* 막대. 채우는 길이는 HTML 에서 style="--v:00%" 로 줌 */
+.liquor_stat i {
+    display: block;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.liquor_stat i::before {
+    content: "";
+    display: block;
+    width: var(--v, 0%);
+    height: 100%;
+    border-radius: inherit;
+    background: var(--test_ink);
+}
+
+.btn_more {
+    align-self: flex-end;
+    margin-top: auto;
+    padding: 9px 20px;
+    border-radius: 999px;
+    background: rgba(58, 42, 30, 0.8);
+    color: var(--test_ink);
+    font: var(--PC-Body2_14B, 700 11px/1.2 sans-serif);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-decoration: none;
+    transition: filter 0.2s;
+}
+
+.btn_more:hover {
+    filter: brightness(1.15);
 }
 
 /* ===================== 진행 표시 / 뒤로가기 ===================== */
