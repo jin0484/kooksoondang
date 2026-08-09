@@ -21,8 +21,8 @@
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     // 태블릿까지는 모프를 돌리고, 장식 자체가 빠지는 모바일에서만 끔.
     // (모바일은 .history_deco 가 display:none 이라 prepareFrames 도 어차피 실패함)
-    const mobileQuery = window.matchMedia('(max-width: 30rem)');
-    const tabletQuery = window.matchMedia('(max-width: 48rem)');
+    const mobileQuery = window.matchMedia('(max-width: 47.9375rem)');
+    const tabletQuery = window.matchMedia('(max-width: 64rem)');
     const svgNamespace = 'http://www.w3.org/2000/svg';
     const stageSize = { width: 228, height: 510 };
     const sampleCount = 240;
@@ -409,6 +409,8 @@
 
     const hoverQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    // 마우스가 달린 기기여도 모바일 폭에서는 커서 연출(따라 움직이기·던지기)을 돌리지 않음
+    const mobileQuery = window.matchMedia('(max-width: 47.9375rem)');
 
     // 커서 속도(px/s)를 요소의 초기 속도로 환산하는 배율
     const throwScale = 0.32;
@@ -449,7 +451,7 @@
     const tabletQuery = window.matchMedia('(max-width: 64rem)');
 
     const clamp = (value, limit) => Math.min(Math.max(value, -limit), limit);
-    const isEnabled = () => hoverQuery.matches && !reducedMotionQuery.matches;
+    const isEnabled = () => hoverQuery.matches && !reducedMotionQuery.matches && !mobileQuery.matches;
 
     // 기존 transform 을 지우지 않고 그 안쪽에 흔들림을 얹어야 제자리에서 회전함
     function captureBase(item) {
@@ -976,10 +978,7 @@
 
     if (!section || !cards.length || !foodCards.length || !drinkCards.length || plates.length < 2 || !checkButton) return;
 
-    const desktopQuery = window.matchMedia('(min-width: 48.0625rem)');
-    // 카드 뭉치를 눌러 다음 장을 넘기는 건 모바일에서만. 태블릿은 카드가 한 장씩 떨어져 놓여서
-    // 뭉치처럼 보이지 않는 탓에, 사진을 누르면 의도치 않게 바뀌는 것으로 읽힘
-    const mobileQuery = window.matchMedia('(max-width: 30rem)');
+    const desktopQuery = window.matchMedia('(min-width: 64.0625rem)');
     const finePointerQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const hintCard = foodCards[Math.min(1, foodCards.length - 1)];
@@ -999,8 +998,8 @@
     const selectedCards = { food: null, drink: null };
     const rouletteCards = { food: foodCards, drink: drinkCards };
     const rouletteIndex = { food: 1, drink: 2 };
-    // 앞장부터 순서대로. 인덱스가 곧 앞장에서 몇 장 뒤인지를 뜻함
-    const rouletteStackClasses = ['is_pairing_roulette_active', 'is_pairing_roulette_next', 'is_pairing_roulette_next2'];
+    // 룰렛은 줄마다 고른 한 장만 보여 줌. 나머지는 css 가 감춤
+    const rouletteActiveClass = 'is_pairing_roulette_active';
     const labels = {
         food: {
             pancake: 'Seafood Scallion Pancake',
@@ -1218,7 +1217,7 @@
        "Other food / Other drink" 로 다음 장을 넘겨 고른다.
        고른 카드는 데스크톱과 같은 selectedCards 에 넣어 두므로 결과 계산은 그대로 쓰인다 */
     function renderRoulette() {
-        cards.forEach((card) => card.classList.remove(...rouletteStackClasses));
+        cards.forEach((card) => card.classList.remove(rouletteActiveClass));
 
         if (!isRouletteEnabled()) return;
 
@@ -1227,10 +1226,7 @@
 
             if (!card) return;
 
-            // 모바일에서는 뒤따르는 두 장이 뒤에 겹쳐 보임(css 가 부채꼴로 눕힘)
-            rouletteStackClasses.forEach((className, offset) => {
-                list[(rouletteIndex[type] + offset) % list.length]?.classList.add(className);
-            });
+            card.classList.add(rouletteActiveClass);
             selectedCards[type] = card;
             // 카드를 직접 눌러 넘겼을 때도 열려 있는 목록의 표시가 따라가야 함
             syncSwapMenu(type);
@@ -1238,15 +1234,6 @@
 
         plates.forEach(syncPlate);
         setFeedback('');
-    }
-
-    function swapRoulette(type) {
-        const list = rouletteCards[type];
-
-        if (!list?.length) return;
-
-        rouletteIndex[type] = (rouletteIndex[type] + 1) % list.length;
-        renderRoulette();
     }
 
     /* "Other food / Other drink" 는 다음 장으로 넘기는 대신 목록을 위로 펼쳐 바로 고르게 함.
@@ -1637,15 +1624,9 @@
     }
 
     function selectWithTap(card) {
-        // 룰렛에서는 앞장을 누르면 다음 장이 올라옴 (모바일 카드 뭉치).
-        // 태블릿은 "Other food / Other drink" 로만 바꾸므로 눌러도 반응하지 않음
-        if (isRouletteEnabled()) {
-            if (mobileQuery.matches && card.classList.contains('is_pairing_roulette_active')) {
-                swapRoulette(typeFor(card));
-            }
-
-            return;
-        }
+        // 룰렛에서는 "Other food / Other drink" 로만 바꾸므로 카드를 눌러도 반응하지 않음.
+        // 카드가 한 장씩 떨어져 놓여 있어, 사진을 누르면 의도치 않게 바뀌는 것으로 읽힘
+        if (isRouletteEnabled()) return;
 
         if (!areCardsReady() || performance.now() < suppressTapUntil) return;
 
@@ -1819,7 +1800,7 @@
 
     /* 태블릿까지는 스크롤 스토리텔링을 돌리고, 카드를 가로로 넘기는 모바일에서만 끔.
        (모바일은 events_viewport 가 스크롤 스냅 캐러셀이라 장을 겹쳐 놓으면 안 됨) */
-    const motionQuery = window.matchMedia('(min-width: 30.0625rem)');
+    const motionQuery = window.matchMedia('(min-width: 48rem)');
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
     const smoothStep = (value) => value * value * (3 - 2 * value);
@@ -1980,9 +1961,11 @@
     updateMode();
 })();
 
-/* 모바일 이벤트 캐러셀 페이저.
-   넘기는 동작 자체는 css 스크롤 스냅이 맡고, 여기서는 지금 보이는 장에 점을 맞추고
-   점을 누르면 그 장으로 스크롤만 시킨다. 태블릿 이상에서는 페이저가 감춰져 있어 눌릴 일이 없음 */
+/* 모바일 이벤트 캐러셀.
+   손가락으로 넘기는 건 css 스크롤 스냅이 맡고, 마우스로 끄는 건 아래에서 직접 받는다.
+   그 밖에 지금 보이는 장에 점을 맞추고, 점을 누르면 그 장으로 스크롤시킨다.
+   태블릿 이상에서는 세 장이 한 자리에 겹쳐 있어 가로로 넘칠 일이 없으므로
+   페이저가 눌릴 일도, 끌 것도 없음(끌기는 넘치는지 재서 걸러 냄) */
 (() => {
     const viewport = document.querySelector('.events_viewport');
     const pager = document.querySelector('[data-events-pager]');
@@ -1993,18 +1976,28 @@
 
     let syncFrame = 0;
 
-    function syncDots() {
-        syncFrame = 0;
+    // 카드 사이 간격 때문에 한 칸이 뷰포트 폭과 다름. 첫 장을 0 으로 두고 잰 각 장의 자리
+    function slideOrigin(index) {
+        return slides[index].offsetLeft - slides[0].offsetLeft;
+    }
 
-        // 카드 사이 간격 때문에 한 칸이 뷰포트 폭과 다르므로, 실제 위치가 가장 가까운 장을 고름.
-        // 가로로 넘기지 않는 폭에서는 스크롤이 0 이라 첫 장이 그대로 남음
-        const origin = slides[0].offsetLeft;
-        const position = viewport.scrollLeft + origin;
+    // 지금 스크롤 위치에서 가장 가까운 장.
+    // 가로로 넘기지 않는 폭에서는 스크롤이 0 이라 첫 장이 그대로 남음
+    function currentIndex() {
+        const position = viewport.scrollLeft;
         let current = 0;
 
         slides.forEach((slide, index) => {
-            if (Math.abs(slide.offsetLeft - position) < Math.abs(slides[current].offsetLeft - position)) current = index;
+            if (Math.abs(slideOrigin(index) - position) < Math.abs(slideOrigin(current) - position)) current = index;
         });
+
+        return current;
+    }
+
+    function syncDots() {
+        syncFrame = 0;
+
+        const current = currentIndex();
 
         dots.forEach((dot, index) => {
             if (index === current) dot.setAttribute('aria-current', 'true');
@@ -2020,17 +2013,124 @@
 
     dots.forEach((dot, index) => {
         dot.addEventListener('click', () => {
-            const target = slides[index];
+            if (!slides[index]) return;
 
-            if (!target) return;
-
-            viewport.scrollTo({ left: target.offsetLeft - slides[0].offsetLeft, behavior: 'smooth' });
+            viewport.scrollTo({ left: slideOrigin(index), behavior: 'smooth' });
         });
     });
 
     viewport.addEventListener('scroll', requestSync, { passive: true });
     window.addEventListener('resize', requestSync, { passive: true });
     syncDots();
+
+    /* ----- 끌어서 넘기기 -----
+       터치는 브라우저 기본 스크롤이 관성과 스냅까지 알아서 해 주므로 건드리지 않고 마우스일 때만 가로챈다.
+       끄는 동안에는 스크롤 스냅을 잠시 꺼야 한다. 켜 둔 채로 scrollLeft 를 직접 넣으면
+       브라우저가 매번 가까운 장으로 되돌려서 손을 따라오지 못함 */
+
+    // 이만큼 움직이기 전에는 누른 것으로 보고 끌기를 시작하지 않음
+    const dragThreshold = 6;
+    // 한 장 폭의 이만큼을 끌면 손을 떼는 순간 그 방향으로 한 장 넘어감
+    const flipRatio = 0.25;
+
+    let startX = 0;
+    let startScroll = 0;
+    let startIndex = 0;
+    let pointerDown = false;
+    let dragging = false;
+    let snapTimer = 0;
+    let snapDone = null;
+
+    function clearSnapWatch() {
+        window.clearTimeout(snapTimer);
+
+        if (!snapDone) return;
+
+        viewport.removeEventListener('scrollend', snapDone);
+        snapDone = null;
+    }
+
+    function releaseSnap() {
+        // 앞선 드래그가 걸어 둔 복구 예약이 남아 있으면 끄는 도중에 스냅이 켜져 버림
+        clearSnapWatch();
+        viewport.style.scrollSnapType = 'none';
+    }
+
+    // 스냅은 부드러운 스크롤이 끝난 뒤에 돌려놔야 함. 도중에 켜면 남은 거리를 건너뛰어 버림.
+    // scrollend 를 못 받는 브라우저를 위해 시간제한도 같이 걸어 둠
+    function restoreSnap() {
+        clearSnapWatch();
+
+        snapDone = () => {
+            clearSnapWatch();
+            viewport.style.scrollSnapType = '';
+        };
+
+        viewport.addEventListener('scrollend', snapDone);
+        snapTimer = window.setTimeout(snapDone, 700);
+    }
+
+    function endDrag() {
+        if (!pointerDown) return;
+
+        const wasDragging = dragging;
+
+        pointerDown = false;
+        dragging = false;
+        viewport.classList.remove('is_dragging');
+
+        if (!wasDragging) return;
+
+        // 끈 거리가 한 장의 1/4 을 넘으면 그 방향으로 한 장, 아니면 보던 장으로 되돌림.
+        // 가장 가까운 장을 고르지 않는 이유는 살짝만 튕겨도 넘어가는 느낌을 주기 위함
+        const moved = viewport.scrollLeft - startScroll;
+        const step = slideOrigin(1);
+        let target = startIndex;
+
+        if (step > 0 && Math.abs(moved) >= step * flipRatio) target = startIndex + Math.sign(moved);
+
+        target = Math.min(Math.max(target, 0), slides.length - 1);
+
+        viewport.scrollTo({ left: slideOrigin(target), behavior: 'smooth' });
+        restoreSnap();
+    }
+
+    viewport.addEventListener('pointerdown', (event) => {
+        if (event.pointerType !== 'mouse' || event.button !== 0) return;
+        // 가로로 넘치지 않는 폭(태블릿 이상)에서는 끌 것이 없음
+        if (viewport.scrollWidth <= viewport.clientWidth) return;
+
+        pointerDown = true;
+        dragging = false;
+        startX = event.clientX;
+        startScroll = viewport.scrollLeft;
+        startIndex = currentIndex();
+    });
+
+    // 커서가 상자 밖으로 나가도 계속 끌리도록 window 에 붙임
+    window.addEventListener('pointermove', (event) => {
+        if (!pointerDown) return;
+
+        const delta = event.clientX - startX;
+
+        if (!dragging) {
+            if (Math.abs(delta) < dragThreshold) return;
+
+            dragging = true;
+            viewport.classList.add('is_dragging');
+            releaseSnap();
+        }
+
+        viewport.scrollLeft = startScroll - delta;
+    });
+
+    window.addEventListener('pointerup', endDrag);
+    window.addEventListener('pointercancel', endDrag);
+
+    // 카드 안에 사진이 있어 끌면 브라우저 기본 이미지 드래그가 먼저 걸림
+    viewport.addEventListener('dragstart', (event) => {
+        if (viewport.scrollWidth > viewport.clientWidth) event.preventDefault();
+    });
 })();
 
 /* 인트로로 나갈 때의 전환은 common/page_transition.js 가 사이트 안의 모든 링크와 같은 방식으로 처리함 */
@@ -2042,6 +2142,8 @@
     if (!character || frames.length < 2) return;
 
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    // 캐릭터에 커서를 올리면 도는 연출이라 모바일 폭에서는 돌리지 않음
+    const mobileQuery = window.matchMedia('(max-width: 47.9375rem)');
     // 1 - 2 - 3 - 2 로 한 바퀴. 이어 붙으면 1-2-3-2-1-2-3-2… 가 되어 같은 장면이 겹치지 않음
     const order = [0, 1, 2, 1];
     const frameDuration = 200;
@@ -2066,7 +2168,7 @@
     }
 
     character.addEventListener('mouseenter', () => {
-        if (frameTimer || reducedMotionQuery.matches) return;
+        if (frameTimer || reducedMotionQuery.matches || mobileQuery.matches) return;
 
         showStep(0);
         frameTimer = window.setInterval(() => showStep(step + 1), frameDuration);
@@ -2410,7 +2512,7 @@
 
     if (!scroller) return;
 
-    const tabletQuery = window.matchMedia('(min-width: 30.0625rem) and (max-width: 48rem)');
+    const tabletQuery = window.matchMedia('(min-width: 48rem) and (max-width: 64rem)');
 
     // 사용자가 한 번이라도 밀었으면 그 위치를 존중함. 방향 전환(회전) 때만 다시 가운데로 둠
     let touched = false;
@@ -2463,6 +2565,8 @@
     let startScroll = 0;
     let dragging = false;
     let blockClick = false;
+    let snapTimer = 0;
+    let snapDone = null;
 
     function scrollable() {
         if (scroller.scrollWidth > scroller.clientWidth) return scroller;
@@ -2470,13 +2574,49 @@
         return null;
     }
 
+    function clearSnapWatch() {
+        window.clearTimeout(snapTimer);
+
+        if (!snapDone) return;
+
+        snapDone.target.removeEventListener('scrollend', snapDone);
+        snapDone = null;
+    }
+
+    /* 모바일 슬라이드에는 스크롤 스냅이 걸려 있어서, 끄는 동안 scrollLeft 를 직접 넣으면
+       브라우저가 매번 가까운 카드로 되돌려 손을 따라오지 못한다. 그래서 끄는 동안만 꺼 둠.
+       (스냅이 없는 태블릿 틀에서는 인라인 값만 붙었다 지워질 뿐 달라지는 게 없음) */
+    function releaseSnap(target) {
+        clearSnapWatch();
+        target.style.scrollSnapType = 'none';
+    }
+
+    // 되돌리는 건 스냅이 자리를 잡고 난 뒤라야 함. scrollend 를 못 받는 브라우저용 시간제한도 같이 검
+    function restoreSnap(target) {
+        clearSnapWatch();
+
+        snapDone = () => {
+            clearSnapWatch();
+            target.style.scrollSnapType = '';
+        };
+        snapDone.target = target;
+
+        target.addEventListener('scrollend', snapDone);
+        snapTimer = window.setTimeout(snapDone, 500);
+    }
+
     function endDrag() {
         if (!dragTarget) return;
+
+        const target = dragTarget;
 
         // 클릭 억제 여부는 pointerup 뒤에 오는 click 이 읽고 감
         blockClick = dragging;
         collage.classList.remove('is_dragging');
         dragTarget = null;
+
+        if (dragging) restoreSnap(target);
+
         dragging = false;
     }
 
@@ -2505,6 +2645,7 @@
 
             dragging = true;
             collage.classList.add('is_dragging');
+            releaseSnap(dragTarget);
         }
 
         // 드래그로 넘긴 것도 사용자가 민 것이므로 리사이즈 때 가운데로 되돌리지 않음

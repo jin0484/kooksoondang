@@ -263,8 +263,12 @@ section[id] {
   transition: transform 180ms ease, opacity 180ms ease;
 }
 
-.pill:hover {
-  transform: translateY(-0.15rem);
+/* hover 연출은 태블릿부터. 모바일은 커서가 없어서 뜻이 없고,
+   터치로 누르면 hover 상태가 손을 뗀 뒤에도 남아 눌린 채로 보임 */
+@media (min-width: 48rem) {
+  .pill:hover {
+    transform: translateY(-0.15rem);
+  }
 }
 
 .pill_ghost {
@@ -287,8 +291,10 @@ section[id] {
   transition: transform 180ms ease;
 }
 
-.btn_pill:hover {
-  transform: translateY(-0.15rem);
+@media (min-width: 48rem) {
+  .btn_pill:hover {
+    transform: translateY(-0.15rem);
+  }
 }
 
 .btn_pill_reset {
@@ -837,8 +843,12 @@ section[id] {
   padding-right: clamp(2rem, 4vw, 5rem);
 }
 
-.marquee:hover .marquee_track {
-  animation-play-state: paused;
+/* 태블릿부터만 세울 수 있음. 모바일에서 되살리면
+   위 prefers-reduced-motion 의 animation: none 보다 이 규칙이 세서 다시 움직여 버림 */
+@media (min-width: 48rem) {
+  .marquee:hover .marquee_track {
+    animation-play-state: paused;
+  }
 }
 
 /* 그룹 2개가 동일하므로 -50% 이동 시 이음매 없이 반복됨 */
@@ -1091,8 +1101,10 @@ section[id] {
   transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.history_item h3:hover::before {
-  transform: scaleX(1);
+@media (min-width: 48rem) {
+  .history_item h3:hover::before {
+    transform: scaleX(1);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1166,7 +1178,7 @@ section[id] {
   width: clamp(6rem, 7.5vw, 9.5rem);
 }
 
-@media (max-width: 48rem) {
+@media (max-width: 64rem) {
   main {
     --history-pairing-overlap: clamp(1.25rem, 7vw, 2.25rem);
   }
@@ -1270,7 +1282,7 @@ section[id] {
   scroll-margin-top: clamp(4.5rem, 6vw, 6rem);
 }
 
-@media (max-width: 48rem) {
+@media (max-width: 64rem) {
   .pairing--history-overlay {
     border-radius: 1.25rem 1.25rem 0 0;
     box-shadow: 0 -0.5rem 1.5rem rgba(14, 19, 38, 0.12);
@@ -1594,7 +1606,9 @@ section[id] {
   transform: translate(0, 0) scale(1);
 }
 
-@media (hover: hover) and (pointer: fine) {
+/* 마우스가 달린 기기여도 모바일 폭에서는 끔(min-width).
+   여기 규칙은 카드를 접시로 끌어다 놓는 데스크톱 판에서만 뜻이 있음 */
+@media (hover: hover) and (pointer: fine) and (min-width: 48rem) {
   .pairing_card {
     cursor: grab;
   }
@@ -1646,7 +1660,7 @@ section[id] {
   transform-origin: bottom center;
 }
 
-@media (min-width: 48.0625rem) {
+@media (min-width: 64.0625rem) {
   .pairing_drag {
     position: absolute;
     /* 화면(섹션) 오른쪽 끝에서 225px 떨어지도록 좌우 패딩(gutter)을 상쇄 */
@@ -2423,19 +2437,19 @@ section[id] {
 
 /* 스크롤 연출이 도는 폭(태블릿 이상)에서는 js 가 글자 농도를 직접 넣는다.
    연출이 꺼지는 모바일·모션 최소화에서만 흐린 상태로 굳지 않게 되돌림 */
-@media (max-width: 30rem),
+@media (max-width: 47.9375rem),
 (prefers-reduced-motion: reduce) {
   .event_reveal_char {
     opacity: 1 !important;
   }
 }
 
-/* ---------- hero: 태블릿 (<= 1024px) ---------- */
-/* hero 만 48rem 이 아니라 64rem 까지 태블릿 배치를 씀.
-   769~1024px(아이패드 세로 등) 은 데스크톱 규칙이 걸리는 구간인데, .hero_visual 이
-   좌측 패딩(180px)과 .hero_left 사이에 눌려 배경 도형(폭 106.25% 기준)은 작아지는 반면
-   캐릭터는 높이 90% 기준이라 오히려 커져서, 캐릭터가 도형보다 몇 배 큰 상태로 깨졌음.
-   그래서 캐릭터도 도형과 같은 기준(컨테이너 폭)으로 재서 둘의 비율을 폭과 무관하게 고정함 */
+/* ---------- hero: 태블릿 (768~1024px) ---------- */
+/* 데스크톱에서는 .hero_visual 이 좌측 패딩(180px)과 .hero_left 사이에 눌려
+   배경 도형(폭 106.25% 기준)은 작아지는 반면 캐릭터는 높이 90% 기준이라 오히려 커져서,
+   캐릭터가 도형보다 몇 배 큰 상태로 깨졌음.
+   그래서 캐릭터도 도형과 같은 기준(컨테이너 폭)으로 재서 둘의 비율을 폭과 무관하게 고정함.
+   hero 는 아래 태블릿 블록과 폭이 같지만, 이 캐릭터 보정만 따로 묶어 두려고 블록을 나눠 둠 */
 
 @media (max-width: 64rem) {
 
@@ -2444,7 +2458,8 @@ section[id] {
   .hero {
     height: auto;
     min-height: 32rem;
-    padding: 8.75rem 0 5.5rem 2.5rem;
+    /* 좌우 여백은 데스크톱과 같은 --gutter-x 를 씀(768px 에서 40px, 1024px 에서 53px) */
+    padding: 8.75rem 0 5.5rem var(--gutter-x);
   }
 
   /* 일러스트 틀 높이도 폭을 따라가야 캐릭터가 잘리지 않음. 768px 에서는 기존 높이(382px)와 같음 */
@@ -2525,16 +2540,28 @@ section[id] {
   }
 }
 
-/* ---------- tablet (<= 768px) ---------- */
-/* 768px 태블릿 시안 배치. 좌우 여백은 40px 로 통일하고,
-   데스크톱에서만 도는 연출(브랜드 스토리 고정, 이벤트 스크롤 스토리텔링, 카드 드래그)은
-   js 가 이미 이 폭에서 꺼 두므로 여기서는 배치만 다시 잡음 */
+/* ---------- tablet (768~1024px) ---------- */
+/* 768px 태블릿 시안 배치. 데스크톱에서만 도는 연출(브랜드 스토리 고정,
+   이벤트 스크롤 스토리텔링, 카드 드래그)은 js 가 이미 이 폭에서 꺼 두므로
+   여기서는 배치만 다시 잡음.
 
-@media (max-width: 48rem) {
+   시안은 768px 하나뿐인데 이 블록은 1024px 까지 쓰므로, 고정값을 그대로 두면
+   폭이 33% 넓어지는 동안 글자와 카드만 제자리라 화면이 헐거워 보인다.
+   그래서 크기값은 clamp(768 시안값, vw, 1024 상한) 꼴로 두어
+   768px 에서는 시안 그대로이고 1024px 까지 비례해서 커지게 함.
+   vw 계수는 "상한 / 1024" 로 잡아 1024px 에서 정확히 상한에 닿게 맞췄고,
+   768px 에서는 계산값이 시안값보다 작아 하한(시안값)이 그대로 유지된다 */
+
+@media (max-width: 64rem) {
   :root {
-    /* 태블릿에서는 카드가 원본 크기(248x368)로 보임. 결과 모달 복제본도 이 값을 씀 */
-    --pairing-card-w: 248px;
-    --pairing-card-h: 368px;
+    /* 태블릿 카드는 768px 에서 원본 크기(248x368), 1024px 에서 310x460.
+       두 변수의 vw 계수 비가 원본 비(248:368)와 같아야 카드가 안 찌그러짐.
+       결과 모달 복제본도 이 값을 씀 */
+    --pairing-card-w: clamp(248px, 30.27vw, 310px);
+    --pairing-card-h: clamp(368px, 44.92vw, 460px);
+    /* 카드 안쪽 여백. 술 카드 사진이 이 값만큼 음수 마진으로 카드 밖까지 나가야 해서
+       (아래 .pairing_card_drink .pairing_card_media) 양쪽이 같은 값을 봐야 함 */
+    --pairing-card-pad: clamp(10px, 1.17vw, 12px);
   }
 
   /* hero 는 위쪽 64rem 블록에서 처리함 */
@@ -2546,15 +2573,15 @@ section[id] {
   }
 
   .best_head {
-    padding: 0 2.5rem;
+    padding: 0 var(--gutter-x);
   }
 
   .best_head h2 {
-    font-size: 2.5rem;
+    font-size: clamp(2.5rem, 4.88vw, 3.125rem);
   }
 
   .best_head p {
-    font-size: 1.25rem;
+    font-size: clamp(1.25rem, 2.34vw, 1.5rem);
   }
 
   /* 콜라주는 화면보다 넓게(201%) 깔리는데, 예전에는 .best 의 overflow-x: hidden 으로
@@ -2597,19 +2624,20 @@ section[id] {
   /* ----- marquee ----- */
 
   .marquee {
-    padding: 3.75rem 0;
+    padding: clamp(3.75rem, 7.81vw, 5rem) 0;
   }
 
   .marquee_track {
-    min-height: 9rem;
+    min-height: clamp(9rem, 17.58vw, 11.25rem);
   }
 
+  /* 데스크톱 상한(6.875rem)에 이미 닿아 있어 더 키우지 않음 */
   .marquee p {
     font-size: 6.875rem;
   }
 
   .marquee img {
-    width: 7.25rem;
+    width: clamp(7.25rem, 12.5vw, 8rem);
   }
 
   /* ----- brand history ----- */
@@ -2628,7 +2656,7 @@ section[id] {
        기준점은 분리선 하단이므로 "분리선 높이(약 21vw) + 물방울 절반" 으로 잡아
        폭이 변해도 물방울 아래끝이 잔 윗면에 살짝 걸치게 함(데스크톱과 같은 겹침 비율) */
     --history-drip-rise: calc(21vw + 53px);
-    padding: var(--history-intro-rise) 2.5rem 5rem;
+    padding: var(--history-intro-rise) var(--gutter-x) 5rem;
   }
 
   /* 항목 사이 여백. 프레임 간 스크롤 거리는 여기에 항목 높이(사진 한 줄)가 더해진 값이라
@@ -2637,23 +2665,26 @@ section[id] {
     gap: calc(2.5rem + 200px);
   }
 
+  /* 데스크톱 상한(1.25rem)에 이미 닿아 있어 더 키우지 않음 */
   .history_period {
     font-size: 1.25rem;
   }
 
   .history_item h3 {
-    font-size: 2.75rem;
+    font-size: clamp(2.75rem, 5.47vw, 3.5rem);
   }
 
   .history_text {
-    font-size: 1.0625rem;
+    font-size: clamp(1.0625rem, 1.95vw, 1.25rem);
   }
 
   .history_points h4,
   .history_points ul {
-    font-size: 0.9375rem;
+    font-size: clamp(0.9375rem, 1.66vw, 1.0625rem);
   }
 
+  /* 장식 3종과 페트는 --history-deco-col(7.25rem) 안에 들어가야 모프 축이 맞으므로
+     열 폭과 함께 고정해 둠. 폭이 넓어져도 이 쪽 레일만 같은 크기로 남음 */
   .history_deco_circle {
     width: 3rem;
   }
@@ -2699,7 +2730,7 @@ section[id] {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 5rem 2.5rem;
+    padding: 5rem var(--gutter-x);
   }
 
   .pairing--history-overlay {
@@ -2722,7 +2753,7 @@ section[id] {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, var(--pairing-card-w)));
     justify-content: center;
-    gap: 0 clamp(1rem, 7.8vw, 60px);
+    gap: 0 clamp(1rem, 7.8vw, 80px);
     grid-template-areas:
       "head  head"
       "food  drink"
@@ -2737,11 +2768,11 @@ section[id] {
   }
 
   .pairing_head h2 {
-    font-size: 2.125rem;
+    font-size: clamp(2.125rem, 4.1vw, 2.625rem);
   }
 
   .pairing_head p {
-    font-size: 1.1875rem;
+    font-size: clamp(1.1875rem, 2.15vw, 1.375rem);
   }
 
   .pairing_lead_drag {
@@ -2784,17 +2815,17 @@ section[id] {
     height: auto;
     aspect-ratio: 248 / 368;
     gap: 0.75rem;
-    padding: 10px;
+    padding: var(--pairing-card-pad);
     /* 룰렛에서는 hover 로 들썩이지 않게 고정 */
     --pairing-card-hover-y: 0px;
   }
 
   .pairing_card_drink .pairing_card_media {
-    margin: -10px -10px 0;
+    margin: calc(-1 * var(--pairing-card-pad)) calc(-1 * var(--pairing-card-pad)) 0;
   }
 
   .pairing_card_label {
-    font-size: 1.1875rem;
+    font-size: clamp(1.1875rem, 2.15vw, 1.375rem);
     line-height: 1.25;
   }
 
@@ -2830,7 +2861,7 @@ section[id] {
     border-radius: 0.25rem 0.25rem 2rem 2rem;
     background: none;
     color: var(--makgeolli_light4);
-    font-size: 1.0625rem;
+    font-size: clamp(1.0625rem, 1.86vw, 1.1875rem);
     font-weight: 500;
     transition: background-color 180ms ease;
   }
@@ -2882,7 +2913,7 @@ section[id] {
     border-radius: 0.5rem;
     background: none;
     color: var(--makgeolli_light4);
-    font-size: 0.9375rem;
+    font-size: clamp(0.9375rem, 1.66vw, 1.0625rem);
     font-weight: 500;
     line-height: 1.3;
     text-align: left;
@@ -2903,7 +2934,7 @@ section[id] {
     margin-top: 3.75rem;
     padding: 0.75rem 2.75rem;
     background: var(--btn-reset);
-    font-size: 1.0625rem;
+    font-size: clamp(1.0625rem, 1.86vw, 1.1875rem);
   }
 
   /* ----- events ----- */
@@ -2911,7 +2942,7 @@ section[id] {
   /* 연출이 켜지면 섹션 여백은 데스크톱 규칙(padding: 0 var(--gutter-x))을 그대로 씀.
      아래 값은 연출이 꺼졌을 때(모바일·모션 최소화) 쓰이는 평범한 배치 */
   .events {
-    padding: 4rem 2.5rem;
+    padding: clamp(4rem, 7.81vw, 5rem) var(--gutter-x);
     margin-bottom: 4rem;
   }
 
@@ -2923,6 +2954,7 @@ section[id] {
     gap: 5rem;
   }
 
+  /* 데스크톱 상한(3rem)에 이미 닿아 있어 더 키우지 않음 */
   .events_head h2 {
     font-size: 3rem;
   }
@@ -2946,7 +2978,7 @@ section[id] {
       "number title"
       ".      list"
       "progress progress";
-    column-gap: 5.5rem;
+    column-gap: clamp(5.5rem, 11.45vw, 7.5rem);
     row-gap: 2rem;
   }
 
@@ -2969,7 +3001,7 @@ section[id] {
 
   .event_copy h3 {
     grid-area: title;
-    font-size: 1.5rem;
+    font-size: clamp(1.5rem, 2.73vw, 1.75rem);
   }
 
   .event_copy ul {
@@ -2980,7 +3012,7 @@ section[id] {
 
   .event_copy li {
     padding-left: 1.875rem;
-    font-size: 0.875rem;
+    font-size: clamp(0.875rem, 1.56vw, 1rem);
   }
 
   /* 연출이 꺼진 폭(모바일)에서는 진행 막대가 0 에 머무르므로
@@ -3022,7 +3054,7 @@ section[id] {
      object-fit: cover 라 원본이 잘려서 채워지고 비율은 안 깨짐.
      화면이 낮을 때는 잘리는 대신 줄어들도록 shrink 만 열어 둠 */
   .events.is_event_motion_ready .event_media {
-    flex: 0 1 458px;
+    flex: 0 1 clamp(458px, 55.86vw, 572px);
     align-self: stretch;
     width: 100%;
     height: auto;
@@ -3046,7 +3078,7 @@ section[id] {
       ".      list"
       "progress progress";
     grid-template-rows: auto auto minmax(0, 1fr);
-    column-gap: 5.5rem;
+    column-gap: clamp(5.5rem, 11.45vw, 7.5rem);
     row-gap: 1.5rem;
     align-content: stretch;
   }
@@ -3056,7 +3088,7 @@ section[id] {
   }
 
   .events.is_event_motion_ready .event_copy h3 {
-    font-size: 1.5rem;
+    font-size: clamp(1.5rem, 2.73vw, 1.75rem);
   }
 
   .events.is_event_motion_ready .event_copy ul {
@@ -3065,26 +3097,39 @@ section[id] {
 
   .events.is_event_motion_ready .event_copy li {
     padding-left: 1.875rem;
-    font-size: 0.875rem;
+    font-size: clamp(0.875rem, 1.56vw, 1rem);
   }
 }
 
-/* ---------- mobile (<= 480px) ---------- */
+/* ---------- mobile (360~767px) ---------- */
 /* 360px 모바일 시안 배치. 좌우 여백 16px.
-   태블릿 블록(48rem) 이 먼저 적용된 뒤 이 블록이 덮으므로, 달라지는 것만 적음 */
+   태블릿 블록(64rem) 이 먼저 적용된 뒤 이 블록이 덮으므로, 달라지는 것만 적음.
 
-@media (max-width: 30rem) {
+   시안은 360px 하나뿐인데 이 블록은 767px 까지 쓴다. 고정값을 그대로 두면
+   폭이 두 배로 넓어지는 동안 카드와 글자만 제자리라 화면이 텅 비어 보이고,
+   768px 로 넘어가는 순간 태블릿 값으로 크게 튄다.
+   그래서 크기값은 360px 에서 시안값, 767px 에서 태블릿(768px) 값이 되도록
+   두 점을 잇는 1차식 calc(고정분 + Nvw) 으로 두고 clamp 로 양끝을 물렸다.
+   덕분에 두 시안은 각자 폭에서 정확히 재현되고 그 사이는 매끄럽게 이어지며,
+   767 -> 768 경계에서 튀지 않는다 */
+
+@media (max-width: 47.9375rem) {
 
   /* ----- hero ----- */
 
   .hero {
-    min-height: 39.375rem;
-    padding: 12.5rem 0 6rem 1rem;
+    /* 360px 630px -> 767px 512px(태블릿 min-height). 폭이 넓어질수록 세로가 줄어드는
+       구간이라 vw 계수가 음수 */
+    min-height: clamp(32rem, calc(45.9rem - 29vw), 39.375rem);
+    /* 위 여백도 360px 200px -> 767px 140px 로 줄고, 좌 여백은 16px -> 40px 로 늘어남
+       (40px 은 768px 에서의 --gutter-x 값이라 경계에서 이어짐) */
+    padding: clamp(8.75rem, calc(15.82rem - 14.74vw), 12.5rem) 0 6rem clamp(1rem, calc(5.9vw - 5.23px), 2.5rem);
   }
 
-  /* 제목은 max-content 라 이 폭을 넘어가고, 설명 문구만 여기에 맞춰 접힘 */
+  /* 제목은 max-content 라 이 폭을 넘어가고, 설명 문구만 여기에 맞춰 접힘.
+     360px 160px -> 767px 320px(태블릿 .hero_left 폭) */
   .hero_left {
-    width: 10rem;
+    width: clamp(10rem, 41.72vw, 20rem);
   }
 
   .hero_body {
@@ -3096,17 +3141,17 @@ section[id] {
   }
 
   .hero_title .line {
-    font-size: 2.5rem;
+    font-size: clamp(2.5rem, 8.34vw, 4rem);
   }
 
   .hero_cup {
-    width: 3.25rem;
+    width: clamp(3.25rem, 10.69vw, 5.125rem);
     left: 22%;
     top: calc(40% + 2px);
   }
 
   .hero_desc {
-    font-size: 0.8125rem;
+    font-size: clamp(0.8125rem, 1.96vw, 0.9375rem);
     line-height: 1.54;
   }
 
@@ -3115,21 +3160,28 @@ section[id] {
     display: none;
   }
 
+  /* 360px 에서는 시안대로 224px 로 두고, 폭이 413px 을 넘으면 태블릿과 같은 식(54.2vw)을 씀.
+     여기서부터 아래 캐릭터 계산이 "부모 = 54.2vw" 를 전제로 하므로 두 식이 맞물려야 함 */
   .hero_visual {
-    width: 14rem;
+    width: max(14rem, 54.2vw);
   }
 
   /* 모바일 시안은 캐릭터가 도형보다 크게 잡혀 있음(태블릿 0.64 → 모바일 0.92).
-     64rem 블록과 같은 폭 기준을 쓰되 배율만 다르게 둠 */
+     그런데 이 배율은 부모 폭의 % 라 vw 로 보간할 수가 없어서(계산 기준이 서로 다름),
+     캐릭터 크기와 위치를 아예 절대 길이로 바꿔서 직접 잇는다.
+     끝값은 767px 에서 태블릿이 내는 실측 크기(캐릭터 449px, 프레임 449px)와 같게 맞춰
+     768px 로 넘어갈 때 크기가 튀지 않게 했다.
+     세로 위치(translateY)도 % 는 자기 높이 기준이라 같은 이유로 px 로 환산해 이었음 */
   .hero_visual .hero_character {
-    left: -10%;
-    width: 155.24%;
-    transform: translateY(-35.79%);
+    left: min(0px, calc(-2.6375rem + 5.5vw));
+    width: clamp(21.73rem, calc(14.34rem + 28.64vw), 28.07rem);
+    transform: translateY(clamp(-186.9px, calc(-2.12rem - 19.94vw), -116.3px));
   }
 
+  /* 프레임 SVG 는 2000x2000 정사각이라 캐릭터 PNG(1588x1484) 와 보정값이 조금 다름 */
   .hero_visual .hero_character_frame {
-    width: 155.15%;
-    transform: translateY(-33.86%);
+    width: clamp(21.72rem, calc(14.33rem + 28.62vw), 28.04rem);
+    transform: translateY(clamp(-192.3px, calc(-1.9rem - 21.1vw), -117.6px));
   }
 
   /* ----- best ----- */
@@ -3139,38 +3191,44 @@ section[id] {
   }
 
   .best_inner {
-    gap: 1.625rem;
+    gap: clamp(1.625rem, calc(19.17vw - 2.69rem), 6.5rem);
   }
 
   .best_head {
-    padding: 0 1rem;
+    padding: 0 clamp(1rem, calc(5.9vw - 5.23px), 2.5rem);
   }
 
   .best_head h2 {
-    font-size: 1.5rem;
+    font-size: clamp(1.5rem, calc(0.62rem + 3.93vw), 2.5rem);
   }
 
   .best_head p {
-    font-size: 0.875rem;
+    font-size: clamp(0.875rem, calc(0.54rem + 1.47vw), 1.25rem);
   }
 
-  /* 모바일은 .best_collage 자체가 스크롤러라 태블릿 틀이 겹치면 스크롤이 이중이 됨 */
+  /* 태블릿 스크롤 틀이 겹치면 안쪽 줄과 스크롤이 이중이 됨 */
   .best_collage_scroll {
     display: contents;
   }
 
-  /* 콜라주 대신 옆으로 넘겨 보는 카드 줄 */
+  /* 흩뿌린 콜라주 대신 옆으로 넘겨 보는 슬라이드.
+     한 장이 화면의 약 58% 를 차지하고 다음 장이 오른쪽에 걸쳐 보여서
+     "더 있다"는 걸 눈으로 알 수 있게 함.
+     손가락으로 넘기는 건 브라우저 기본 스크롤 + 스냅이 맡고,
+     마우스로 끄는 건 main.js 의 콜라주 끌기가 받아 줌(넘칠 때만 걸림) */
   .best_collage {
     align-self: stretch;
     display: flex;
     gap: 0.5rem;
     width: 100%;
     margin: 0;
-    padding: 0 1rem;
+    padding: 0 clamp(1rem, calc(5.9vw - 5.23px), 2.5rem);
     aspect-ratio: auto;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scroll-snap-type: x mandatory;
+    /* 스냅이 멈출 때 카드 왼쪽이 좌우 여백 선에 딱 맞도록 */
+    scroll-padding-inline: clamp(1rem, calc(5.9vw - 5.23px), 2.5rem);
     scrollbar-width: none;
   }
 
@@ -3178,25 +3236,42 @@ section[id] {
     display: none;
   }
 
+  /* position: relative 가 꼭 필요함. 기본값인 static 이면 아래 라벨(absolute)이
+     .best_collage 를 기준으로 잡혀 세 장의 라벨이 한자리에 겹쳐 버린다.
+     container-type 은 라벨 크기를 화면이 아니라 카드 폭(cqw)에 묶으려고 켬 */
   .best_card {
-    position: static;
-    flex: 0 0 12.75rem;
-    width: 12.75rem;
+    position: relative;
+    /* 데스크톱 콜라주는 카드마다 left/top 으로 자리를 흩뿌려 놓는데(absolute),
+       relative 로 바꾸면 그 값이 상대 오프셋으로 되살아나 줄에서 밀려남. 여기서 지움 */
+    inset: auto;
+    container-type: inline-size;
+    flex: 0 0 min(58vw, 20rem);
+    width: min(58vw, 20rem);
+    min-width: 0;
     transform: none;
-    scroll-snap-align: center;
+    scroll-snap-align: start;
     box-shadow: none;
   }
 
+  /* 카드보다 긴 줄은 카드가 잘라 내는 게 원래 디자인(.best_card 의 overflow: hidden).
+     기본값인 width: 90% 로 두면 그 안에서 한 번 더 접혀 줄 수가 달라지므로,
+     줄바꿈은 마크업의 <br> 만 따르게 하고 폭은 글자 길이 그대로 둠 */
+  .best_card_label {
+    width: max-content;
+    white-space: nowrap;
+  }
+
+  /* 카드 폭 대비 비율은 기존 값을 그대로 옮긴 것(카드 213px 에서 46/40/29px) */
   .best_card_bekseju .best_card_label {
-    font-size: 44px;
+    font-size: 21.5cqw;
   }
 
   .best_card_prebiotics .best_card_label {
-    font-size: 38px;
+    font-size: 18.6cqw;
   }
 
   .best_card_banana .best_card_label {
-    font-size: 28px;
+    font-size: 13.7cqw;
   }
 
   /* 흩어 놓은 장식은 콜라주 배치에서만 의미가 있음 */
@@ -3207,19 +3282,19 @@ section[id] {
   /* ----- marquee ----- */
 
   .marquee {
-    padding: 2.5rem 0;
+    padding: clamp(2.5rem, calc(1.39rem + 4.91vw), 3.75rem) 0;
   }
 
   .marquee_track {
-    min-height: 4.5rem;
+    min-height: clamp(4.5rem, calc(0.52rem + 17.69vw), 9rem);
   }
 
   .marquee p {
-    font-size: 3rem;
+    font-size: clamp(3rem, calc(15.23vw - 0.43rem), 6.875rem);
   }
 
   .marquee img {
-    width: 3.25rem;
+    width: clamp(3.25rem, calc(15.73vw - 0.29rem), 7.25rem);
   }
 
   /* ----- brand history ----- */
@@ -3228,11 +3303,13 @@ section[id] {
      덮으며 올라오다 만 채로 다음 섹션이 따라와 버리므로 평범하게 이어지게 둠 */
   .history {
     position: static;
-    padding: 2.5rem 1rem 3rem;
+    padding: 2.5rem clamp(1rem, calc(5.9vw - 5.23px), 2.5rem) 3rem;
   }
 
+  /* 태블릿은 모프가 프레임 사이를 넘어가는 스크롤 거리(+200px)가 필요해서 간격이 크지만,
+     모바일은 모프 자체가 꺼져 있어 그만큼 벌릴 이유가 없음. 폭에 맞춰 완만하게만 늘림 */
   .history_list {
-    gap: 3rem;
+    gap: clamp(3rem, calc(0.35rem + 11.79vw), 6rem);
   }
 
   /* 장식 아이콘과 Key Points 는 시안에 없음. 본문은 한 단으로 펴짐.
@@ -3246,7 +3323,7 @@ section[id] {
 
   .history_item {
     grid-template-columns: minmax(0, 1fr);
-    row-gap: 2rem;
+    row-gap: clamp(2rem, calc(0.67rem + 5.9vw), 3.5rem);
   }
 
   .history_item article,
@@ -3275,177 +3352,175 @@ section[id] {
   }
 
   .history_period {
-    font-size: 0.875rem;
+    font-size: clamp(0.875rem, calc(0.54rem + 1.47vw), 1.25rem);
   }
 
   .history_item h3 {
-    font-size: 1.625rem;
+    font-size: clamp(1.625rem, calc(0.63rem + 4.42vw), 2.75rem);
   }
 
   .history_text {
-    font-size: 0.875rem;
+    font-size: clamp(0.875rem, calc(0.71rem + 0.74vw), 1.0625rem);
     line-height: 1.45;
   }
 
-  /* ----- pairing (deck) ----- */
+  /* ----- pairing (roulette) ----- */
+
+  /* 태블릿과 같은 룰렛판(카드 두 장 + Other food/drink + 확인 버튼)을 그대로 씀.
+     배치 규칙은 위 태블릿 블록이 이미 잡아 두었으므로 여기서는 치수만 줄인다.
+
+     게임 한 벌이 스크롤 없이 한 화면에 들어와야 해서 카드를 폭과 높이 두 쪽에서 다 잰다.
+     - 폭: 좌우 여백과 두 열 사이 간격을 뺀 나머지의 절반
+     - 높이: 한 화면에서 카드 말고 세로로 자리를 먹는 것들(--pairing-chrome)을 뺀 나머지
+     둘 중 작은 쪽을 쓰고, 태블릿 원본(248px)보다 커지지는 않게 상한을 둔다.
+     vh 가 아니라 svh 를 쓰는 이유: vh 는 주소창이 걷힌 큰 화면 기준이라
+     주소창이 나와 있을 때 계산보다 실제 화면이 낮아져 확인 버튼이 잘린다 */
+  :root {
+    --pairing-gutter: clamp(1rem, calc(5.9vw - 5.23px), 2.5rem);
+    --pairing-col-gap: clamp(0.75rem, 3.13vw, 1.5rem);
+    /* 위아래 여백 + 제목 두 줄 + 교체 버튼 + 확인 버튼이 세로로 먹는 자리의 합.
+       폭이 넓어지면 이것들의 글자도 커져서 360px 에서 298px, 767px 에서 313px 로 늘어난다.
+       그중 큰 쪽에 여유를 얹은 20rem 에, 아래 .pairing 이 위아래로 50px 씩 더 벌린 만큼(100px)을 더함.
+       좁은 화면에서는 어차피 폭 쪽이 먼저 걸려 이 값이 커도 카드가 작아지지 않는다 */
+    --pairing-chrome: calc(20rem + 100px);
+    --pairing-card-w: clamp(7.5rem,
+        min(calc((100vw - 2 * var(--pairing-gutter) - var(--pairing-col-gap)) / 2),
+          calc((100svh - var(--pairing-chrome)) * 248 / 368)),
+        248px);
+    --pairing-card-h: calc(var(--pairing-card-w) * 368 / 248);
+    /* 카드 안쪽 여백은 카드가 줄어든 만큼 같이 줄어야 사진 여백 비율이 유지됨(태블릿 248px 에서 10px) */
+    --pairing-card-pad: calc(var(--pairing-card-w) * 10 / 248);
+  }
 
   /* 태블릿에서 넣은 min-height(한 화면 채우기)는 여기서 되돌림.
-     모바일은 카드가 한 줄로 줄어 내용이 613px 밖에 안 되는데,
-     그대로 두면 확인 버튼 아래로 어두운 배경이 300px 가까이 남는다 */
+     카드가 화면에 맞춰 줄어 내용이 이미 한 화면이라 더 늘릴 이유가 없음.
+     위아래 여백은 기본 2.5rem(40px)에서 50px 씩 더 벌린 값(90px).
+     늘린 만큼은 --pairing-chrome 에도 더해 두어 카드가 그만큼 줄고 한 화면이 유지됨 */
   .pairing {
     min-height: auto;
-    padding: 5.625rem 1rem 5.375rem;
+    padding: 5.625rem var(--pairing-gutter);
   }
 
-  /* 태블릿에서 100px 더 끌어올린 겹침도 되돌림.
-     그 100px 는 태블릿 padding-top 이 같이 상쇄해 주는 값인데,
-     모바일은 위 규칙이 padding 을 새로 잡아서 상쇄분이 사라진다.
-     그대로 두면 brand story 마지막 항목을 80px 잡아먹음 */
+  /* 데스크톱·태블릿에서는 이 섹션이 brand story 를 덮으며 올라오지만(음수 margin-top),
+     모바일에서는 그 겹침을 없애고 앞 섹션 아래에 그냥 이어 붙인다.
+     태블릿이 얹는 추가 120px 까지 한 번에 되돌리려고 0 으로 못박음.
+     윗변의 완만한 아치와 그림자는 섹션 생김새라 그대로 둠 */
   .pairing--history-overlay {
-    margin-top: calc(-1 * var(--history-pairing-overlap));
+    margin-top: 0;
   }
 
-  /* 카드 줄은 가운데 300px 만 쓰고, 확인 버튼만 좌우 여백까지 다 씀 */
+  /* 열 폭은 --pairing-card-w 를 쓰되, % 로 한 번 더 눌러 둠.
+     --pairing-card-w 안의 100vw 는 스크롤바 폭까지 포함해서 재므로
+     스크롤바가 있는 환경에서는 그 폭만큼 두 열이 넘칠 수 있음.
+     % 는 그리드 상자의 실제 안쪽 폭 기준이라 그런 오차가 없다 */
   .pairing_inner {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    justify-content: stretch;
-    gap: 0 0.75rem;
-  }
-
-  .pairing_food {
-    justify-self: end;
-  }
-
-  .pairing_drink {
-    justify-self: start;
+    grid-template-columns: repeat(2, minmax(0,
+          min(var(--pairing-card-w), calc((100% - var(--pairing-col-gap)) / 2))));
+    gap: 0 var(--pairing-col-gap);
   }
 
   .pairing_head {
-    margin-bottom: 2.4375rem;
+    margin-bottom: 1.5rem;
   }
 
+  /* 제목이 앉는 칸은 카드 두 장 + 사이 간격 만큼이라, 카드가 좁아지면 제목도 같이 좁아진다.
+     화면 폭만 보고 크기를 정하면 좁은 칸에서 두 줄로 접히고, 그만큼 세로가 더 필요해져
+     카드가 또 좁아지는 악순환이 생김. 그래서 카드 폭에도 걸어 한 줄을 유지시킴
+     (카드 148px 에서 28px. "What's on My Plate?" 가 한 줄에 들어가는 비율) */
   .pairing_head h2 {
-    font-size: 1.75rem;
+    font-size: min(clamp(1.75rem, calc(1.42rem + 1.47vw), 2.125rem), calc(var(--pairing-card-w) * 0.19));
   }
 
   .pairing_head p {
-    font-size: 1rem;
+    font-size: min(clamp(1rem, calc(0.83rem + 0.74vw), 1.1875rem), calc(var(--pairing-card-w) * 0.108));
   }
 
-  /* 남은 카드가 뒤에 겹쳐 보이는 카드 뭉치. 앞장을 누르면 다음 장이 올라옴 */
-  .pairing_row {
-    position: relative;
-    width: 9rem;
-    aspect-ratio: 248 / 368;
+  /* 카드 안쪽 여백과 사진이 밖으로 나가는 양은 태블릿 규칙이 --pairing-card-pad 로 잡아 주므로
+     여기서는 위 :root 의 변수값만 바꿔 두면 됨 */
+
+  .pairing_card {
+    gap: 0.5rem;
   }
 
-  .pairing_row .pairing_card,
-  .pairing_row .pairing_card.is_pairing_roulette_active {
-    display: flex;
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    aspect-ratio: auto;
-    gap: 0.375rem;
-    padding: 6px;
-    cursor: pointer;
-  }
-
-  /* 뒷장은 앞장 뒤에 부채처럼 깔림. 그 밖의 장은 겹쳐 두기만 하고 감춤 */
-  .pairing_row .pairing_card {
-    z-index: 0;
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .pairing_row .pairing_card.is_pairing_roulette_active {
-    z-index: 3;
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  .pairing_row .pairing_card.is_pairing_roulette_next {
-    z-index: 2;
-    opacity: 1;
-  }
-
-  .pairing_row .pairing_card.is_pairing_roulette_next2 {
-    z-index: 1;
-    opacity: 1;
-  }
-
-  .pairing_food .pairing_card.is_pairing_roulette_active {
-    transform: rotate(-2deg);
-  }
-
-  .pairing_food .pairing_card.is_pairing_roulette_next {
-    transform: translate(3px, -5px) rotate(3deg);
-  }
-
-  .pairing_food .pairing_card.is_pairing_roulette_next2 {
-    transform: translate(6px, -10px) rotate(6deg);
-  }
-
-  .pairing_drink .pairing_card.is_pairing_roulette_active {
-    transform: rotate(1deg);
-  }
-
-  .pairing_drink .pairing_card.is_pairing_roulette_next {
-    transform: translate(5px, 5px) rotate(4deg);
-  }
-
-  .pairing_drink .pairing_card.is_pairing_roulette_next2 {
-    transform: translate(10px, 10px) rotate(7deg);
-  }
-
-  .pairing_card_drink .pairing_card_media {
-    margin: -6px -6px 0;
-  }
-
+  /* 라벨도 카드가 줄어든 만큼 같이 줄어야 두 줄이 카드 밖으로 넘치지 않음 */
   .pairing_card_label {
-    font-size: 0.8125rem;
+    font-size: clamp(0.75rem, calc(var(--pairing-card-w) * 19 / 248), 1.1875rem);
   }
 
-  /* 넘기기 버튼 대신 카드를 직접 누름 */
-  .pairing_roulette_swaps {
-    display: none;
+  /* 교체 버튼이 앉는 칸도 카드 폭만큼 좁아졌으므로 좌우 들여쓰기를 줄임 */
+  .pairing_swap_field {
+    margin: 0.75rem 0.25rem 0;
   }
 
-  .pairing_check_short {
-    display: none;
+  .pairing_swap {
+    gap: 0.375rem;
+    min-height: 2.5rem;
+    padding: 0.375rem 0.75rem;
+    font-size: clamp(0.8125rem, calc(0.62rem + 0.98vw), 1.0625rem);
   }
 
-  .pairing_check_long {
-    display: inline;
+  .pairing_swap img {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
+  /* 목록은 버튼 위로 열리는데, 화면이 낮으면 제목까지 덮고 위로 넘침 */
+  .pairing_swap_menu {
+    max-height: min(19rem, 45svh);
+  }
+
+  .pairing_swap_option {
+    padding: 0.5rem 0.625rem;
+    font-size: clamp(0.8125rem, calc(0.62rem + 0.98vw), 0.9375rem);
   }
 
   .pairing_roulette_check {
-    justify-self: stretch;
-    margin-top: 3.6875rem;
-    padding: 0.9375rem 1rem;
-    border-radius: 0.25rem 0.25rem 1.75rem 1.75rem;
-    font-size: 1.0625rem;
-    font-weight: 700;
+    margin-top: 1.5rem;
+    padding: 0.75rem 1.75rem;
+    font-size: clamp(0.9375rem, calc(0.72rem + 0.98vw), 1.0625rem);
+  }
+
+  /* 결과 모달의 카드 복제본도 --pairing-card-w 를 따라오는데, 대화상자가 그리드 칸이라
+     지정 폭(width)보다 내용 최소폭이 우선한다. 그래서 두 장이 안 들어가면
+     대화상자가 통째로 화면 밖으로 밀려남. 여백과 배율을 줄여 360px 에서도 들어오게 맞춤 */
+  .pairing_result_dialog {
+    padding: 1.5rem;
+  }
+
+  .pairing_result_cards {
+    --result-card-scale: 0.78;
+    gap: 0.75rem;
+  }
+
+  /* 복제본은 "원래 크기로 그린 뒤 wrapper 크기만큼 scale 로 줄이는" 구조다.
+     그런데 위 룰렛 규칙의 width: 100% 가 여기까지 걸리면, 이미 배율이 반영된
+     wrapper 폭을 100% 로 잡고 그 위에 scale 이 또 걸려 카드가 두 번 줄어든다.
+     줄어든 카드는 transform-origin: top left 라 wrapper 왼쪽 위에 붙어서
+     두 장이 가운데가 아니라 왼쪽으로 쏠려 보였음. 원래 크기를 돌려줘야 wrapper 에 딱 맞음 */
+  .pairing_result_card .pairing_card {
+    width: var(--pairing-card-w);
+    height: var(--pairing-card-h);
   }
 
   /* ----- events ----- */
 
   .events,
   .events.is_event_motion_ready {
-    padding: 3rem 1rem 4.75rem;
+    padding: 3rem clamp(1rem, calc(5.9vw - 5.23px), 2.5rem) 4.75rem;
     margin-bottom: 0;
   }
 
   .events_inner {
-    gap: 1.375rem;
+    gap: clamp(1.375rem, calc(6.39vw - 1px), 3rem);
   }
 
   .events_head h2 {
-    font-size: 1.75rem;
+    font-size: clamp(1.75rem, calc(0.64rem + 4.91vw), 3rem);
   }
 
-  /* 한 장씩 옆으로 넘겨 보는 캐러셀. 넘기기는 스크롤 스냅이 맡고 js 는 점만 맞춤 */
+  /* 한 장씩 옆으로 넘겨 보는 캐러셀. 손가락으로 넘기는 건 스크롤 스냅이 맡고,
+     마우스로 끄는 건 main.js 가 받아서 스냅을 잠시 끄고 직접 밀어 줌.
+     js 는 그 밖에 지금 보이는 장에 점을 맞추는 일도 함 */
   .events_viewport {
     display: flex;
     flex-direction: row;
@@ -3454,16 +3529,27 @@ section[id] {
     overscroll-behavior-x: contain;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
+    /* 스크롤바를 숨겨 놔서 끌 수 있다는 걸 커서로만 알릴 수 있음 */
+    cursor: grab;
   }
 
   .events_viewport::-webkit-scrollbar {
     display: none;
   }
 
+  .events_viewport.is_dragging {
+    cursor: grabbing;
+  }
+
+  /* 끄는 동안 카드 글자가 통째로 선택되며 파랗게 반전되는 걸 막음 */
+  .events_viewport.is_dragging * {
+    user-select: none;
+  }
+
   .event_card {
     flex: 0 0 100%;
     width: 100%;
-    gap: 1.625rem;
+    gap: clamp(1.625rem, calc(0.85rem + 3.44vw), 2.5rem);
     scroll-snap-align: start;
   }
 
@@ -3479,11 +3565,11 @@ section[id] {
 
   .event_copy {
     grid-template-areas: "number title";
-    column-gap: 2.25rem;
+    column-gap: clamp(2.25rem, calc(12.78vw - 10px), 5.5rem);
   }
 
   .event_copy h3 {
-    font-size: 1.125rem;
+    font-size: clamp(1.125rem, calc(0.79rem + 1.47vw), 1.5rem);
   }
 
   .events_pager {
