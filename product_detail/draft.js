@@ -1386,6 +1386,9 @@ const halo =
             transparent:
                 true,
 
+            opacity:
+                0.2,
+
             depthWrite:
                 false,
 
@@ -2184,6 +2187,20 @@ function tick() {
         clock
             .getElapsedTime();
 
+    const isDesignPositionLocked =
+        window.scrollY >=
+        scrollPoints.design;
+
+    const designScrollOffset =
+        Math.max(
+            0,
+            window.scrollY -
+            scrollPoints.design
+        );
+
+    const designPinDropPx =
+        300;
+
 
     /* =====================================================
        목표 위치 / 회전을 부드럽게 따라가기
@@ -2199,6 +2216,15 @@ function tick() {
                 current[key]
             ) *
             LERP;
+
+    }
+
+    if (isDesignPositionLocked) {
+
+        Object.assign(
+            current,
+            target
+        );
 
     }
 
@@ -2232,12 +2258,31 @@ function tick() {
     */
 
     product.position.y =
-        current.posY +
-        Math.sin(
-            time *
-            0.7
-        ) *
-        0.018;
+        isDesignPositionLocked
+            ? current.posY +
+            (
+                (
+                    designScrollOffset -
+                    designPinDropPx
+                ) /
+                window.innerHeight
+            ) *
+            (
+                2 *
+                Math.tan(
+                    THREE.MathUtils.degToRad(
+                        camera.fov /
+                        2
+                    )
+                ) *
+                current.camZ
+            )
+            : current.posY +
+            Math.sin(
+                time *
+                0.7
+            ) *
+            0.018;
 
 
     /* =====================================================

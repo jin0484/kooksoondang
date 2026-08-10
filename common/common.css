@@ -509,15 +509,15 @@ html.lenis body {
     position: fixed;
     z-index: 40;
     isolation: isolate;
-    left: 0;
+    right: 0;
     top: calc(50% + 300px);
-    transform: translate(-100%, -50%);
+    transform: translate(100%, -50%);
     transition: transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
     display: flex;
     align-items: center;
     padding: 1rem 0.75rem;
     background: var(--side-nav-surface);
-    border-radius: 0 var(--side-nav-radius) var(--side-nav-radius) 0;
+    border-radius: var(--side-nav-radius) 0 0 var(--side-nav-radius);
 }
 
 .side_nav:hover,
@@ -533,13 +533,13 @@ html.lenis body {
     position: absolute;
     z-index: 0;
     top: 50%;
-    left: calc(100% - 1px);
+    right: calc(100% - 1px);
     width: var(--side-nav-handle-width);
     height: var(--side-nav-handle-height);
     transform: translateY(-50%);
     pointer-events: auto;
     background: var(--side-nav-surface);
-    border-radius: 0 var(--side-nav-handle-radius) var(--side-nav-handle-radius) 0;
+    border-radius: var(--side-nav-handle-radius) 0 0 var(--side-nav-handle-radius);
 
     display: flex;
     align-items: center;
@@ -559,6 +559,8 @@ html.lenis body {
     display: flex;
     flex-direction: column;
     gap: 0.7rem;
+    transform: scale(0.9);
+    transform-origin: center;
 }
 
 .side_nav li a {
