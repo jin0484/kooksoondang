@@ -1113,6 +1113,21 @@ section {
 
 
 /* =========================================================
+   FOOTER CLEARANCE
+
+   The shared footer wave is translated upward by 18.4% of
+   its 540 / 1920 aspect-ratio height (5.175vw).  Reserve that
+   visual space here so it does not cover the final product card,
+   and keep the footer above the fixed Three.js canvas.
+========================================================= */
+
+.site_footer {
+    margin-top: calc(5.175vw + 1px);
+    z-index: 3;
+}
+
+
+/* =========================================================
    SCROLL HINT
 ========================================================= */
 

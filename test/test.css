@@ -423,6 +423,15 @@ body {
     stroke-dashoffset: 1;
 }
 
+.intro_bubble_text {
+    fill: var(--bekseju_darker_warm, #272625);
+    font-family: var(--font-ROH_HOE-CHAN, serif);
+    font-size: 14.3px;
+    font-weight: 500;
+    letter-spacing: -0.04em;
+    opacity: 0;
+}
+
 /* 할머니가 다 걸어와 멈춘 뒤에 그려지기 시작함
    (제목 시작 시각 + 걷는 시간). 획 그리는 방식은 잔 그림과 같음 */
 .intro_bubble.is_draw_running path {
@@ -430,8 +439,26 @@ body {
         calc(var(--intro-pour-delay) + var(--walker-walk)) forwards;
 }
 
+.intro_bubble.is_draw_running .intro_bubble_text {
+    animation: intro_bubble_text_in 280ms ease-out
+        calc(var(--intro-pour-delay) + var(--walker-walk) + 900ms) forwards;
+}
+
+@keyframes intro_bubble_text_in {
+    from {
+        opacity: 0;
+        transform: translateY(3px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
-    .intro_bubble path {
+    .intro_bubble path,
+    .intro_bubble_text {
         animation: none;
         opacity: 1;
         stroke-dashoffset: 0;
