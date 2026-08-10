@@ -30,7 +30,7 @@
   <meta property="og:image" content="https://jin0484.github.io/kooksoondang/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <title>Products</title>
+  <title>Products1</title>
   <link rel="stylesheet" href="../common/reset.css">
   <link rel="stylesheet" href="../common/common.css">
   <!-- 페이지 전환 덮개. 첫 프레임부터 덮여 있어야 하므로 다른 스타일보다 먼저 읽어 둠 -->
@@ -39,10 +39,22 @@
   <link rel="stylesheet"
     href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
   <link rel="stylesheet" href="products.css">
+  <!-- Lenis -->
   <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js" defer></script>
+
+  <!-- GSAP -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+
+  <!-- GSAP ScrollTrigger -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
+
+  <!-- Common -->
+  <script src="../common/page_transition.js" defer></script>
   <script src="../common/page_transition.js" defer></script>
   <script src="../common/common.js" defer></script>
-  <script src="products.js" defer></script>
+
+  <!-- Products -->
+  <script src="./products.js" defer></script>
 </head>
 
 <body>
@@ -82,278 +94,607 @@
 
     <!-- ---------- Products Hero ---------- -->
     <section class="products_hero" id="products_hero" aria-labelledby="products_hero_title">
+
       <div class="products_hero_inner">
         <h1 class="products_hero_title" id="products_hero_title">
           <span>KOREAN TRADITIONAL</span>
           <span>HERBAL RICE WINE</span>
         </h1>
       </div>
+
       <div class="products_hero_stage" aria-hidden="true">
+
+        <img class="hero_splash" src="./products_asset/img/splash.png" alt="">
+
+        <img class="hero_bottle hero_bottle_rice" src="./products_asset/img/rice_makgeolli.png" alt="">
+
+        <img class="hero_bottle hero_bottle_draft" src="./products_asset/img/draft_makgeolli.png" alt="">
+
+        <img class="hero_bottle hero_bottle_prebiotics" src="./products_asset/img/1000_makgeolli.png" alt="">
+
+        <img class="hero_bottle hero_bottle_strawberry" src="./products_asset/img/strawberry_makgeolli.png" alt="">
+
         <img class="hero_bottle hero_bottle_center" src="../asset/img/bekseju_bottle.png" alt="">
-        <img class="hero_bottle hero_bottle_rice" src="products_asset/img/rice_makgeolli.png" alt="">
-        <img class="hero_bottle hero_bottle_draft" src="products_asset/img/draft_makgeolli.png" alt="">
-        <img class="hero_bottle hero_bottle_prebiotics" src="products_asset/img/1000_makgeolli.png" alt="">
-        <img class="hero_bottle hero_bottle_strawberry" src="products_asset/img/strawberry_makgeolli.png" alt="">
+
       </div>
+
+      <!-- 스크롤 전환 시 검정 Fade -->
+      <div class="products_hero_dim" aria-hidden="true"></div>
+
     </section>
 
-    <!-- ---------- Taste / Experience Filter ---------- -->
-    <section class="experience_filter" id="experience_filter" aria-labelledby="experience_filter_title">
-      <div class="products_container">
-        <h2 class="experience_filter_title" id="experience_filter_title">What are you craving today?</h2>
 
-        <form class="craving_search" role="search" data-craving-search>
-          <label class="a11y_hidden" for="craving_search_input">Search products</label>
-          <input class="craving_search_input" id="craving_search_input" type="search" placeholder="What about &ldquo;Makgeolli&rdquo;?"
-            autocomplete="off" data-craving-input>
-          <button class="craving_search_button" type="submit" aria-label="Search products">
-            <span class="craving_search_icon" aria-hidden="true"></span>
-          </button>
-        </form>
+    <!-- =====================================================
+       Hero 위로 덮여 올라오는 콘텐츠
+  ====================================================== -->
 
-        <ul class="experience_tags" data-experience-tags>
-          <li><button class="experience_tag" type="button" aria-pressed="false" data-experience="vegan">#Vegan</button></li>
-          <li><button class="experience_tag" type="button" aria-pressed="false" data-experience="beginner">#Beginner</button></li>
-          <li><button class="experience_tag" type="button" aria-pressed="false" data-experience="intermediate">#Intermediate</button></li>
-          <li><button class="experience_tag" type="button" aria-pressed="false" data-experience="advanced">#Advanced</button></li>
-        </ul>
-      </div>
-    </section>
+    <div class="products_content_layer">
 
-    <!-- ---------- Product Showcase ---------- -->
-    <section class="product_showcase" id="product_showcase" aria-labelledby="product_showcase_title">
-      <div class="products_container">
-        <h2 class="product_showcase_title" id="product_showcase_title">MEET YOUR NEW FAVORITE</h2>
 
-        <ul class="product_category" data-product-category>
-          <li>
-            <button class="category_button is_active" type="button" aria-pressed="true" data-category="makgeolli">
-              MAKGEOLLI
+      <!-- ---------- Taste / Experience Filter ---------- -->
+
+      <section class="experience_filter" id="experience_filter" aria-labelledby="experience_filter_title">
+
+        <div class="products_container">
+
+          <h2 class="experience_filter_title" id="experience_filter_title">
+            What are you craving today?
+          </h2>
+
+
+          <form class="craving_search" role="search" data-craving-search>
+
+            <label class="a11y_hidden" for="craving_search_input">
+              Search products
+            </label>
+
+            <input class="craving_search_input" id="craving_search_input" type="search"
+              placeholder="What about &ldquo;Makgeolli&rdquo;?" autocomplete="off" data-craving-input>
+
+            <button class="craving_search_button" type="submit" aria-label="Search products">
+              <span class="craving_search_icon" aria-hidden="true"></span>
             </button>
-          </li>
-          <li>
-            <button class="category_button" type="button" aria-pressed="false" data-category="bekseju">
-              BEKSEJU
+
+          </form>
+
+
+          <ul class="experience_tags" data-experience-tags>
+
+            <li>
+              <button class="experience_tag" type="button" aria-pressed="false" data-experience="vegan">
+                #Vegan
+              </button>
+            </li>
+
+            <li>
+              <button class="experience_tag" type="button" aria-pressed="false" data-experience="beginner">
+                #Beginner
+              </button>
+            </li>
+
+            <li>
+              <button class="experience_tag" type="button" aria-pressed="false" data-experience="intermediate">
+                #Intermediate
+              </button>
+            </li>
+
+            <li>
+              <button class="experience_tag" type="button" aria-pressed="false" data-experience="advanced">
+                #Advanced
+              </button>
+            </li>
+
+          </ul>
+
+        </div>
+
+      </section>
+
+
+      <!-- ---------- Product Showcase ---------- -->
+
+      <section class="product_showcase" id="product_showcase" aria-labelledby="product_showcase_title">
+
+        <div class="products_container">
+
+          <h2 class="product_showcase_title" id="product_showcase_title">
+            MEET YOUR NEW FAVORITE
+          </h2>
+
+
+          <ul class="product_category" data-product-category>
+
+            <li>
+              <button class="category_button is_active" type="button" aria-pressed="true" data-category="makgeolli">
+                MAKGEOLLI
+              </button>
+            </li>
+
+            <li>
+              <button class="category_button" type="button" aria-pressed="false" data-category="bekseju" disabled>
+                BEKSEJU
+              </button>
+            </li>
+
+            <li>
+              <button class="category_button" type="button" aria-pressed="false" data-category="yedamcheong" disabled>
+                YEDAMCHEONG
+              </button>
+            </li>
+
+            <li>
+              <button class="category_button" type="button" aria-pressed="false" data-category="soju" disabled>
+                SOJU
+              </button>
+            </li>
+
+          </ul>
+
+
+          <ul class="product_grid" id="product_grid" data-product-grid aria-live="polite">
+
+            <!-- Draft -->
+
+            <li class="product_card" style="--product_tone:#2C8B62" data-category="makgeolli"
+              data-experience="intermediate vegan" data-product="draft">
+
+              <article tabindex="0">
+
+                <div class="product_media">
+                  <span class="product_tone" aria-hidden="true"></span>
+
+                  <img class="product_bottle" src="products_asset/img/draft_makgeolli.png" alt="Draft Makgeolli bottle">
+                </div>
+
+                <h3 class="product_name">
+                  DRAFT MAKGEOLLI
+                </h3>
+
+                <p class="product_taste">
+                  #FRESH #LIVELY #VEGAN
+                </p>
+
+              </article>
+
+            </li>
+
+
+            <!-- Rice -->
+
+            <li class="product_card" style="--product_tone:#B0916E" data-category="makgeolli"
+              data-experience="advanced vegan" data-product="rice">
+
+              <article tabindex="0">
+
+                <div class="product_media">
+
+                  <span class="product_tone" aria-hidden="true"></span>
+
+                  <img class="product_bottle" src="products_asset/img/rice_makgeolli.png" alt="Rice Makgeolli bottle">
+
+                </div>
+
+                <h3 class="product_name">
+                  RICE MAKGEOLLI
+                </h3>
+
+                <p class="product_taste">
+                  #SMOOTH #AUTHENTIC #VEGAN
+                </p>
+
+              </article>
+
+            </li>
+
+
+            <!-- 100 Billion Prebiotics -->
+
+            <li class="product_card" style="--product_tone:#FBF7F2" data-category="makgeolli"
+              data-experience="advanced vegan" data-product="prebiotics">
+
+              <article tabindex="0">
+
+                <div class="product_media">
+
+                  <span class="product_tone" aria-hidden="true"></span>
+
+                  <img class="product_bottle" src="products_asset/img/1000_makgeolli.png"
+                    alt="100 Billion Prebiotics Makgeolli bottle">
+
+                </div>
+
+                <h3 class="product_name">
+                  100 BILLION PREBIOTICS
+                </h3>
+
+                <p class="product_taste">
+                  #RICE #NURUK #VEGAN
+                </p>
+
+              </article>
+
+            </li>
+
+
+            <!-- Strawberry -->
+
+            <li class="product_card" style="--product_tone:#F28E8E" data-category="makgeolli" data-experience="beginner"
+              data-product="strawberry">
+
+              <article tabindex="0">
+
+                <div class="product_media">
+
+                  <span class="product_tone" aria-hidden="true"></span>
+
+                  <img class="product_fruit" src="products_asset/img/strawberry.png" alt="" aria-hidden="true">
+
+                  <img class="product_bottle" src="products_asset/img/strawberry_makgeolli.png"
+                    alt="Strawberry Makgeolli bottle">
+
+                </div>
+
+                <h3 class="product_name">
+                  STRAWBERRY MAKGEOLLI
+                </h3>
+
+                <p class="product_taste">
+                  #SWEET #TANGY
+                </p>
+
+              </article>
+
+            </li>
+
+
+            <!-- Banana -->
+
+            <li class="product_card" style="--product_tone:#F2D757" data-category="makgeolli" data-experience="beginner"
+              data-product="banana">
+
+              <article tabindex="0">
+
+                <div class="product_media">
+
+                  <span class="product_tone" aria-hidden="true"></span>
+
+                  <img class="product_fruit" src="products_asset/img/banana.png" alt="" aria-hidden="true">
+
+                  <img class="product_bottle" src="products_asset/img/banana_makgeolli.png"
+                    alt="Banana Makgeolli bottle">
+
+                </div>
+
+                <h3 class="product_name">
+                  BANANA MAKGEOLLI
+                </h3>
+
+                <p class="product_taste">
+                  #SOFT #CREAMY
+                </p>
+
+              </article>
+
+            </li>
+
+
+            <!-- Peach -->
+
+            <li class="product_card" style="--product_tone:#F5B4C1" data-category="makgeolli"
+              data-experience="intermediate" data-product="peach">
+
+              <article tabindex="0">
+
+                <div class="product_media">
+
+                  <span class="product_tone" aria-hidden="true"></span>
+
+                  <img class="product_fruit" src="products_asset/img/peach.png" alt="" aria-hidden="true">
+
+                  <img class="product_bottle" src="products_asset/img/peach_makgeolli.png" alt="Peach Makgeolli bottle">
+
+                </div>
+
+                <h3 class="product_name">
+                  PEACH MAKGEOLLI
+                </h3>
+
+                <p class="product_taste">
+                  #SWEET #FRAGRANT
+                </p>
+
+              </article>
+
+            </li>
+
+
+            <!-- Chesnut -->
+
+            <li class="product_card" style="--product_tone:#845C42" data-category="makgeolli"
+              data-experience="intermediate" data-product="chesnut">
+
+              <article tabindex="0">
+
+                <div class="product_media">
+
+                  <span class="product_tone" aria-hidden="true"></span>
+
+                  <img class="product_fruit" src="products_asset/img/chesnut.png" alt="" aria-hidden="true">
+
+                  <img class="product_bottle" src="products_asset/img/chesnut_makgeolli.png"
+                    alt="Chesnut Makgeolli bottle">
+
+                </div>
+
+                <h3 class="product_name">
+                  CHESNUT MAKGEOLLI
+                </h3>
+
+                <p class="product_taste">
+                  #RICH #NUTTY
+                </p>
+
+              </article>
+
+            </li>
+
+
+            <!-- White Grape -->
+
+            <li class="product_card" style="--product_tone:#B3C643" data-category="makgeolli" data-experience="beginner"
+              data-product="whitegrape">
+
+              <article tabindex="0">
+
+                <div class="product_media">
+
+                  <span class="product_tone" aria-hidden="true"></span>
+
+                  <img class="product_fruit" src="products_asset/img/whitegrape.png" alt="" aria-hidden="true">
+
+                  <img class="product_bottle" src="products_asset/img/whitegrape_makgeolli.png"
+                    alt="White Grape Makgeolli bottle">
+
+                </div>
+
+                <h3 class="product_name">
+                  WHITE GRAPE MAKGEOLLI
+                </h3>
+
+                <p class="product_taste">
+                  #CRISP #REFRESHING
+                </p>
+
+              </article>
+
+            </li>
+
+          </ul>
+
+
+          <p class="product_empty" id="product_empty" data-product-empty hidden>
+            No products match this selection yet. Try another category or taste.
+          </p>
+
+
+          <div class="view_all_wrap">
+
+            <button class="view_all_button" type="button" data-view-all>
+              VIEW ALL
+
+              <span class="view_all_chevron" aria-hidden="true"></span>
             </button>
-          </li>
-          <li>
-            <button class="category_button" type="button" aria-pressed="false" data-category="yedamcheong">
-              YEDAMCHEONG
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ---------- Beginner's Starter Kit ---------- -->
+
+      <section class="starter_kit" id="starter_kit" aria-labelledby="starter_kit_title">
+
+        <div class="starter_kit_inner">
+
+          <div class="starter_kit_copy">
+
+            <h2 class="starter_kit_title" id="starter_kit_title">
+              BEGINNER&rsquo;S STARTER KIT
+            </h2>
+
+            <p class="starter_kit_desc">
+              A perfectly sweet and smooth introduction<br>
+              to Korean traditional drinks.
+            </p>
+
+            <button class="starter_kit_cta" type="button" data-view-details>
+              VIEW DETAILS
             </button>
-          </li>
-          <li>
-            <button class="category_button" type="button" aria-pressed="false" data-category="soju">
-              SOJU
-            </button>
-          </li>
-        </ul>
 
-        <ul class="product_grid" id="product_grid" data-product-grid aria-live="polite">
-          <li class="product_card" style="--product_tone:#2C8B62" data-category="makgeolli"
-            data-experience="intermediate vegan" data-product="draft">
-            <article tabindex="0">
-              <div class="product_media">
-                <span class="product_tone" aria-hidden="true"></span>
-                <img class="product_bottle" src="products_asset/img/draft_makgeolli.png" alt="Draft Makgeolli bottle">
-              </div>
-              <h3 class="product_name">DRAFT MAKGEOLLI</h3>
-              <p class="product_taste">#FRESH #LIVELY #VEGAN</p>
-            </article>
-          </li>
+            <img class="starter_kit_character" src="products_asset/img/character.png" alt="" aria-hidden="true">
 
-          <li class="product_card" style="--product_tone:#B0916E" data-category="makgeolli"
-            data-experience="advanced vegan" data-product="rice">
-            <article tabindex="0">
-              <div class="product_media">
-                <span class="product_tone" aria-hidden="true"></span>
-                <img class="product_bottle" src="products_asset/img/rice_makgeolli.png" alt="Rice Makgeolli bottle">
-              </div>
-              <h3 class="product_name">RICE MAKGEOLLI</h3>
-              <p class="product_taste">#SMOOTH #AUTHENTIC #VEGAN</p>
-            </article>
-          </li>
+          </div>
 
-          <li class="product_card" style="--product_tone:#FBF7F2" data-category="makgeolli"
-            data-experience="advanced vegan" data-product="prebiotics">
-            <article tabindex="0">
-              <div class="product_media">
-                <span class="product_tone" aria-hidden="true"></span>
-                <img class="product_bottle" src="products_asset/img/1000_makgeolli.png"
-                  alt="100 Billion Prebiotics Makgeolli bottle">
-              </div>
-              <h3 class="product_name">100 BILLION PREBIOTICS</h3>
-              <p class="product_taste">#RICE #NURUK #VEGAN</p>
-            </article>
-          </li>
 
-          <li class="product_card" style="--product_tone:#F28E8E" data-category="makgeolli" data-experience="beginner"
-            data-product="strawberry">
-            <article tabindex="0">
-              <div class="product_media">
-                <span class="product_tone" aria-hidden="true"></span>
-                <img class="product_fruit" src="products_asset/img/strawberry.png" alt="" aria-hidden="true">
-                <img class="product_bottle" src="products_asset/img/strawberry_makgeolli.png"
+          <ul class="starter_kit_list">
+
+            <!-- Strawberry -->
+
+            <li class="starter_kit_card">
+
+              <span class="starter_kit_best" aria-label="Best seller">
+                BEST
+              </span>
+
+              <span class="starter_kit_visual">
+
+                <img class="starter_kit_splash" src="products_asset/img/strawberry_splash.png" alt=""
+                  aria-hidden="true">
+
+                <img class="starter_kit_can" src="products_asset/img/strawberry_makgeolli_can.png"
+                  alt="Strawberry Makgeolli can">
+
+                <img class="starter_kit_bottle" src="products_asset/img/strawberry_makgeolli.png"
                   alt="Strawberry Makgeolli bottle">
-              </div>
-              <h3 class="product_name">STRAWBERRY MAKGEOLLI</h3>
-              <p class="product_taste">#SWEET #TANGY</p>
-            </article>
-          </li>
 
-          <li class="product_card" style="--product_tone:#F2D757" data-category="makgeolli" data-experience="beginner"
-            data-product="banana">
-            <article tabindex="0">
-              <div class="product_media">
-                <span class="product_tone" aria-hidden="true"></span>
-                <img class="product_fruit" src="products_asset/img/banana.png" alt="" aria-hidden="true">
-                <img class="product_bottle" src="products_asset/img/banana_makgeolli.png" alt="Banana Makgeolli bottle">
-              </div>
-              <h3 class="product_name">BANANA MAKGEOLLI</h3>
-              <p class="product_taste">#SOFT #CREAMY</p>
-            </article>
-          </li>
+              </span>
 
-          <li class="product_card" style="--product_tone:#F5B4C1" data-category="makgeolli"
-            data-experience="intermediate" data-product="peach">
-            <article tabindex="0">
-              <div class="product_media">
-                <span class="product_tone" aria-hidden="true"></span>
-                <img class="product_fruit" src="products_asset/img/peach.png" alt="" aria-hidden="true">
-                <img class="product_bottle" src="products_asset/img/peach_makgeolli.png" alt="Peach Makgeolli bottle">
-              </div>
-              <h3 class="product_name">PEACH MAKGEOLLI</h3>
-              <p class="product_taste">#SWEET #FRAGRANT</p>
-            </article>
-          </li>
+              <h3 class="starter_kit_name">
+                Strawberry<br>
+                Makgeolli
+              </h3>
 
-          <li class="product_card" style="--product_tone:#845C42" data-category="makgeolli"
-            data-experience="intermediate" data-product="chesnut">
-            <article tabindex="0">
-              <div class="product_media">
-                <span class="product_tone" aria-hidden="true"></span>
-                <img class="product_fruit" src="products_asset/img/chesnut.png" alt="" aria-hidden="true">
-                <img class="product_bottle" src="products_asset/img/chesnut_makgeolli.png"
-                  alt="Chesnut Makgeolli bottle">
-              </div>
-              <h3 class="product_name">CHESNUT MAKGEOLLI</h3>
-              <p class="product_taste">#RICH #NUTTY</p>
-            </article>
-          </li>
+            </li>
 
-          <li class="product_card" style="--product_tone:#B3C643" data-category="makgeolli" data-experience="beginner"
-            data-product="whitegrape">
-            <article tabindex="0">
-              <div class="product_media">
-                <span class="product_tone" aria-hidden="true"></span>
-                <img class="product_fruit" src="products_asset/img/whitegrape.png" alt="" aria-hidden="true">
-                <img class="product_bottle" src="products_asset/img/whitegrape_makgeolli.png"
+
+            <!-- Banana -->
+
+            <li class="starter_kit_card">
+
+              <span class="starter_kit_visual">
+
+                <img class="starter_kit_splash" src="products_asset/img/banana_splash.png" alt="" aria-hidden="true">
+
+                <img class="starter_kit_can" src="products_asset/img/banana_makgeolli_can.png"
+                  alt="Banana Makgeolli can">
+
+                <img class="starter_kit_bottle" src="products_asset/img/banana_makgeolli.png"
+                  alt="Banana Makgeolli bottle">
+
+              </span>
+
+              <h3 class="starter_kit_name">
+                Banana<br>
+                Makgeolli
+              </h3>
+
+            </li>
+
+
+            <!-- White Grape -->
+
+            <li class="starter_kit_card">
+
+              <span class="starter_kit_visual">
+
+                <img class="starter_kit_splash" src="products_asset/img/whitegrape_splash.png" alt=""
+                  aria-hidden="true">
+
+                <img class="starter_kit_can" src="products_asset/img/whitegrape_makgeolli_can.png"
+                  alt="White Grape Makgeolli can">
+
+                <img class="starter_kit_bottle" src="products_asset/img/whitegrape_makgeolli.png"
                   alt="White Grape Makgeolli bottle">
-              </div>
-              <h3 class="product_name">WHITE GRAPE MAKGEOLLI</h3>
-              <p class="product_taste">#CRISP #REFRESHING</p>
-            </article>
-          </li>
-        </ul>
 
-        <p class="product_empty" id="product_empty" data-product-empty hidden>
-          No products match this selection yet. Try another category or taste.
-        </p>
+              </span>
 
-        <div class="view_all_wrap">
-          <button class="view_all_button" type="button" data-view-all>
-            VIEW ALL
-            <span class="view_all_chevron" aria-hidden="true"></span>
-          </button>
-        </div>
-      </div>
-    </section>
+              <h3 class="starter_kit_name">
+                White Grape<br>
+                Makgeolli
+              </h3>
 
-    <!-- ---------- Beginner's Starter Kit ---------- -->
-    <section class="starter_kit" id="starter_kit" aria-labelledby="starter_kit_title">
-      <div class="starter_kit_inner">
-        <div class="starter_kit_copy">
-          <h2 class="starter_kit_title" id="starter_kit_title">BEGINNER&rsquo;S STARTER KIT</h2>
-          <p class="starter_kit_desc">A perfectly sweet and smooth introduction<br>to Korean traditional drinks.</p>
-          <button class="starter_kit_cta" type="button" data-view-details>VIEW DETAILS</button>
-          <img class="starter_kit_character" src="products_asset/img/character.png" alt="" aria-hidden="true">
+            </li>
+
+          </ul>
+
         </div>
 
-        <ul class="starter_kit_list">
-          <li class="starter_kit_card">
-            <span class="starter_kit_best" aria-label="Best seller">BEST</span>
-            <span class="starter_kit_visual">
-              <img class="starter_kit_splash" src="products_asset/img/strawberry_splash.png" alt="" aria-hidden="true">
-              <img class="starter_kit_can" src="products_asset/img/strawberry_makgeolli_can.png"
-                alt="Strawberry Makgeolli can">
-              <img class="starter_kit_bottle" src="products_asset/img/strawberry_makgeolli.png"
-                alt="Strawberry Makgeolli bottle">
+      </section>
+
+
+      <!-- ---------- Brand Keyword ---------- -->
+
+      <section class="brand_keyword" aria-hidden="true">
+
+        <div class="keyword_row keyword_row_light">
+
+          <div class="keyword_track">
+
+            <span class="keyword_group">
+
+              <span>KOOKSOONDANG</span>
+              <img src="products_asset/icon/jan.svg" alt="">
+
+              <span>PROBIOTICS</span>
+              <img src="products_asset/icon/jan.svg" alt="">
+
+              <span>ORIGINAL MAKGEOLLI</span>
+              <img src="products_asset/icon/jan.svg" alt="">
+
             </span>
-            <h3 class="starter_kit_name">Strawberry<br>Makgeolli</h3>
-          </li>
 
-          <li class="starter_kit_card">
-            <span class="starter_kit_visual">
-              <img class="starter_kit_splash" src="products_asset/img/banana_splash.png" alt="" aria-hidden="true">
-              <img class="starter_kit_can" src="products_asset/img/banana_makgeolli_can.png" alt="Banana Makgeolli can">
-              <img class="starter_kit_bottle" src="products_asset/img/banana_makgeolli.png"
-                alt="Banana Makgeolli bottle">
+
+            <span class="keyword_group">
+
+              <span>KOOKSOONDANG</span>
+              <img src="products_asset/icon/jan.svg" alt="">
+
+              <span>PROBIOTICS</span>
+              <img src="products_asset/icon/jan.svg" alt="">
+
+              <span>ORIGINAL MAKGEOLLI</span>
+              <img src="products_asset/icon/jan.svg" alt="">
+
             </span>
-            <h3 class="starter_kit_name">Banana<br>Makgeolli</h3>
-          </li>
 
-          <li class="starter_kit_card">
-            <span class="starter_kit_visual">
-              <img class="starter_kit_splash" src="products_asset/img/whitegrape_splash.png" alt="" aria-hidden="true">
-              <img class="starter_kit_can" src="products_asset/img/whitegrape_makgeolli_can.png"
-                alt="White Grape Makgeolli can">
-              <img class="starter_kit_bottle" src="products_asset/img/whitegrape_makgeolli.png"
-                alt="White Grape Makgeolli bottle">
+          </div>
+
+        </div>
+
+
+        <div class="keyword_row keyword_row_dark">
+
+          <div class="keyword_track">
+
+            <span class="keyword_group">
+
+              <span>SINCE 1970</span>
+              <img src="products_asset/icon/jan2.svg" alt="">
+
+              <span>MAKGEOLLI</span>
+              <img src="products_asset/icon/jan2.svg" alt="">
+
+              <span>BEKSEJU</span>
+              <img src="products_asset/icon/jan2.svg" alt="">
+
+              <span>YEDAM</span>
+              <img src="products_asset/icon/jan2.svg" alt="">
+
             </span>
-            <h3 class="starter_kit_name">White Grape<br>Makgeolli</h3>
-          </li>
-        </ul>
-      </div>
-    </section>
 
-    <!-- ---------- Brand Keyword ---------- -->
-    <section class="brand_keyword" aria-hidden="true">
-      <div class="keyword_row keyword_row_light">
-        <div class="keyword_track">
-          <span class="keyword_group">
-            <span>KOOKSOONDANG</span><img src="products_asset/icon/jan.svg" alt="">
-            <span>PROBIOTICS</span><img src="products_asset/icon/jan.svg" alt="">
-            <span>ORIGINAL MAKGEOLLI</span><img src="products_asset/icon/jan.svg" alt="">
-          </span>
-          <span class="keyword_group">
-            <span>KOOKSOONDANG</span><img src="products_asset/icon/jan.svg" alt="">
-            <span>PROBIOTICS</span><img src="products_asset/icon/jan.svg" alt="">
-            <span>ORIGINAL MAKGEOLLI</span><img src="products_asset/icon/jan.svg" alt="">
-          </span>
+
+            <span class="keyword_group">
+
+              <span>SINCE 1970</span>
+              <img src="products_asset/icon/jan2.svg" alt="">
+
+              <span>MAKGEOLLI</span>
+              <img src="products_asset/icon/jan2.svg" alt="">
+
+              <span>BEKSEJU</span>
+              <img src="products_asset/icon/jan2.svg" alt="">
+
+              <span>YEDAM</span>
+              <img src="products_asset/icon/jan2.svg" alt="">
+
+            </span>
+
+          </div>
+
         </div>
-      </div>
-      <div class="keyword_row keyword_row_dark">
-        <div class="keyword_track">
-          <span class="keyword_group">
-            <span>SINCE 1970</span><img src="products_asset/icon/jan2.svg" alt="">
-            <span>MAKGEOLLI</span><img src="products_asset/icon/jan2.svg" alt="">
-            <span>BEKSEJU</span><img src="products_asset/icon/jan2.svg" alt="">
-            <span>YEDAM</span><img src="products_asset/icon/jan2.svg" alt="">
-          </span>
-          <span class="keyword_group">
-            <span>SINCE 1970</span><img src="products_asset/icon/jan2.svg" alt="">
-            <span>MAKGEOLLI</span><img src="products_asset/icon/jan2.svg" alt="">
-            <span>BEKSEJU</span><img src="products_asset/icon/jan2.svg" alt="">
-            <span>YEDAM</span><img src="products_asset/icon/jan2.svg" alt="">
-          </span>
-        </div>
-      </div>
-    </section>
+
+      </section>
+
+    </div>
+    <!-- /products_content_layer -->
 
   </main>
 
   <button class="products_top_button" type="button" aria-label="Back to top" data-top-button>
-    <img class="products_top_character" src="products_asset/img/character.png" alt="" aria-hidden="true">
-    <img class="products_top_bowl" src="products_asset/icon/top_btn.svg" alt="" aria-hidden="true">
+    <img class="products_top_character" src="products_asset/img/topimg.png" alt="back to top character">
+    <img class="products_top_bowl" src="products_asset/icon/top_btn.svg" alt="true">
   </button>
 
   <footer class="site_footer" id="site_footer">
@@ -373,6 +714,21 @@
         <small>COPYRIGHT&copy; 2026 by KOOKSOONDANG BREWERY CO.LTD | ALL RIGHTS RESERVED</small>
       </div>
       <div class="footer_right">
+        <!-- 목록이 버튼 위로 열림. 버튼보다 앞에 두면 겹칠 때 목록이 위에 오고, 위치는 css 가 버튼 기준으로 잡음 -->
+        <div class="family_site" data-family-site>
+          <ul class="family_site_list" id="family_site_list">
+            <li><button type="button" disabled>Beopgochangsin</button></li>
+            <li><button type="button" disabled>Bekseju Village</button></li>
+            <li><button type="button" disabled>Yedam</button></li>
+            <li><button type="button" disabled>Juhyangro</button></li>
+            <li><button type="button" disabled>Woorisool Areumteo</button></li>
+          </ul>
+          <button type="button" class="family_site_button" aria-haspopup="true" aria-expanded="false"
+            aria-controls="family_site_list" data-family-site-toggle>
+            Family Site
+            <img src="../asset/icon/chevron_down_3.svg" alt="" aria-hidden="true">
+          </button>
+        </div>
         <!-- 목록이 버튼 위로 열림. 버튼보다 앞에 두면 겹칠 때 목록이 위에 오고, 위치는 css 가 버튼 기준으로 잡음 -->
         <div class="family_site" data-family-site>
           <ul class="family_site_list" id="family_site_list">

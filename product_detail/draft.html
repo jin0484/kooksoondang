@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        KOOKSOONDANG — Rice Makgeolli
+    </title>
+
+    <link rel="stylesheet" href="./draft.css">
+
+</head>
+
+
+<body>
+
+
+    <!-- =========================================
+         LOADING
+    ========================================== -->
+
+    <div id="loader">
+        LOADING
+    </div>
+
+
+    <!-- =========================================
+         THREE.JS CANVAS
+    ========================================== -->
+
+    <canvas id="scene"></canvas>
+
+
+
+    <!-- =========================================
+         PAGE TRACK
+    ========================================== -->
+
+    <div id="track">
+
+
+        <!-- =====================================
+             01. HERO - GREEN
+        ====================================== -->
+
+        <section class="product_hero" id="product_hero">
+
+
+            <!-- =================================
+                 FLOATING DECO
+            ================================== -->
+
+            <div class="hero_deco" aria-hidden="true">
+
+
+                <img src="./product_detail_asset/icon/deco1.svg" alt="" class="hero_deco_item hero_deco_01">
+
+
+                <img src="./product_detail_asset/icon/deco2.svg" alt="" class="hero_deco_item hero_deco_02">
+
+
+                <img src="./product_detail_asset/icon/deco3.svg" alt="" class="hero_deco_item hero_deco_03">
+
+
+                <img src="./product_detail_asset/icon/deco4.svg" alt="" class="hero_deco_item hero_deco_04">
+
+
+                <img src="./product_detail_asset/icon/deco5.svg" alt="" class="hero_deco_item hero_deco_05">
+
+
+            </div>
+
+
+
+            <!-- =================================
+                 THREE.JS BOTTLE AREA
+            ================================== -->
+
+            <div class="product_hero_bottle_area"></div>
+
+
+        </section>
+
+
+
+        <!-- =====================================
+             02. PRODUCT INTRO - WHITE
+        ====================================== -->
+
+        <section class="product_intro" id="product_intro">
+
+
+            <div class="product_intro_inner">
+
+
+                <h1 class="product_intro_title">
+                    Original Makgeolli
+                </h1>
+
+
+                <p class="product_intro_desc">
+
+                    It is a traditional Makgeolli made with clean water,<br>
+                    carefully selected rice, and nuruk.
+
+                </p>
+
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- =====================================
+             03. FRESHNESS
+        ====================================== -->
+
+        <section class="product_freshness" id="product_freshness">
+
+
+            <div class="product_detail_inner">
+
+
+                <!-- Three.js 병 위치 영역 -->
+
+                <div class="product_detail_visual"></div>
+
+
+
+                <div class="product_detail_copy">
+
+
+                    <span class="product_detail_number">
+                        01. FRESHNESS
+                    </span>
+
+
+                    <h2 class="product_detail_title">
+
+                        "Double Fermented,<br>
+                        Modern Fresh"
+
+                    </h2>
+
+
+                    <p class="product_detail_desc">
+
+                        We enhanced the freshness of Makgeolli<br>
+                        by combining the pleasant acidity<br>
+                        from lactic acid fermentation<br>
+                        with our specially cultivated yeast.
+
+                    </p>
+
+
+                </div>
+
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- =====================================
+     04. FERMENTATION MESSAGE
+====================================== -->
+
+        <section class="product_fermentation" id="product_fermentation">
+
+            <div class="product_fermentation_inner">
+
+
+                <!-- 병 뒤쪽 글자 -->
+                <h2 class="fermentation_text fermentation_text_back">
+                    Dual Fermented
+                </h2>
+
+
+                <!-- Three.js 병이 지나가는 영역 -->
+                <div class="product_fermentation_bottle_area"></div>
+
+
+                <!-- 병 앞쪽 글자 -->
+                <h2 class="fermentation_text fermentation_text_front">
+                    Triple Lactic
+                </h2>
+
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================
+             05. HEALTHY CHOICE
+        ====================================== -->
+
+        <section class="product_health" id="product_health">
+
+
+            <div class="product_detail_inner">
+
+
+                <div class="product_detail_copy">
+
+
+                    <span class="product_detail_number">
+                        02. HEALTHY CHOICE
+                    </span>
+
+
+                    <h2 class="product_detail_title">
+
+                        Healthier Benefits<br>
+                        Dual Fermented
+
+                    </h2>
+
+
+                    <p class="product_detail_desc">
+
+                        It is richly packed with beneficial components,<br>
+                        including lactic acid bacteria generated<br>
+                        during the rice and lactic acid fermentation.
+
+                    </p>
+
+
+                </div>
+
+
+
+                <!-- Three.js 병 위치 영역 -->
+
+                <div class="product_detail_visual"></div>
+
+
+            </div>
+
+
+        </section>
+
+
+
+        <section class="product_design" id="product_design">
+
+
+            <div class="product_detail_inner">
+
+
+                <!-- 기존 제품 이미지 + Three.js 병 영역 -->
+
+                <div class="product_detail_visual product_design_visual"></div>
+
+
+
+                <div class="product_detail_copy">
+
+
+                    <span class="product_detail_number">
+                        03. INNOVATIVE DESIGN
+                    </span>
+
+
+                    <h2 class="product_detail_title">
+
+                        Preserving Quality<br>
+                        Through New Design
+
+                    </h2>
+
+
+                    <p class="product_detail_desc">
+
+                        The full-shrink label wrapping the entire bottle<br>
+                        locks in and maintains<br>
+                        the fresh state of freshly brewed Makgeolli.
+
+                    </p>
+
+
+
+                    <!-- Vector 1 ~ 7 -->
+
+                    <div class="product_design_vectors">
+
+                        <img src="./product_detail_asset/icon/Vector1.svg" alt="">
+
+                        <img src="./product_detail_asset/icon/Vector2.svg" alt="">
+
+                        <img src="./product_detail_asset/icon/Vector3.svg" alt="">
+
+                        <img src="./product_detail_asset/icon/Vector4.svg" alt="">
+
+                        <img src="./product_detail_asset/icon/Vector5.svg" alt="">
+
+                        <img src="./product_detail_asset/icon/Vector6.svg" alt="">
+
+                        <img src="./product_detail_asset/icon/Vector7.svg" alt="">
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </section>
+
+
+
+        <section class="more_products" id="more_products">
+
+
+    <div class="more_products_inner">
+
+
+        <h2 class="more_products_title">
+            more products
+        </h2>
+
+
+
+        <div class="more_products_list">
+
+
+            <!-- PRODUCT 01 -->
+
+            <article class="more_product_card">
+
+
+                <div class="more_product_image">
+
+                    <video
+                        src="./product_detail_asset/video/video1.mp4"
+                        autoplay
+                        muted
+                        loop
+                        playsinline
+                        preload="metadata"
+                    ></video>
+
+                </div>
+
+
+                <p>
+
+                    KOOKSOONDANG<br>
+                    DRAFT<br>
+                    MAKGEOLLI
+
+                </p>
+
+
+            </article>
+
+
+
+            <!-- PRODUCT 02 -->
+
+            <article class="more_product_card">
+
+
+                <div class="more_product_image">
+
+                    <video
+                        src="./product_detail_asset/video/video2.mp4"
+                        autoplay
+                        muted
+                        loop
+                        playsinline
+                        preload="metadata"
+                    ></video>
+
+                </div>
+
+
+                <p>
+
+                    KOOKSOONDANG<br>
+                    RICE<br>
+                    MAKGEOLLI
+
+                </p>
+
+
+            </article>
+
+
+
+            <!-- PRODUCT 03 -->
+
+            <article class="more_product_card">
+
+
+                <div class="more_product_image">
+
+                    <video
+                        src="./product_detail_asset/video/video3.mp4"
+                        autoplay
+                        muted
+                        loop
+                        playsinline
+                        preload="metadata"
+                    ></video>
+
+                </div>
+
+
+                <p>
+
+                    100 BILLION<br>
+                    PREBIOTICS<br>
+                    MAKGEOLLI
+
+                </p>
+
+
+            </article>
+
+
+
+            <!-- PRODUCT 04 -->
+
+            <article class="more_product_card">
+
+
+                <div class="more_product_image">
+
+                    <video
+                        src="./product_detail_asset/video/video4.mp4"
+                        autoplay
+                        muted
+                        loop
+                        playsinline
+                        preload="metadata"
+                    ></video>
+
+                </div>
+
+
+                <p>
+
+                    KOOKSOONDANG<br>
+                    BANANA<br>
+                    MAKGEOLLI
+
+                </p>
+
+
+            </article>
+
+
+
+            <!-- PRODUCT 05 -->
+
+            <article class="more_product_card">
+
+
+                <div class="more_product_image">
+
+                    <video
+                        src="./product_detail_asset/video/video5.mp4"
+                        autoplay
+                        muted
+                        loop
+                        playsinline
+                        preload="metadata"
+                    ></video>
+
+                </div>
+
+
+                <p>
+
+                    KOOKSOONDANG<br>
+                    CHESTNUT<br>
+                    MAKGEOLLI
+
+                </p>
+
+
+            </article>
+
+
+        </div>
+
+
+    </div>
+
+
+</section>
+
+
+</div>
+
+
+
+    <!-- =========================================
+         SCROLL HINT
+    ========================================== -->
+
+    <div class="scroll-hint" id="hint">
+        SCROLL
+    </div>
+
+
+
+    <!-- =========================================
+         THREE.JS IMPORT MAP
+    ========================================== -->
+
+    <script type="importmap">
+
+        {
+            "imports": {
+
+                "three":
+                    "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+
+                "three/addons/":
+                    "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+
+            }
+        }
+
+    </script>
+
+
+
+    <!-- =========================================
+         JAVASCRIPT
+    ========================================== -->
+
+    <script type="module" src="./draft.js"></script>
+
+
+</body>
+
+</html>

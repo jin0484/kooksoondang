@@ -1,34 +1,80 @@
-/*
- * Products 페이지 인터랙션
- * - 카테고리 선택 (MAKGEOLLI / BEKSEJU / YEDAMCHEONG / SOJU)
- * - Experience / Taste 태그 선택 (#Vegan #Beginner #Intermediate #Advanced)
- * - 검색어 입력
- * - VIEW ALL / VIEW DETAILS
- * - TOP 버튼
- *
- * 각 제품의 data-experience 값은 시안에서 실제로 확인되는 정보만으로 정했다.
- *   vegan        : 카드에 #VEGAN 이 적힌 제품 (Draft / Rice / 100 Billion Prebiotics)
- *   beginner     : Beginner's Starter Kit 에 제시된 제품 (Strawberry / Banana / White Grape)
- *   intermediate / advanced : 남은 제품을 Taste Keyword 기준으로 나눔
- * 시안에 필터 기준이 명시되어 있지 않아 임의의 제품이나 등급을 새로 만들지는 않았다.
- */
+/* =========================================================
+   Products 페이지 인터랙션
+
+   1. 제품 필터 / 검색
+   2. TOP 버튼
+   3. Hero Intro Animation
+   4. Hero → Content Scroll Transition
+   5. Product Showcase Reveal
+========================================================= */
+
+
+/* =========================================================
+   1. 제품 필터 / 검색 / 버튼
+========================================================= */
 
 (() => {
     const grid = document.querySelector('[data-product-grid]');
 
     if (!grid) return;
 
-    const cards = Array.from(grid.querySelectorAll('.product_card'));
-    const categoryList = document.querySelector('[data-product-category]');
-    const categoryButtons = categoryList ? Array.from(categoryList.querySelectorAll('.category_button')) : [];
-    const tagList = document.querySelector('[data-experience-tags]');
-    const tagButtons = tagList ? Array.from(tagList.querySelectorAll('.experience_tag')) : [];
-    const searchForm = document.querySelector('[data-craving-search]');
-    const searchInput = document.querySelector('[data-craving-input]');
-    const emptyMessage = document.querySelector('[data-product-empty]');
-    const viewAllButton = document.querySelector('[data-view-all]');
-    const viewDetailsButton = document.querySelector('[data-view-details]');
-    const showcase = document.getElementById('product_showcase');
+
+    const cards = Array.from(
+        grid.querySelectorAll('.product_card')
+    );
+
+
+    const categoryList =
+        document.querySelector('[data-product-category]');
+
+
+    const categoryButtons =
+        categoryList
+            ? Array.from(
+                categoryList.querySelectorAll(
+                    '.category_button'
+                )
+            )
+            : [];
+
+
+    const tagList =
+        document.querySelector('[data-experience-tags]');
+
+
+    const tagButtons =
+        tagList
+            ? Array.from(
+                tagList.querySelectorAll(
+                    '.experience_tag'
+                )
+            )
+            : [];
+
+
+    const searchForm =
+        document.querySelector('[data-craving-search]');
+
+
+    const searchInput =
+        document.querySelector('[data-craving-input]');
+
+
+    const emptyMessage =
+        document.querySelector('[data-product-empty]');
+
+
+    const viewAllButton =
+        document.querySelector('[data-view-all]');
+
+
+    const viewDetailsButton =
+        document.querySelector('[data-view-details]');
+
+
+    const showcase =
+        document.getElementById('product_showcase');
+
 
     const state = {
         category: 'makgeolli',
@@ -36,146 +82,1784 @@
         keyword: ''
     };
 
-    function matchesCard(card) {
-        const category = card.dataset.category || '';
-        const experience = (card.dataset.experience || '').split(/\s+/);
-        const name = (card.querySelector('.product_name')?.textContent || '').toLowerCase();
-        const taste = (card.querySelector('.product_taste')?.textContent || '').toLowerCase();
 
-        if (state.category && category !== state.category) return false;
-        if (state.experience && !experience.includes(state.experience)) return false;
-        if (state.keyword && !name.includes(state.keyword) && !taste.includes(state.keyword)) return false;
+    function matchesCard(card) {
+
+        const category =
+            card.dataset.category || '';
+
+
+        const experience =
+            (card.dataset.experience || '')
+                .split(/\s+/)
+                .filter(Boolean);
+
+
+        const name =
+            (
+                card.querySelector(
+                    '.product_name'
+                )?.textContent || ''
+            ).toLowerCase();
+
+
+        const taste =
+            (
+                card.querySelector(
+                    '.product_taste'
+                )?.textContent || ''
+            ).toLowerCase();
+
+
+        if (
+            state.category &&
+            category !== state.category
+        ) {
+            return false;
+        }
+
+
+        if (
+            state.experience &&
+            !experience.includes(
+                state.experience
+            )
+        ) {
+            return false;
+        }
+
+
+        if (
+            state.keyword &&
+            !name.includes(state.keyword) &&
+            !taste.includes(state.keyword)
+        ) {
+            return false;
+        }
+
 
         return true;
     }
 
+
     function renderProducts() {
+
         let visibleCount = 0;
 
+
         cards.forEach((card) => {
-            const isVisible = matchesCard(card);
+
+            const isVisible =
+                matchesCard(card);
+
 
             card.hidden = !isVisible;
-            if (isVisible) visibleCount += 1;
+
+
+            if (isVisible) {
+                visibleCount += 1;
+            }
+
         });
 
-        if (emptyMessage) emptyMessage.hidden = visibleCount > 0;
+
+        if (emptyMessage) {
+            emptyMessage.hidden =
+                visibleCount > 0;
+        }
     }
 
-    function setPressed(button, isPressed) {
-        button.classList.toggle('is_active', isPressed);
-        button.setAttribute('aria-pressed', String(isPressed));
+
+    function setPressed(
+        button,
+        isPressed
+    ) {
+
+        button.classList.toggle(
+            'is_active',
+            isPressed
+        );
+
+
+        button.setAttribute(
+            'aria-pressed',
+            String(isPressed)
+        );
     }
+
 
     function handleCategoryClick(event) {
-        const button = event.target.closest('.category_button');
+
+        const button =
+            event.target.closest(
+                '.category_button'
+            );
+
 
         if (!button) return;
 
-        state.category = button.dataset.category || '';
-        categoryButtons.forEach((item) => setPressed(item, item === button));
+
+        state.category =
+            button.dataset.category || '';
+
+
+        categoryButtons.forEach(
+            (item) => {
+
+                setPressed(
+                    item,
+                    item === button
+                );
+
+            }
+        );
+
+
         renderProducts();
     }
+
 
     function handleTagClick(event) {
-        const button = event.target.closest('.experience_tag');
+
+        const button =
+            event.target.closest(
+                '.experience_tag'
+            );
+
 
         if (!button) return;
 
-        // 같은 태그를 다시 누르면 해제
-        const nextExperience = state.experience === button.dataset.experience ? '' : button.dataset.experience;
 
-        state.experience = nextExperience || '';
-        tagButtons.forEach((item) => setPressed(item, item.dataset.experience === state.experience));
+        const clickedExperience =
+            button.dataset.experience || '';
+
+
+        const nextExperience =
+            state.experience ===
+                clickedExperience
+
+                ? ''
+
+                : clickedExperience;
+
+
+        state.experience =
+            nextExperience;
+
+
+        tagButtons.forEach(
+            (item) => {
+
+                setPressed(
+                    item,
+
+                    item.dataset.experience ===
+                    state.experience
+                );
+
+            }
+        );
+
+
         renderProducts();
     }
+
 
     function handleSearchSubmit(event) {
+
         event.preventDefault();
-        state.keyword = (searchInput?.value || '').trim().toLowerCase();
+
+
+        state.keyword =
+            (
+                searchInput?.value || ''
+            )
+                .trim()
+                .toLowerCase();
+
+
         renderProducts();
     }
+
 
     function handleSearchInput() {
-        // 입력을 지우면 곧바로 전체가 다시 보이도록
-        if (searchInput.value !== '') return;
+
+        if (!searchInput) return;
+
+
+        if (
+            searchInput.value !== ''
+        ) {
+            return;
+        }
+
 
         state.keyword = '';
+
+
         renderProducts();
     }
 
-    // 시안에 VIEW ALL 의 이동 목적지가 없어서 새 페이지를 만들지 않고
-    // 적용된 조건을 모두 풀어 전체 제품을 보여주는 동작으로 구현했다.
+
     function handleViewAllClick() {
+
         state.category = '';
         state.experience = '';
         state.keyword = '';
 
-        categoryButtons.forEach((item) => setPressed(item, false));
-        tagButtons.forEach((item) => setPressed(item, false));
-        if (searchInput) searchInput.value = '';
+
+        categoryButtons.forEach(
+            (item) => {
+
+                setPressed(
+                    item,
+                    false
+                );
+
+            }
+        );
+
+
+        tagButtons.forEach(
+            (item) => {
+
+                setPressed(
+                    item,
+                    false
+                );
+
+            }
+        );
+
+
+        if (searchInput) {
+            searchInput.value = '';
+        }
+
 
         renderProducts();
     }
 
-    // VIEW DETAILS 역시 목적지가 확인되지 않아, Starter Kit 에 제시된
-    // 입문자용 제품을 제품 영역에서 바로 확인하도록 연결했다.
+
     function handleViewDetailsClick() {
-        state.category = 'makgeolli';
-        state.experience = 'beginner';
+
+        state.category =
+            'makgeolli';
+
+        state.experience =
+            'beginner';
+
         state.keyword = '';
 
-        categoryButtons.forEach((item) => setPressed(item, item.dataset.category === 'makgeolli'));
-        tagButtons.forEach((item) => setPressed(item, item.dataset.experience === 'beginner'));
-        if (searchInput) searchInput.value = '';
+
+        categoryButtons.forEach(
+            (item) => {
+
+                setPressed(
+                    item,
+
+                    item.dataset.category ===
+                    'makgeolli'
+                );
+
+            }
+        );
+
+
+        tagButtons.forEach(
+            (item) => {
+
+                setPressed(
+                    item,
+
+                    item.dataset.experience ===
+                    'beginner'
+                );
+
+            }
+        );
+
+
+        if (searchInput) {
+            searchInput.value = '';
+        }
+
 
         renderProducts();
+
 
         if (!showcase) return;
 
-        const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 
-        if (window.siteLenis) window.siteLenis.scrollTo(showcase);
-        else showcase.scrollIntoView({ behavior, block: 'start' });
+        const behavior =
+            window.matchMedia(
+                '(prefers-reduced-motion: reduce)'
+            ).matches
+
+                ? 'auto'
+
+                : 'smooth';
+
+
+        if (window.siteLenis) {
+
+            window.siteLenis.scrollTo(
+                showcase
+            );
+
+        } else {
+
+            showcase.scrollIntoView({
+                behavior,
+                block: 'start'
+            });
+
+        }
     }
 
-    categoryList?.addEventListener('click', handleCategoryClick);
-    tagList?.addEventListener('click', handleTagClick);
-    searchForm?.addEventListener('submit', handleSearchSubmit);
-    searchInput?.addEventListener('input', handleSearchInput);
-    viewAllButton?.addEventListener('click', handleViewAllClick);
-    viewDetailsButton?.addEventListener('click', handleViewDetailsClick);
+
+    categoryList?.addEventListener(
+        'click',
+        handleCategoryClick
+    );
+
+
+    tagList?.addEventListener(
+        'click',
+        handleTagClick
+    );
+
+
+    searchForm?.addEventListener(
+        'submit',
+        handleSearchSubmit
+    );
+
+
+    searchInput?.addEventListener(
+        'input',
+        handleSearchInput
+    );
+
+
+    viewAllButton?.addEventListener(
+        'click',
+        handleViewAllClick
+    );
+
+
+    viewDetailsButton?.addEventListener(
+        'click',
+        handleViewDetailsClick
+    );
+
 
     renderProducts();
+
 })();
 
+
+/* =========================================================
+   2. TOP 버튼
+========================================================= */
+
 (() => {
-    const topButton = document.querySelector('[data-top-button]');
+
+    const topButton =
+        document.querySelector(
+            '[data-top-button]'
+        );
+
 
     if (!topButton) return;
 
+
     const revealPoint = 400;
+
+
     let scrollFrame = 0;
 
+
     function updateTopButton() {
+
         scrollFrame = 0;
-        topButton.classList.toggle('is_visible', window.scrollY > revealPoint);
+
+
+        topButton.classList.toggle(
+            'is_visible',
+
+            window.scrollY >
+            revealPoint
+        );
     }
+
 
     function handleScroll() {
+
         if (scrollFrame) return;
 
-        scrollFrame = window.requestAnimationFrame(updateTopButton);
+
+        scrollFrame =
+            window.requestAnimationFrame(
+                updateTopButton
+            );
     }
+
 
     function handleTopClick() {
-        const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 
-        if (window.siteLenis) window.siteLenis.scrollTo(0);
-        else window.scrollTo({ top: 0, behavior });
+        const behavior =
+            window.matchMedia(
+                '(prefers-reduced-motion: reduce)'
+            ).matches
+
+                ? 'auto'
+
+                : 'smooth';
+
+
+        if (window.siteLenis) {
+
+            window.siteLenis.scrollTo(0);
+
+        } else {
+
+            window.scrollTo({
+                top: 0,
+                behavior
+            });
+
+        }
     }
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    topButton.addEventListener('click', handleTopClick);
+
+    window.addEventListener(
+        'scroll',
+        handleScroll,
+        {
+            passive: true
+        }
+    );
+
+
+    topButton.addEventListener(
+        'click',
+        handleTopClick
+    );
+
+
     updateTopButton();
+
+})();
+
+
+/* =========================================================
+   3. Products Hero Intro Animation
+
+   순서
+
+   제목
+   ↓
+   Rice / 1000 / Draft / Strawberry
+   ↓
+   Splash
+   ↓
+   백세주
+========================================================= */
+
+(() => {
+
+    const hero =
+        document.querySelector(
+            '.products_hero'
+        );
+
+
+    if (!hero) return;
+
+
+    if (
+        typeof gsap ===
+        'undefined'
+    ) {
+
+        console.warn(
+            '[products hero] GSAP이 로드되지 않았습니다.'
+        );
+
+        return;
+    }
+
+
+    const titleLines =
+        hero.querySelectorAll(
+            '.products_hero_title span'
+        );
+
+
+    const rice =
+        hero.querySelector(
+            '.hero_bottle_rice'
+        );
+
+
+    const draft =
+        hero.querySelector(
+            '.hero_bottle_draft'
+        );
+
+
+    const prebiotics =
+        hero.querySelector(
+            '.hero_bottle_prebiotics'
+        );
+
+
+    const strawberry =
+        hero.querySelector(
+            '.hero_bottle_strawberry'
+        );
+
+
+    const splash =
+        hero.querySelector(
+            '.hero_splash'
+        );
+
+
+    const center =
+        hero.querySelector(
+            '.hero_bottle_center'
+        );
+
+
+    const prefersReducedMotion =
+        window.matchMedia(
+            '(prefers-reduced-motion: reduce)'
+        ).matches;
+
+
+    if (prefersReducedMotion) {
+
+        gsap.set(
+            [
+                ...titleLines,
+                rice,
+                draft,
+                prebiotics,
+                strawberry,
+                splash,
+                center
+            ].filter(Boolean),
+
+            {
+                opacity: 1
+            }
+        );
+
+
+        return;
+    }
+
+
+    const introTl =
+        gsap.timeline({
+
+            defaults: {
+                ease: 'power3.out'
+            }
+
+        });
+
+
+    /* 제목 */
+
+    if (titleLines.length) {
+
+        introTl.fromTo(
+            titleLines,
+
+            {
+                y: -55,
+                opacity: 0
+            },
+
+            {
+                y: 0,
+                opacity: 1,
+
+                duration: 0.9,
+
+                stagger: 0.12
+            }
+        );
+
+    }
+
+
+    /* Rice */
+
+    if (rice) {
+
+        introTl.fromTo(
+            rice,
+
+            {
+                x: -320,
+                y: -80,
+                opacity: 0
+            },
+
+            {
+                x: 0,
+                y: 0,
+                opacity: 1,
+
+                duration: 1.05
+            },
+
+            '-=0.2'
+        );
+
+    }
+
+
+    /* 1000 */
+
+    if (prebiotics) {
+
+        introTl.fromTo(
+            prebiotics,
+
+            {
+                x: 300,
+                y: -130,
+                opacity: 0
+            },
+
+            {
+                x: 0,
+                y: 0,
+                opacity: 1,
+
+                duration: 1.05
+            },
+
+            '-=0.82'
+        );
+
+    }
+
+
+    /* Draft */
+
+    if (draft) {
+
+        introTl.fromTo(
+            draft,
+
+            {
+                x: -270,
+                y: 230,
+                opacity: 0
+            },
+
+            {
+                x: 0,
+                y: 0,
+                opacity: 1,
+
+                duration: 1.05
+            },
+
+            '-=0.78'
+        );
+
+    }
+
+
+    /* Strawberry */
+
+    if (strawberry) {
+
+        introTl.fromTo(
+            strawberry,
+
+            {
+                x: 270,
+                y: 230,
+                opacity: 0
+            },
+
+            {
+                x: 0,
+                y: 0,
+                opacity: 1,
+
+                duration: 1.05
+            },
+
+            '-=0.78'
+        );
+
+    }
+
+
+    /* Splash */
+
+    if (splash) {
+
+        introTl.fromTo(
+            splash,
+
+            {
+                scale: 0.25,
+                opacity: 0
+            },
+
+            {
+                scale: 1,
+                opacity: 1,
+
+                duration: 0.8,
+
+                ease:
+                    'back.out(1.7)'
+            },
+
+            '-=0.3'
+        );
+
+    }
+
+
+    /* 백세주 */
+
+    if (center) {
+
+        introTl.fromTo(
+            center,
+
+            {
+                y: 280,
+                opacity: 0
+            },
+
+            {
+                y: 0,
+                opacity: 1,
+
+                duration: 1.15,
+
+                ease:
+                    'back.out(1.25)'
+            },
+
+            '-=0.5'
+        );
+
+    }
+
+})();
+
+
+/* =========================================================
+   4. Hero → Content Cover Transition
+========================================================= */
+
+(() => {
+
+    const hero =
+        document.querySelector(
+            '.products_hero'
+        );
+
+
+    const heroDim =
+        hero?.querySelector(
+            '.products_hero_dim'
+        );
+
+
+    const contentLayer =
+        document.querySelector(
+            '.products_content_layer'
+        );
+
+
+    if (!hero || !contentLayer) {
+        return;
+    }
+
+
+    if (
+        typeof gsap === 'undefined' ||
+        typeof ScrollTrigger === 'undefined'
+    ) {
+
+        console.warn(
+            '[products scroll] GSAP 또는 ScrollTrigger가 로드되지 않았습니다.'
+        );
+
+        return;
+    }
+
+
+    gsap.registerPlugin(
+        ScrollTrigger
+    );
+
+
+    const prefersReducedMotion =
+        window.matchMedia(
+            '(prefers-reduced-motion: reduce)'
+        ).matches;
+
+
+    if (prefersReducedMotion) {
+        return;
+    }
+
+
+    /* =========================================
+       다음 콘텐츠는 원래 위치 그대로
+
+       yPercent / window.innerHeight 사용 X
+    ========================================= */
+
+    gsap.set(
+        contentLayer,
+        {
+            clearProps: 'transform'
+        }
+    );
+
+
+    /* =========================================
+       Hero 고정 + 다음 콘텐츠가 자연스럽게
+       아래에서 올라와 덮음
+    ========================================= */
+
+    const coverTl =
+        gsap.timeline({
+
+            scrollTrigger: {
+
+                trigger: hero,
+
+                start: 'top top',
+
+                /*
+                 * Hero 고정 시간
+                 * 길수록 천천히 진행
+                 */
+                end: '+=150%',
+
+                scrub: 1,
+
+                /* Hero 고정 */
+                pin: true,
+
+                /*
+                 * 중요!
+                 * pin 공간을 만들지 않음
+                 *
+                 * → 다음 콘텐츠가
+                 *   Hero 위로 올라옴
+                 */
+                pinSpacing: false,
+
+                anticipatePin: 1,
+
+                invalidateOnRefresh: true
+            }
+
+        });
+
+
+    /* =========================================
+       Hero 자체는 움직이지 않음
+
+       heroInner scale X
+       heroStage scale X
+       hero y X
+    ========================================= */
+
+
+    /* =========================================
+       Hero만 살짝 어두워짐
+    ========================================= */
+
+    if (heroDim) {
+
+        coverTl.to(
+            heroDim,
+
+            {
+                opacity: 0.3,
+
+                ease: 'none',
+
+                duration: 1
+            },
+
+            0
+        );
+
+    }
+
+
+    /* =========================================
+       로딩 후 ScrollTrigger 재계산
+    ========================================= */
+
+    window.addEventListener(
+        'load',
+
+        () => {
+
+            ScrollTrigger.refresh();
+
+        },
+
+        {
+            once: true
+        }
+    );
+
+})();
+
+
+/* =========================================================
+   5. Product Showcase Reveal
+
+   배경만
+   ↓
+   제목
+   ↓
+   카테고리
+   ↓
+   제품 왼쪽부터
+   ↓
+   VIEW ALL
+========================================================= */
+
+(() => {
+
+    const showcase =
+        document.querySelector(
+            '.product_showcase'
+        );
+
+
+    if (!showcase) return;
+
+
+    if (
+        typeof gsap ===
+        'undefined'
+    ) {
+
+        console.warn(
+            '[product showcase] GSAP이 로드되지 않았습니다.'
+        );
+
+        return;
+    }
+
+
+    const title =
+        showcase.querySelector(
+            '.product_showcase_title'
+        );
+
+
+    const categoryButtons =
+        Array.from(
+            showcase.querySelectorAll(
+                '.category_button'
+            )
+        );
+
+
+    const cards =
+        Array.from(
+            showcase.querySelectorAll(
+                '.product_card'
+            )
+        );
+
+
+    const viewAll =
+        showcase.querySelector(
+            '.view_all_wrap'
+        );
+
+
+    const prefersReducedMotion =
+        window.matchMedia(
+            '(prefers-reduced-motion: reduce)'
+        ).matches;
+
+
+    if (prefersReducedMotion) {
+
+        gsap.set(
+            [
+                title,
+                ...categoryButtons,
+                ...cards,
+                viewAll
+            ].filter(Boolean),
+
+            {
+                opacity: 1,
+                y: 0
+            }
+        );
+
+
+        return;
+    }
+
+
+    /* =========================================
+       초기 상태
+       처음엔 배경만 보임
+    ========================================= */
+
+
+    if (title) {
+
+        gsap.set(
+            title,
+
+            {
+                opacity: 0,
+
+                y: 25
+            }
+        );
+
+    }
+
+
+    gsap.set(
+        categoryButtons,
+
+        {
+            opacity: 0,
+
+            y: 15
+        }
+    );
+
+
+    /*
+     * 제품은 위치 이동 없이
+     * opacity만 fade
+     */
+
+    gsap.set(
+        cards,
+
+        {
+            opacity: 0
+        }
+    );
+
+
+    if (viewAll) {
+
+        gsap.set(
+            viewAll,
+
+            {
+                opacity: 0,
+
+                y: 15
+            }
+        );
+
+    }
+
+
+    let hasPlayed = false;
+
+
+    function playShowcaseAnimation() {
+
+        if (hasPlayed) return;
+
+
+        hasPlayed = true;
+
+
+        const revealTl =
+            gsap.timeline({
+
+                defaults: {
+
+                    ease:
+                        'power2.out'
+
+                }
+
+            });
+
+
+        /* =========================================
+           1. 제목
+        ========================================= */
+
+        if (title) {
+
+            revealTl.to(
+                title,
+
+                {
+                    opacity: 1,
+
+                    y: 0,
+
+                    duration: 0.8
+                }
+            );
+
+        }
+
+
+        /* =========================================
+           2. 카테고리
+           왼쪽부터
+        ========================================= */
+
+        if (
+            categoryButtons.length
+        ) {
+
+            revealTl.to(
+                categoryButtons,
+
+                {
+                    opacity: 1,
+
+                    y: 0,
+
+                    duration: 0.6,
+
+                    /* 버튼 하나씩 조금 더 천천히 */
+                    stagger: 0.15
+                },
+
+                '-=0.1'
+            );
+
+        }
+
+
+        /* =========================================
+           3. 제품
+           왼쪽 → 오른쪽
+           첫째 줄 → 둘째 줄
+        ========================================= */
+
+        if (cards.length) {
+
+            revealTl.to(
+                cards,
+
+                {
+                    opacity: 1,
+
+                    duration: 0.5,
+
+                    stagger: 0.1
+                },
+
+                '-=0.05'
+            );
+
+        }
+
+
+        /* =========================================
+           4. VIEW ALL
+        ========================================= */
+
+        if (viewAll) {
+
+            revealTl.to(
+                viewAll,
+
+                {
+                    opacity: 1,
+
+                    y: 0,
+
+                    duration: 0.4
+                },
+
+                '-=0.1'
+            );
+
+        }
+
+    }
+
+
+    /* =========================================
+       실제 화면 진입 감지
+    ========================================= */
+
+    const observer =
+        new IntersectionObserver(
+
+            (entries) => {
+
+                entries.forEach(
+                    (entry) => {
+
+                        if (
+                            !entry.isIntersecting
+                        ) {
+                            return;
+                        }
+
+
+                        playShowcaseAnimation();
+
+
+                        observer.unobserve(
+                            showcase
+                        );
+
+                    }
+                );
+
+            },
+
+            {
+                /*
+                 * Product Showcase가
+                 * 약 15% 화면에 보이면 시작
+                 */
+                threshold: 0.15,
+
+                rootMargin:
+                    '0px 0px -5% 0px'
+            }
+
+        );
+
+
+    observer.observe(
+        showcase
+    );
+
+})();
+
+/* =========================================================
+   STARTER KIT MOTION
+========================================================= */
+
+(() => {
+  const reduceMotion =
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const hasGSAP =
+    typeof window.gsap !== "undefined";
+
+  if (reduceMotion || !hasGSAP) return;
+
+
+  const section =
+    document.querySelector(".starter_kit");
+
+  if (!section) return;
+
+
+  const inner =
+    section.querySelector(".starter_kit_inner");
+
+
+  const title =
+    section.querySelector(".starter_kit_title");
+
+  const desc =
+    section.querySelector(".starter_kit_desc");
+
+  const cta =
+    section.querySelector(".starter_kit_cta");
+
+  const character =
+    section.querySelector(".starter_kit_character");
+
+  const cards =
+    gsap.utils.toArray(
+      ".starter_kit_card",
+      section
+    );
+
+  const best =
+    section.querySelector(".starter_kit_best");
+
+  /* =====================================================
+     1. 처음 상태
+  ===================================================== */
+
+  gsap.set(
+    [title, desc, character].filter(Boolean),
+    {
+      autoAlpha: 0,
+      y: 30
+    }
+  );
+
+
+  if (cta) {
+    gsap.set(cta, {
+      autoAlpha: 0,
+      y: 24,
+      scale: 0.75,
+      rotation: -5
+    });
+  }
+
+
+  /*
+    BEST는 원래 CSS에서 rotate(-12deg)이므로
+    최종 위치도 -12도로 맞춰줍니다.
+  */
+  if (best) {
+    gsap.set(best, {
+      autoAlpha: 0,
+      scale: 1.8,
+      rotation: -35
+    });
+  }
+
+
+
+  /* =====================================================
+     2. 카드 겹쳐놓기
+
+     첫 번째 카드 = 딸기
+     두 번째 = 바나나
+     세 번째 = 청포도
+
+     바나나/청포도를 딸기 뒤로 이동
+  ===================================================== */
+
+  function stackCards() {
+
+    if (cards.length < 2) return;
+
+
+    /*
+      먼저 카드들을 최종 위치로 초기화한 다음
+      실제 좌표를 계산합니다.
+    */
+    gsap.set(cards, {
+      clearProps: "transform"
+    });
+
+
+    const strawberry =
+      cards[0];
+
+    const strawberryRect =
+      strawberry.getBoundingClientRect();
+
+
+    cards.slice(1).forEach(
+      (card, index) => {
+
+        const cardRect =
+          card.getBoundingClientRect();
+
+
+        const x =
+          strawberryRect.left -
+          cardRect.left;
+
+        const y =
+          strawberryRect.top -
+          cardRect.top;
+
+
+        gsap.set(card, {
+
+          /*
+            딸기 카드 바로 뒤로 이동
+          */
+          x:
+            x +
+            ((index + 1) * 7),
+
+          y:
+            y +
+            ((index + 1) * 5),
+
+          scale:
+            1 - ((index + 1) * 0.025),
+
+          rotation:
+            index === 0
+              ? 3
+              : 6
+
+        });
+
+      }
+    );
+
+  }
+
+
+
+  /* =====================================================
+     3. 애니메이션
+  ===================================================== */
+
+  function playStarterMotion() {
+
+    const tl =
+      gsap.timeline({
+        defaults: {
+          ease: "power3.out"
+        }
+      });
+
+
+        /* ---------------------------------------------
+     inner 전체가 먼저 오른쪽 → 왼쪽으로 싸악
+  --------------------------------------------- */
+
+  if (inner) {
+
+    tl.fromTo(
+      inner,
+      {
+        x: 180,
+        autoAlpha: 0
+      },
+      {
+        x: 0,
+        autoAlpha: 1,
+
+        duration: 0.4,
+
+        ease: "expo.out"
+      }
+    );
+
+  }
+
+    /* ---------------------------------------------
+       제목
+    --------------------------------------------- */
+
+    if (title) {
+
+      tl.to(title, {
+        autoAlpha: 1,
+        y: 0,
+
+        duration: 0.18
+      });
+
+    }
+
+
+
+    /* ---------------------------------------------
+       설명
+    --------------------------------------------- */
+
+    if (desc) {
+
+      tl.to(
+        desc,
+        {
+          autoAlpha: 1,
+          y: 0,
+
+          duration: 0.18
+        },
+
+        "-=0.10"
+      );
+
+    }
+
+
+
+    /* ---------------------------------------------
+       캐릭터 두둥실
+    --------------------------------------------- */
+
+    if (character) {
+
+      tl.to(
+        character,
+        {
+          autoAlpha: 1,
+
+          y: 0,
+
+          duration: 0.22,
+
+          ease: "back.out(1.5)"
+        },
+
+        "-=0.10"
+      );
+
+    }
+
+
+
+    /* ---------------------------------------------
+       버튼 통통 등장
+    --------------------------------------------- */
+
+    if (cta) {
+
+      tl.to(
+        cta,
+        {
+          autoAlpha: 1,
+
+          y: 0,
+
+          scale: 1.12,
+
+          rotation: 3,
+
+          duration: 0.18,
+
+          ease: "back.out(3)"
+        },
+
+        "-=0.14"
+      );
+
+
+      tl.to(
+        cta,
+        {
+          scale: 1,
+
+          rotation: 0,
+
+          duration: 0.07
+        },
+
+        "-=0.03"
+      );
+
+    }
+
+
+
+   /* =================================================
+   카드 휘리릭 펼치기
+
+   딸기   : -5deg
+   바나나 :  7deg
+   청포도 : -14deg
+================================================= */
+
+if (cards.length > 1) {
+
+  /* 딸기 카드 */
+  tl.to(
+    cards[0],
+    {
+      rotation: -5,
+
+      duration: 0.18,
+
+      ease: "power3.out"
+    },
+
+    "-=0.05"
+  );
+
+
+  /* 바나나 카드 */
+  tl.to(
+    cards[1],
+    {
+      x: 0,
+      y: 8,
+
+      scale: 1,
+
+      rotation: 7,
+
+      duration: 0.28,
+
+      ease: "power4.out"
+    },
+
+    "-=0.16"
+  );
+
+
+  /* 청포도 카드 */
+  tl.to(
+    cards[2],
+    {
+      x: 0,
+      y: 2,
+
+      scale: 1,
+
+      rotation: -14,
+
+      duration: 0.28,
+
+      ease: "power4.out"
+    },
+
+    "-=0.22"
+  );
+
+}
+
+
+
+    /* =================================================
+       BEST 도장 쾅!
+    ================================================= */
+
+    if (best) {
+
+      tl.to(
+        best,
+        {
+          autoAlpha: 1,
+
+          scale: 0.82,
+
+          rotation: -5,
+
+          duration: 0.13,
+
+          ease: "power4.in"
+        },
+
+        "-=0.10"
+      );
+
+
+      tl.to(
+        best,
+        {
+          scale: 1.12,
+
+          rotation: -15,
+
+          duration: 0.08,
+
+          ease: "back.out(4)"
+        }
+      );
+
+
+      tl.to(
+        best,
+        {
+          scale: 1,
+
+          rotation: -12,
+
+          duration: 0.06
+        }
+      );
+
+    }
+
+
+    /*
+      버튼의 inline transform 제거.
+      그래야 기존 CSS hover의
+      translateY(-2px)가 정상 작동합니다.
+    */
+    if (cta) {
+
+      tl.set(cta, {
+        clearProps: "transform"
+      });
+
+    }
+
+  }
+
+
+
+  /* =====================================================
+     4. 섹션이 약 75% 들어왔을 때 한 번 실행
+  ===================================================== */
+
+  const observer =
+    new IntersectionObserver(
+
+      (entries, observer) => {
+
+        entries.forEach(entry => {
+
+          if (!entry.isIntersecting) return;
+
+
+          playStarterMotion();
+
+
+          observer.unobserve(entry.target);
+
+        });
+
+      },
+
+      {
+        threshold: 0.75
+      }
+
+    );
+
+
+
+  /* =====================================================
+     5. 이미지 로딩 후 카드 위치 계산
+  ===================================================== */
+
+  function initStarterMotion() {
+
+    stackCards();
+
+    observer.observe(section);
+
+  }
+
+
+  if (
+    document.readyState === "complete"
+  ) {
+
+    initStarterMotion();
+
+  } else {
+
+    window.addEventListener(
+      "load",
+      initStarterMotion,
+      {
+        once: true
+      }
+    );
+
+  }
+
 })();
