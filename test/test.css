@@ -738,7 +738,7 @@ body {
 .choice {
     padding: 14px 26px;
     border: 0;
-    border-radius: 6px;
+    border-radius: 4px 4px 32px 32px;
     background: var(--bekseju_dark1, #4C3B33);
     color: var(--makgeolli_White, #FFF);
     font: var(--PC-Body_Normal_16SB);
@@ -867,7 +867,7 @@ body {
 #q4_yangban,
 #cut_yangban_alone,
 #cut_yangban_together {
-    background-size: contain;
+    background-size: cover;
     background-image: url("test_asset/Yangban_background.png");
 }
 
@@ -884,7 +884,7 @@ body {
 #q4_pyeongmin,
 #cut_pyeongmin_alone,
 #cut_pyeongmin_together {
-    background-size: contain;
+    background-size: cover;
     background-image: url("test_asset/Pyeongmin_back.png");
 }
 
@@ -907,7 +907,7 @@ body {
         rgba(35, 35, 35, 0.8);
 }
 
-/* 질문이 없는 전환 컷(CLICK TO CONTINUE 화면)에는 질문 글이 없으므로
+/* 질문이 없는 전환 컷에는 질문 글이 없으므로
    위쪽에 한 겹 더 얹던 검은 띠를 빼고 전체 어두운 막만 남긴다 */
 .screen_cut.screen_dim::before {
     background: rgba(35, 35, 35, 0.8);
@@ -921,7 +921,7 @@ body {
 
 /* ---------- 배경 그림 위에 물건 올리기 ---------- */
 
-/* 배경 그림(1920x1080)이 contain 으로 앉는 자리와 똑같은 크기·위치의 빈 상자.
+/* 배경 그림(1920x1080)이 cover 로 채워지는 자리와 똑같은 크기·위치의 빈 상자.
    이 안에서 %로 좌표를 잡으면 그림 속 좌표(탁자 위 등)와 그대로 맞아떨어진다.
    .screen 이 틀만큼 안쪽에 있으므로 화면 크기에서 틀 폭을 빼서 계산함.
    .screen_dim>* 규칙에 position 을 뺏기지 않게 그 뒤에 둠 */
@@ -933,8 +933,8 @@ body {
     top: 50%;
     left: 50%;
     z-index: 1;
-    width: min(var(--sw), var(--sh) * 16 / 9);
-    height: min(var(--sh), var(--sw) * 9 / 16);
+    width: max(var(--sw), var(--sh) * 16 / 9);
+    height: max(var(--sh), var(--sw) * 9 / 16);
     translate: -50% -50%;
     pointer-events: none;
 }
@@ -1012,14 +1012,6 @@ body {
     --w: 3.9%;
 }
 
-/* "클릭해서 계속" 안내는 요소가 아니라 ::after 라서 어두운 막에 덮인다. 따로 올려 줌.
-   자리 잡기는 아래 .screen_cut::after 가 absolute 로 하므로 여기서는 층과 그림자만 손댐 */
-.screen_dim.screen_cut::after {
-    z-index: 1;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
-}
-
-
 /* ===================== 전환 컷 ===================== */
 
 /* 문제 사이에 끼는 연출 화면. 아무 데나 누르면 다음으로 넘어감 */
@@ -1045,12 +1037,7 @@ body {
     height: auto;
 }
 
-/* 흰 배경에서는 밝은 글씨가 묻히므로 안내 문구와 BACK 을 어둡게 뒤집음 */
-.screen_white.screen_cut::after {
-    color: rgba(39, 38, 37, 0.55);
-    text-shadow: none;
-}
-
+/* 흰 배경에서는 BACK 버튼이 묻히지 않도록 어두운 색으로 뒤집음 */
 /* 결과 화면도 흰 배경이라 같이 묶어 둠 */
 .test:has(.screen_white.is_on) .btn_back,
 .test:has(.screen_result.is_on) .btn_back {
@@ -1071,7 +1058,7 @@ body {
 }
 
 /* 전환 컷의 인물 그림. 배경과 같은 1920x1080 판이라
-   object-fit: contain 으로 배경(background-size: contain)과 똑같이 앉히면 자리가 맞음.
+   object-fit: cover 로 배경(background-size: cover)과 같은 기준을 사용함.
    어두운 막(z-index 0) 위로 올려서 인물만 또렷하게 남김.
    .screen_dim>* 규칙보다 뒤에 둬야 position 을 뺏기지 않음 */
 .cut_actor {
@@ -1080,43 +1067,9 @@ body {
     z-index: 1;
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
+    object-position: center;
     pointer-events: none;
-}
-
-/* 컷 화면에만 붙는 "클릭해서 계속" 안내.
-   흐름에 두면 위쪽 내용 길이에 따라 자리가 들쭉날쭉해서
-   화면 바닥에서 100px 띄운 자리에 고정함 */
-.screen_cut::after {
-    content: "CLICK TO CONTINUE";
-    position: absolute;
-    left: 50%;
-    bottom: 100px;
-    transform: translateX(-50%);
-    white-space: nowrap;
-    font-size: 12px;
-    letter-spacing: 2px;
-    color: var(--test_dim);
-    opacity: 0.7;
-    animation: cut_blink 1.6s ease-in-out infinite;
-}
-
-@keyframes cut_blink {
-
-    0%,
-    100% {
-        opacity: 0.25;
-    }
-
-    50% {
-        opacity: 0.9;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .screen_cut::after {
-        animation: none;
-    }
 }
 
 /* ===================== 결과 ===================== */
