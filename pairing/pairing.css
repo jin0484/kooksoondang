@@ -327,40 +327,6 @@
     transform: rotate(180deg);
 }
 
-.pairing_page .pairing_result_action {
-    display: flex;
-    justify-content: center;
-    margin-top: clamp(2rem, 3.125vw, 3.75rem);
-}
-
-.pairing_page .pairing_result_button {
-    min-width: clamp(11.5rem, 12.396vw, 14.875rem);
-    padding: clamp(0.875rem, 0.933vw, 1.125rem) 2rem;
-    border: 1px solid var(--pairing-orange);
-    border-radius: 0.25rem 0.25rem 2rem 2rem;
-    background: transparent;
-    color: var(--pairing-orange);
-    font-size: clamp(1.125rem, 1.542vw, 1.85rem);
-    font-weight: 600;
-    line-height: 1;
-    letter-spacing: 0.01em;
-    transition: background-color 180ms ease, color 180ms ease, opacity 180ms ease, transform 180ms ease;
-}
-
-.pairing_page .pairing_result_button:not(:disabled) {
-    background: var(--pairing-orange);
-    color: var(--makgeolli_light4);
-}
-
-.pairing_page .pairing_result_button:not(:disabled):hover {
-    transform: translateY(-0.25rem);
-}
-
-.pairing_page .pairing_result_button:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-}
-
 .pairing_page .pairing_food_section {
     padding-top: clamp(4rem, 5.208vw, 6.25rem);
 }
@@ -405,6 +371,14 @@
     align-items: center;
     gap: 1.875rem;
     margin-top: 1.25rem;
+}
+
+.pairing_page .pairing_food_carousel.is_all_visible {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.pairing_page .pairing_food_carousel.is_all_visible .pairing_carousel_arrow {
+    display: none;
 }
 
 .pairing_page .pairing_carousel_arrow,
@@ -573,7 +547,7 @@
 
 .pairing_page .pairing_recipe_viewport {
     width: min(calc(100% - var(--pairing-heading-inset) - var(--pairing-heading-inset)), 101.25rem);
-    margin: clamp(2rem, 3.125vw, 3.75rem) auto 0;
+    margin: clamp(1rem, 1.875vw, 2.25rem) auto 0;
     container-type: inline-size;
 }
 
@@ -602,12 +576,15 @@
 }
 
 .pairing_page .pairing_recipe_content {
+    --pairing-recipe-inline-padding: clamp(2rem, 4.95cqw, 5rem);
+    --pairing-recipe-block-padding: clamp(1.25rem, 3.7cqw, 3.75rem);
     display: flex;
     align-items: center;
     flex-direction: column;
     justify-content: center;
     min-width: 0;
-    padding: clamp(2rem, 4.95cqw, 5rem);
+    padding-block: var(--pairing-recipe-block-padding);
+    padding-inline: var(--pairing-recipe-inline-padding);
 }
 
 .pairing_page .pairing_recipe_inner {
@@ -1722,10 +1699,6 @@
         height: clamp(1.25rem, 1.75vw, 1.75rem);
     }
 
-    .pairing_page .pairing_result_action {
-        margin-top: 1.5rem;
-    }
-
     .pairing_page .pairing_food_carousel {
         grid-template-columns: 2.25rem minmax(0, 1fr) 2.25rem;
         gap: 1rem;
@@ -2248,8 +2221,11 @@
 /* Mobile recipe card: photo-led composition matching the Figma strawberry reference. */
 @media (max-width: 47.9375rem) {
     .pairing_page .pairing_recipe_card {
+        --pairing-recipe-mobile-media-height: clamp(17rem, 94vw, 22.5rem);
+        --pairing-recipe-mobile-overlay-height: clamp(10rem, 47vw, 11.5rem);
+        --pairing-recipe-mobile-copy-row: clamp(15.5rem, 64vw, 16.5rem);
         display: grid;
-        grid-template-rows: clamp(19rem, 108vw, 25.25rem) auto;
+        grid-template-rows: var(--pairing-recipe-mobile-media-height) minmax(var(--pairing-recipe-mobile-copy-row), auto);
         position: relative;
         border-radius: 0.75rem;
         background: var(--pairing-copy);
@@ -2258,10 +2234,10 @@
     .pairing_page .pairing_recipe_card::before {
         position: absolute;
         z-index: 1;
-        top: calc(clamp(19rem, 108vw, 25.25rem) - clamp(11rem, 47vw, 12.5rem));
+        top: calc(var(--pairing-recipe-mobile-media-height) - var(--pairing-recipe-mobile-overlay-height));
         right: 0;
         left: 0;
-        height: clamp(12rem, 52vw, 14rem);
+        height: var(--pairing-recipe-mobile-overlay-height);
         background: linear-gradient(180deg, rgba(93, 80, 74, 0) 0%, rgba(93, 80, 74, 0.12) 18%, rgba(93, 80, 74, 0.4) 42%, rgba(93, 80, 74, 0.78) 70%, var(--pairing-copy) 100%);
         content: "";
         pointer-events: none;
@@ -2271,7 +2247,7 @@
         position: relative;
         z-index: 0;
         grid-row: 1;
-        height: clamp(19rem, 108vw, 25.25rem);
+        height: var(--pairing-recipe-mobile-media-height);
         background: var(--pairing-copy);
         -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 58%, rgba(0, 0, 0, 0.72) 74%, rgba(0, 0, 0, 0.28) 88%, transparent 100%);
         mask-image: linear-gradient(180deg, #000 0%, #000 58%, rgba(0, 0, 0, 0.72) 74%, rgba(0, 0, 0, 0.28) 88%, transparent 100%);
@@ -2279,6 +2255,12 @@
 
     .pairing_page .pairing_recipe_image {
         object-position: center;
+    }
+
+    .pairing_page .pairing_recipe_card--strawberry-makgeolli .pairing_recipe_image,
+    .pairing_page .pairing_recipe_card--honey-makgeolli .pairing_recipe_image,
+    .pairing_page .pairing_recipe_card--matcha-makgeolli .pairing_recipe_image {
+        object-position: center 70%;
     }
 
     .pairing_page .pairing_recipe_content {
@@ -2404,8 +2386,7 @@
         animation: pairing_option_selected 300ms cubic-bezier(0.22, 1, 0.36, 1);
     }
 
-    .pairing_page .pairing_question_next:not(:disabled),
-    .pairing_page .pairing_result_button:not(:disabled) {
+    .pairing_page .pairing_question_next:not(:disabled) {
         animation: pairing_action_ready 420ms ease-out;
     }
 
@@ -2453,7 +2434,6 @@
 
     .pairing_page .pairing_question_option:active,
     .pairing_page .pairing_question_nav_button:not(:disabled):active,
-    .pairing_page .pairing_result_button:not(:disabled):active,
     .pairing_page .pairing_food_tab:active,
     .pairing_page .pairing_recipe_picker:active {
         transform: scale(0.975);
