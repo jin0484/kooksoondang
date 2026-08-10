@@ -102,9 +102,9 @@
         {
             id: 'makgeolli-highball',
             title: 'Makgeolli Highball',
-            feature: 'A refreshing sparkling twist',
+            feature: 'Refreshing & Light',
             difficulty: 'Beginner',
-            time: '10 min',
+            time: '2 min',
             image: 'Makgeolli Highball.png',
             icons: recipeIconSet,
             ingredients: ['Makgeolli 120 ml', 'Sparkling water 100 ml', 'Lemon juice 10 ml', 'Ice cubes', 'Lemon slice'],
@@ -120,7 +120,7 @@
             image: 'figma/strawberry_makgeolli.png',
             icons: recipeIconSet,
             ingredients: ['120 ml (4 oz) Makgeolli', '3–4 Fresh Strawberries', '15 ml (0.5 oz) Strawberry Syrup', 'Ice Cubes'],
-            steps: ['Remove the strawberry stems and cut the berries into small pieces.', 'Gently mash the strawberries with the strawberry syrup.', 'Fill a glass with ice, then add the strawberry mixture.', 'Pour in the Makgeolli and stir gently until evenly blended.'],
+            steps: ['Hull and chop the strawberries.', 'Mash with strawberry syrup.', 'Add ice, then the berry mix.', 'Pour in makgeolli; stir gently.'],
             tip: ['Save a strawberry slice for garnish.', 'For a smoother texture, blend the fruit before adding it to the glass.']
         },
         {
@@ -137,7 +137,7 @@
                 divider: 'icon/recipe/honey_divider.svg'
             },
             ingredients: ['150 ml (5 oz) Makgeolli', '15 ml (0.5 oz) Honey', '15 ml (0.5 oz) Warm Water', 'Ice Cubes'],
-            steps: ['Mix the honey with warm water until completely dissolved.', 'Gently swirl the Makgeolli bottle to blend the sediment.', 'Fill a glass with ice, then pour in the Makgeolli.', 'Add the honey mixture and stir gently until well combined.'],
+            steps: ['Dissolve honey in warm water.', 'Gently swirl the makgeolli bottle.', 'Add ice and pour in makgeolli.', 'Stir in the honey mixture.'],
             tip: ['Garnish with a small piece of honeycomb.', 'Adjust the amount of honey to match your preferred sweetness.']
         },
         {
@@ -154,7 +154,7 @@
                 divider: 'icon/recipe/matcha_divider.svg'
             },
             ingredients: ['120 ml (4 oz) Makgeolli', '2 g (1 tsp) Matcha Powder', '30 ml (1 oz) Warm Water', '10 ml (0.3 oz) Simple Syrup'],
-            steps: ['Sift the matcha powder into a small bowl to remove any lumps.', 'Add warm water and whisk until smooth and lightly foamy.', 'Pour the chilled Makgeolli and simple syrup into a glass.', 'Slowly pour the matcha over the top to create a layered finish.'],
+            steps: ['Sift matcha into a small bowl.', 'Whisk with warm water until foamy.', 'Add makgeolli and syrup to a glass.', 'Top slowly with matcha.'],
             tip: ['Pour the matcha slowly over the back of a spoon.', 'This helps create a clean and visible green layer.']
         },
         {
@@ -171,7 +171,7 @@
                 divider: 'icon/recipe/baekseju_divider.svg'
             },
             ingredients: ['60 ml (2 oz) Baekseju', '120 ml (4 oz) Sparkling Water', '10 ml (0.3 oz) Honey Syrup', 'Large Ice Cubes'],
-            steps: ['Fill a highball glass to the brim with large ice cubes.', 'Pour in the Baekseju and gently swirl to chill the drink.', 'Add the honey syrup and stir once until evenly combined.', 'Slowly pour in the sparkling water to preserve the carbonation.'],
+            steps: ['Fill a highball glass with ice.', 'Pour in Baekseju and swirl to chill.', 'Add honey syrup; stir once.', 'Top slowly with sparkling water.'],
             tipLines: ['Stir only once after adding the sparkling water.', 'Garnish with a thin slice of ginger for a fresh herbal aroma.'],
             tip: 'A rosemary sprig brings out Baekseju’s delicate herbal aroma.'
         }
@@ -300,6 +300,9 @@
     };
     let recipeTransitionTimer = null;
     let recipeTransitionId = 0;
+    let resultModalOpener = null;
+    let shouldRestoreResultFocus = true;
+    let foodCarouselResizeFrame = 0;
 
     const assetUrl = (path) => encodeURI(`./pairing_asset/${path}`);
     const escapeHtml = (value) => String(value)
@@ -310,8 +313,10 @@
         .replaceAll("'", '&#039;');
 
     const questionnaire = document.querySelector('#pairing_questionnaire');
-    const resultButton = document.querySelector('#pairing_result_button');
     const foodTrack = document.querySelector('#pairing_food_track');
+    const foodCarousel = foodTrack?.closest('.pairing_food_carousel');
+    const foodPreviousButton = document.querySelector('.pairing_food_previous');
+    const foodNextButton = document.querySelector('.pairing_food_next');
     const foodTabs = document.querySelectorAll('.pairing_food_tab');
     const recipePickerList = document.querySelector('#pairing_recipe_picker_list');
     const recipeViewport = document.querySelector('#pairing_recipe_viewport');
@@ -319,7 +324,7 @@
     const resultModalContent = document.querySelector('#pairing_result_modal_content');
     const modalCloseButton = document.querySelector('#pairing_modal_close');
 
-    if (!questionnaire || !resultButton || !foodTrack || !recipePickerList || !recipeViewport || !resultModal || !resultModalContent || !modalCloseButton) {
+    if (!questionnaire || !foodTrack || !recipePickerList || !recipeViewport || !resultModal || !resultModalContent || !modalCloseButton) {
         return;
     }
 
@@ -331,12 +336,16 @@
         return `pairing_question_content_${question.id}`;
     }
 
+    function areAllQuestionsAnswered() {
+        return questions.every((question) => Boolean(state.answers[question.id]));
+    }
+
     function getQuestionPanelMarkup(question, questionIndex) {
         const isOpen = questionIndex === state.activeQuestionIndex;
         const selectedAnswer = state.answers[question.id];
         const isFirstQuestion = questionIndex === 0;
         const isLastQuestion = questionIndex === questions.length - 1;
-        const canShowResult = questions.every((item) => Boolean(state.answers[item.id]));
+        const canShowResult = areAllQuestionsAnswered();
         const canContinue = isLastQuestion ? canShowResult : Boolean(selectedAnswer);
         const panelId = getQuestionPanelId(question);
         const contentId = getQuestionContentId(question);
@@ -380,6 +389,7 @@
             questionnaire.innerHTML = questions.map((question, index) => getQuestionPanelMarkup(question, index)).join('');
         }
 
+        const canShowResult = areAllQuestionsAnswered();
         questions.forEach((question, questionIndex) => {
             const panel = questionnaire.querySelector(`#${getQuestionPanelId(question)}`);
             if (!panel) return;
@@ -392,7 +402,6 @@
             const nextButton = panel.querySelector('[data-question-next]');
             const isFirstQuestion = questionIndex === 0;
             const isLastQuestion = questionIndex === questions.length - 1;
-            const canShowResult = questions.every((item) => Boolean(state.answers[item.id]));
             const canContinue = isLastQuestion ? canShowResult : Boolean(selectedAnswer);
 
             panel.classList.toggle('is_open', isOpen);
@@ -430,6 +439,7 @@
                 nextButton.textContent = isLastQuestion ? 'View Result' : 'Next';
             }
         });
+
     }
 
     function focusActiveQuestionOption() {
@@ -455,12 +465,6 @@
         }
     }
 
-    function updateResultButton() {
-        const canShowResult = questions.every((question) => Boolean(state.answers[question.id]));
-        resultButton.disabled = !canShowResult;
-        resultButton.setAttribute('aria-disabled', String(!canShowResult));
-    }
-
     function handleQuestionnaireClick(event) {
         const answerButton = event.target.closest('[data-question-answer]');
         const questionTab = event.target.closest('[data-question-open]');
@@ -472,7 +476,6 @@
             const answerValue = answerButton.dataset.answerValue;
             state.answers[questionId] = answerValue;
             renderQuestionnaire();
-            updateResultButton();
             return;
         }
 
@@ -492,8 +495,7 @@
             if (!currentQuestion || nextButton.disabled) return;
 
             if (currentQuestionIndex === questions.length - 1) {
-                resultButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                resultButton.focus({ preventScroll: true });
+                openResultModal(nextButton);
                 return;
             }
 
@@ -530,6 +532,7 @@
                 <span class="pairing_food_tag">${escapeHtml(food.tag)}</span>
             </article>`;
         }).join('');
+        updateFoodCarouselControls();
     }
 
     function setFoodCategory(category) {
@@ -549,6 +552,32 @@
         const trackRect = foodTrack.getBoundingClientRect();
         const cardRect = card.getBoundingClientRect();
         return foodTrack.scrollLeft + cardRect.left - trackRect.left;
+    }
+
+    function updateFoodCarouselControls() {
+        if (!foodCarousel || !foodPreviousButton || !foodNextButton) return;
+
+        // Compare against the whole carousel, so the arrow columns themselves
+        // do not stop a row of cards that already fits from becoming static.
+        const hasOverflow = foodTrack.scrollWidth > foodCarousel.clientWidth + 1;
+        const areAllCardsVisible = !hasOverflow;
+        foodCarousel.classList.toggle('is_all_visible', areAllCardsVisible);
+        foodPreviousButton.hidden = areAllCardsVisible;
+        foodNextButton.hidden = areAllCardsVisible;
+        foodTrack.tabIndex = areAllCardsVisible ? -1 : 0;
+
+        if (areAllCardsVisible && foodTrack.scrollLeft !== 0) {
+            foodTrack.scrollTo({ left: 0, behavior: 'auto' });
+        }
+    }
+
+    function scheduleFoodCarouselControlUpdate() {
+        if (foodCarouselResizeFrame) return;
+
+        foodCarouselResizeFrame = window.requestAnimationFrame(() => {
+            foodCarouselResizeFrame = 0;
+            updateFoodCarouselControls();
+        });
     }
 
     function scrollFoodCards(direction) {
@@ -915,9 +944,30 @@
             </div>`;
     }
 
-    function openResultModal() {
-        if (resultButton.disabled) return;
+    function restoreResultModalFocus() {
+        const opener = resultModalOpener;
+        resultModalOpener = null;
 
+        if (!shouldRestoreResultFocus || !opener?.isConnected) return;
+
+        try {
+            opener.focus({ preventScroll: true });
+        } catch {
+            opener.focus();
+        }
+    }
+
+    function handleResultModalClose() {
+        document.body.classList.remove('is_pairing_modal_open');
+        restoreResultModalFocus();
+        shouldRestoreResultFocus = true;
+    }
+
+    function openResultModal(opener) {
+        if (!areAllQuestionsAnswered()) return;
+
+        resultModalOpener = opener || questionnaire.querySelector(`[data-question-next="${questions.length - 1}"]`);
+        shouldRestoreResultFocus = true;
         renderResult();
         document.body.classList.add('is_pairing_modal_open');
         if (typeof resultModal.showModal === 'function') {
@@ -929,17 +979,17 @@
     }
 
     function closeResultModal(shouldRestoreFocus = true) {
+        shouldRestoreResultFocus = shouldRestoreFocus;
         if (typeof resultModal.close === 'function' && resultModal.open) {
             resultModal.close();
+            return;
         } else {
             resultModal.removeAttribute('open');
         }
-        document.body.classList.remove('is_pairing_modal_open');
-        if (shouldRestoreFocus) resultButton.focus();
+        handleResultModalClose();
     }
 
     questionnaire.addEventListener('click', handleQuestionnaireClick);
-    resultButton.addEventListener('click', openResultModal);
     modalCloseButton.addEventListener('click', closeResultModal);
     resultModalContent.addEventListener('click', (event) => {
         const continueButton = event.target.closest('[data-result-continue]');
@@ -956,7 +1006,7 @@
             document.querySelector('#food_pairing')?.scrollIntoView({ behavior: 'smooth' });
         }
     });
-    resultModal.addEventListener('close', () => document.body.classList.remove('is_pairing_modal_open'));
+    resultModal.addEventListener('close', handleResultModalClose);
     resultModal.addEventListener('click', (event) => {
         if (event.target === resultModal) closeResultModal();
     });
@@ -964,8 +1014,8 @@
     foodTabs.forEach((tab) => {
         tab.addEventListener('click', () => setFoodCategory(tab.dataset.foodCategory));
     });
-    document.querySelector('.pairing_food_previous')?.addEventListener('click', () => scrollFoodCards(-1));
-    document.querySelector('.pairing_food_next')?.addEventListener('click', () => scrollFoodCards(1));
+    foodPreviousButton?.addEventListener('click', () => scrollFoodCards(-1));
+    foodNextButton?.addEventListener('click', () => scrollFoodCards(1));
     foodTrack.addEventListener('keydown', (event) => {
         if (event.key === 'ArrowLeft') {
             event.preventDefault();
@@ -977,6 +1027,7 @@
         }
     });
     createMouseDragScroller(foodTrack);
+    window.addEventListener('resize', scheduleFoodCarouselControlUpdate, { passive: true });
 
     recipePickerList.addEventListener('click', (event) => {
         const picker = event.target.closest('[data-recipe-index]');
@@ -1005,7 +1056,6 @@
     }, true);
 
     renderQuestionnaire();
-    updateResultButton();
     renderFoodCards();
     renderRecipePickers();
     renderRecipe();
