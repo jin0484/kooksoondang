@@ -9,6 +9,7 @@
     if (!test) return;
 
     var btnBack = document.getElementById('btn_back');
+    var btnSkip = document.getElementById('btn_skip');
     var progress = document.getElementById('progress');
     var progressNow = document.getElementById('progress_now');
 
@@ -364,8 +365,10 @@
         if (step) {
             progressNow.textContent = step;
             progress.hidden = false;
+            btnSkip.hidden = false;
         } else {
             progress.hidden = true;
+            btnSkip.hidden = true;
         }
 
         btnBack.hidden = trail.length === 0;
@@ -421,6 +424,12 @@
        선택지 버튼, 전환 컷(섹션 전체), 시작/다시하기 버튼이 모두 data-next 를 갖고 있음
     ------------------------------------------------------------------ */
     test.addEventListener('click', function (e) {
+        if (e.target.closest('#btn_skip')) {
+            if (window.sitePageTransition) window.sitePageTransition.leaveTo('../main/main.html');
+            else window.location.assign('../main/main.html');
+            return;
+        }
+
         if (e.target.closest('#btn_back')) {
             back();
             return;
