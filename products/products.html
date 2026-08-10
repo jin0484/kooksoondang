@@ -30,7 +30,7 @@
   <meta property="og:image" content="https://jin0484.github.io/kooksoondang/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <title>Products1</title>
+  <title>Products</title>
   <link rel="stylesheet" href="../common/reset.css">
   <link rel="stylesheet" href="../common/common.css">
   <!-- 페이지 전환 덮개. 첫 프레임부터 덮여 있어야 하므로 다른 스타일보다 먼저 읽어 둠 -->
@@ -210,20 +210,26 @@
               </button>
             </li>
 
+            <!-- disabled 는 click 자체가 안 올라와서 안내를 띄울 수 없음.
+                 보이기는 그대로 흐리게 두고 aria-disabled 로만 표시함 -->
+
             <li>
-              <button class="category_button" type="button" aria-pressed="false" data-category="bekseju" disabled>
+              <button class="category_button" type="button" aria-pressed="false" aria-disabled="true"
+                data-category="bekseju" data-coming-soon>
                 BEKSEJU
               </button>
             </li>
 
             <li>
-              <button class="category_button" type="button" aria-pressed="false" data-category="yedamcheong" disabled>
+              <button class="category_button" type="button" aria-pressed="false" aria-disabled="true"
+                data-category="yedamcheong" data-coming-soon>
                 YEDAMCHEONG
               </button>
             </li>
 
             <li>
-              <button class="category_button" type="button" aria-pressed="false" data-category="soju" disabled>
+              <button class="category_button" type="button" aria-pressed="false" aria-disabled="true"
+                data-category="soju" data-coming-soon>
                 SOJU
               </button>
             </li>
@@ -484,7 +490,7 @@
 
           <div class="view_all_wrap">
 
-            <button class="view_all_button" type="button" data-view-all>
+            <button class="view_all_button" type="button" data-view-all data-coming-soon>
               VIEW ALL
 
               <span class="view_all_chevron" aria-hidden="true"></span>
@@ -697,11 +703,22 @@
 
   </main>
 
-  <!-- 세 페이지가 함께 쓰는 TOP 버튼. 모양은 common.css, 동작은 common.js 가 맡음 -->
-  <button class="site_top_button" type="button" aria-label="Back to top" data-top-button>
-    <img class="site_top_character" src="../asset/img/top_character.png" alt="">
-    <img class="site_top_bowl" src="../asset/icon/top_btn.svg" alt="">
-  </button>
+  <!-- 캐릭터와 TOP 버튼을 겹쳐 세우는 자리.
+       캐릭터는 TOP 이 아닌 다른 버튼이라 button 밖에 둠 (눌러도 맨 위로 가지 않음) -->
+  <div class="products_top_stack">
+
+    <img class="products_top_character" src="products_asset/img/topimg.png" alt="" aria-hidden="true">
+
+    <!-- 세 페이지가 함께 쓰는 TOP 버튼. 모양은 common.css, 동작은 common.js 가 맡음 -->
+    <button class="site_top_button" type="button" aria-label="Back to top" data-top-button>
+      <img class="site_top_bowl" src="../asset/icon/top_btn.svg" alt="">
+    </button>
+
+  </div>
+
+  <!-- 준비중인 버튼을 눌렀을 때 잠깐 떴다 사라지는 안내.
+       문구는 JS 가 넣어야 aria-live 가 읽어주므로 비워 둠 -->
+  <div class="coming_soon_toast" data-coming-soon-toast role="status" aria-live="polite"></div>
 
   <footer class="site_footer" id="site_footer">
     <img class="site_footer_wave" src="../asset/icon/footer_wave.svg" alt="" aria-hidden="true">
@@ -735,30 +752,15 @@
             <img src="../asset/icon/chevron_down_3.svg" alt="" aria-hidden="true">
           </button>
         </div>
-        <!-- 목록이 버튼 위로 열림. 버튼보다 앞에 두면 겹칠 때 목록이 위에 오고, 위치는 css 가 버튼 기준으로 잡음 -->
-        <div class="family_site" data-family-site>
-          <ul class="family_site_list" id="family_site_list">
-            <li><button type="button" disabled>Beopgochangsin</button></li>
-            <li><button type="button" disabled>Bekseju Village</button></li>
-            <li><button type="button" disabled>Yedam</button></li>
-            <li><button type="button" disabled>Juhyangro</button></li>
-            <li><button type="button" disabled>Woorisool Areumteo</button></li>
-          </ul>
-          <button type="button" class="family_site_button" aria-haspopup="true" aria-expanded="false"
-            aria-controls="family_site_list" data-family-site-toggle>
-            Family Site
-            <img src="../asset/icon/chevron_down_3.svg" alt="" aria-hidden="true">
-          </button>
-        </div>
         <address>
           <p>641, Bongeunsa-ro, Gangnam-gu, Seoul, Republic of Korea</p>
           <p>Tel : +82 02-513-8572</p>
           <p>CEO: Sangmin Bae</p>
         </address>
         <ul class="footer_sns">
-          <li><a href="#" aria-label="Instagram"><img src="../asset/icon/icon_instagram.svg" alt=""></a></li>
-          <li><a href="#" aria-label="YouTube"><img src="../asset/icon/icon_youtube.svg" alt=""></a></li>
-          <li><a href="#" aria-label="Facebook"><img src="../asset/icon/icon_facebook.svg" alt=""></a></li>
+          <li><a href="" aria-label="Instagram"><img src="../asset/icon/icon_instagram.svg" alt=""></a></li>
+          <li><a href="" aria-label="YouTube"><img src="../asset/icon/icon_youtube.svg" alt=""></a></li>
+          <li><a href="" aria-label="Facebook"><img src="../asset/icon/icon_facebook.svg" alt=""></a></li>
         </ul>
       </div>
     </div>

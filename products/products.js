@@ -83,6 +83,65 @@
     };
 
 
+    /* -----------------------------------------------------
+       준비중 안내 (작은 반투명 팝업)
+
+       BEKSEJU / YEDAMCHEONG / SOJU / VIEW ALL 처럼
+       아직 보여줄 제품이 없는 버튼에서 부름
+    ----------------------------------------------------- */
+
+    const comingSoonToast =
+        document.querySelector(
+            '[data-coming-soon-toast]'
+        );
+
+
+    const COMING_SOON_MESSAGE =
+        'Products coming soon';
+
+
+    let comingSoonTimer = 0;
+
+
+    function showComingSoon() {
+
+        if (!comingSoonToast) return;
+
+
+        window.clearTimeout(
+            comingSoonTimer
+        );
+
+
+        /*
+          aria-live 는 글자가 바뀔 때 읽어주므로
+          이미 떠 있으면 한 번 비웠다가 다시 넣음
+        */
+        comingSoonToast.textContent = '';
+
+        comingSoonToast.textContent =
+            COMING_SOON_MESSAGE;
+
+
+        comingSoonToast.classList.add(
+            'is_visible'
+        );
+
+
+        comingSoonTimer =
+            window.setTimeout(
+                () => {
+
+                    comingSoonToast
+                        .classList
+                        .remove('is_visible');
+
+                },
+                1800
+            );
+    }
+
+
     function matchesCard(card) {
 
         const category =
@@ -199,6 +258,15 @@
         if (!button) return;
 
 
+        /* 준비중 카테고리는 거르지 않고 안내만 띄움 */
+        if (
+            button.hasAttribute('data-coming-soon')
+        ) {
+            showComingSoon();
+            return;
+        }
+
+
         state.category =
             button.dataset.category || '';
 
@@ -302,6 +370,15 @@
 
 
     function handleViewAllClick() {
+
+        /* 준비중 표시가 붙어 있으면 목록을 바꾸지 않고 안내만 띄움 */
+        if (
+            viewAllButton?.hasAttribute('data-coming-soon')
+        ) {
+            showComingSoon();
+            return;
+        }
+
 
         state.category = '';
         state.experience = '';
@@ -1735,7 +1812,8 @@
       tl.to(
         character,
         {
-          autoAlpha: 1,
+          /* CSS의 opacity: 0.15 (투명도 15%)를 유지 */
+          autoAlpha: 0.15,
 
           y: 0,
 
@@ -1994,3 +2072,4 @@ if (cards.length > 1) {
   }
 
 })();
+

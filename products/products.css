@@ -362,6 +362,19 @@
 }
 
 
+/*
+ * 이 페이지만 콘텐츠 레이어가 z-index: 50 이라
+ * 공용 푸터의 파도(.site_footer_wave, z-index: 0)가
+ * 레이어의 불투명 배경에 가려져 푸터 윗변이 평평해 보였습니다.
+ * 푸터를 레이어보다 위로 올려 다른 페이지와 같은 파도가 보이게 합니다.
+ */
+.site_footer {
+  position: relative;
+
+  z-index: 60;
+}
+
+
 /* =========================================================
    TASTE / EXPERIENCE FILTER
 ========================================================= */
@@ -691,7 +704,7 @@
 }
 
 
-.category_button:hover {
+.category_button:not([aria-disabled="true"]):hover {
   color:
     var(--kooksoondang_orange);
 }
@@ -712,6 +725,18 @@
   opacity: 0.5;
 
   pointer-events: none;
+}
+
+
+/*
+ * 준비중 카테고리.
+ * 흐린 모양은 :disabled 와 같게 두되,
+ * 안내를 띄워야 하므로 클릭은 받는다.
+ */
+.category_button[aria-disabled="true"] {
+  cursor: default;
+
+  opacity: 0.5;
 }
 
 
@@ -1157,20 +1182,25 @@
 .view_all_chevron {
   display: block;
 
-  /* 30% + 30% 키움 */
-  width: 2.32375rem;
-  height: 1.47875rem;
+  /*
+   * 이전 렌더 크기(0.88725rem x 1.47875rem) 기준
+   * 가로 +30% / 세로 +10%
+   * contain은 비율을 유지해서 가로가 안 늘어나므로
+   * mask-size를 100% 100%로 늘려 채웁니다.
+   */
+  width: 1.15325rem;
+  height: 1.62675rem;
 
   background:
     currentColor;
 
   -webkit-mask:
     url('../asset/icon/chevron_down_1.svg')
-    no-repeat center / contain;
+    no-repeat center / 100% 100%;
 
   mask:
     url('../asset/icon/chevron_down_1.svg')
-    no-repeat center / contain;
+    no-repeat center / 100% 100%;
 
   transform: translateY(0);
 
@@ -1351,14 +1381,17 @@
 .starter_kit_character {
   position: absolute;
 
+  /* 오른쪽으로 30px (right 를 그만큼 줄임) */
   right:
-    clamp(0rem, 6vw, 6rem);
+    calc(clamp(0rem, 6vw, 6rem) - 30px);
 
-  /* 아래로 30px */
-  bottom: -30px;
+  /* 아래로 30px + 20px */
+  bottom: -50px;
 
   width: 270px;
   height: 270px;
+
+  opacity: 0.15;
 
   pointer-events: none;
 }
@@ -1391,11 +1424,15 @@
     clamp(0.75rem, 1.2vw, 1.5rem)
     clamp(1.25rem, 1.8vw, 2.125rem);
 
-  border-radius:
-    0.625rem;
+  border-radius: 50px;
 
   background:
     var(--makgeolli_light1);
+
+  /* 시안 값 : X 1 / Y 1 / 흐림 4 / 스프레드 0 / #000000 10% */
+  box-shadow:
+    1px 1px 4px 0
+    rgba(0, 0, 0, 0.1);
 
   text-align: center;
 
@@ -1466,12 +1503,13 @@
 
   border-radius: 50%;
 
-  background:
-    var(--makgeolli_light2);
+  /* 링 안쪽으로 카드가 비치도록 투명 처리 */
+  background: transparent;
 
+  /* 기존 clamp(0.75rem, 1.15vw, 1.375rem)에서 5px 키움 */
   font:
     700
-    clamp(0.75rem, 1.15vw, 1.375rem) / 1
+    clamp(1.0625rem, calc(1.15vw + 5px), 1.6875rem) / 1
     var(--font-Pretendard);
 
   letter-spacing:
@@ -1522,8 +1560,13 @@
   width: 42%;
   height: auto;
 
+  /* 제품 사진을 가운데 기준으로 살짝 기울임 */
   transform:
-    translate(-50%, -50%);
+    translate(-50%, -50%)
+    rotate(-8deg);
+
+  transform-origin:
+    center center;
 }
 
 
@@ -1547,8 +1590,13 @@
       rgba(76, 59, 51, 0.16)
     );
 
+  /* 제품 사진을 가운데 기준으로 살짝 기울임 */
   transform:
-    translate(-50%, -50%);
+    translate(-50%, -50%)
+    rotate(-8deg);
+
+  transform-origin:
+    center center;
 }
 
 
@@ -1595,8 +1643,20 @@
 ========================================================= */
 
 .brand_keyword {
+  /*
+   * 위는 그대로.
+   *
+   * 아래는 "파도 꼭대기까지" 80px.
+   * 푸터 파도는 푸터 상자 위로 솟아 있어서
+   * 그냥 80px 만 주면 파도가 그 자리를 다 먹어 버린다.
+   *
+   * 솟는 높이 = 파도 그림 높이(가로의 540/1920) × 18.4%
+   *           = 가로의 5.175%
+   * 패딩 % 는 가로 기준이라 화면 폭이 변해도 그대로 맞는다.
+   */
   padding-block:
-    clamp(2.5rem, 5.2vw, 6.25rem);
+    clamp(2.5rem, 5.2vw, 6.25rem)
+    calc(80px + 5.175%);
 
   overflow: hidden;
 
@@ -1629,8 +1689,9 @@
 /* 첫 번째 줄과 두 번째 줄 사이 간격 */
 
 .keyword_row + .keyword_row {
+  /* 기존 간격 + 40px */
   margin-top:
-    clamp(0.5rem, 1.1vw, 1.25rem);
+    calc(clamp(0.5rem, 1.1vw, 1.25rem) + 40px);
 }
 
 
@@ -2114,8 +2175,9 @@
     font-size: clamp(0.75rem, 1.55vw, 0.95rem);
   }
 
+  /* 아래는 80px 유지 (푸터까지의 여백) */
   .brand_keyword {
-    padding-block: clamp(3.5rem, 7vw, 4.5rem);
+    padding-top: clamp(3.5rem, 7vw, 4.5rem);
   }
 
   .keyword_row {
@@ -2507,8 +2569,9 @@
     font-size: 0.72rem;
   }
 
+  /* 아래는 80px 유지 (푸터까지의 여백) */
   .brand_keyword {
-    padding-block: clamp(2.75rem, 13vw, 3.5rem);
+    padding-top: clamp(2.75rem, 13vw, 3.5rem);
   }
 
   .keyword_row {
@@ -2655,4 +2718,194 @@
       none !important;
   }
 
+}
+
+
+/* =========================================================
+   TOP 버튼 위의 캐릭터
+
+   TOP 과는 다른 버튼이라 button 밖에 있음.
+   자리(위치·폭·간격)는 common.css 의 .site_top_button 과 같은 값을 써서
+   예전처럼 TOP 바로 위에 겹쳐 서게 함
+========================================================= */
+
+.products_top_stack {
+  position: fixed;
+
+  right: clamp(1rem, 2.1vw, 2.5rem);
+  bottom: clamp(1rem, 2.1vw, 2.5rem);
+
+  z-index: 100;
+
+  display: grid;
+  justify-items: center;
+  align-items: center;
+
+  /* 캐릭터와 TOP 그림 사이 간격 */
+  row-gap: 14px;
+
+  width: clamp(4rem, 5.3vw, 6.3125rem);
+
+  /* 빈 자리로 뒤쪽 클릭을 막지 않게 */
+  pointer-events: none;
+}
+
+
+/* 자리는 위 상자가 잡으므로 버튼은 흐름 안에 둠 */
+.products_top_stack .site_top_button {
+  position: static;
+
+  width: 100%;
+
+  pointer-events: auto;
+}
+
+
+.products_top_character {
+  display: block;
+
+  width: 78%;
+  height: auto;
+
+  margin: 0;
+
+  object-fit: contain;
+
+  /* TOP 버튼과 같이 나타나고 같이 사라짐 */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(0.75rem);
+
+  transition:
+    opacity 260ms ease,
+    transform 260ms ease,
+    visibility 260ms ease;
+
+  pointer-events: none;
+}
+
+
+.products_top_stack:has(.site_top_button.is_visible)
+.products_top_character {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+
+@media (max-width: 80rem) {
+  .products_top_stack {
+    right: clamp(1.5rem, 3.5vw, 2.25rem);
+    bottom: clamp(1.5rem, 3.5vw, 2.25rem);
+    row-gap: 0.5rem;
+    width: clamp(3.75rem, 8vw, 5rem);
+  }
+}
+
+
+@media (max-width: 48rem) {
+  .products_top_stack {
+    right: 1rem;
+    bottom: 1rem;
+    row-gap: 0.4rem;
+    width: clamp(3.25rem, 15vw, 3.75rem);
+  }
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .products_top_character {
+    transition: none !important;
+  }
+}
+
+
+/* =========================================================
+   COMING SOON TOAST
+
+   준비중인 버튼(BEKSEJU / YEDAMCHEONG / SOJU / VIEW ALL)을
+   눌렀을 때 화면 아래에 잠깐 떴다 사라지는 작은 반투명 안내.
+========================================================= */
+
+.coming_soon_toast {
+  position: fixed;
+
+  left: 50%;
+  bottom: clamp(2rem, 6vh, 4.5rem);
+
+  /* TOP 버튼 묶음(z-index: 100)보다 위 */
+  z-index: 200;
+
+  max-width: calc(100% - 2.5rem);
+
+  padding:
+    0.75rem 1.5rem;
+
+  /* 위 4px / 아래 32px */
+  border-radius:
+    4px 4px 32px 32px;
+
+  /* bekseju_dark1(#4C3B33) 투명도 70% */
+  background:
+    rgba(76, 59, 51, 0.7);
+
+  background:
+    color-mix(
+      in srgb,
+      var(--bekseju_dark1) 70%,
+      transparent
+    );
+
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+
+  box-shadow:
+    0 6px 20px
+    rgba(0, 0, 0, 0.18);
+
+  font:
+    600
+    clamp(0.8125rem, 1vw, 0.9375rem) / 1.4
+    var(--font-Pretendard);
+
+  letter-spacing: 0.02em;
+
+  color: #fff;
+
+  text-align: center;
+
+  /* 안내가 뒤쪽 클릭을 막지 않게 */
+  pointer-events: none;
+
+  opacity: 0;
+  visibility: hidden;
+
+  transform:
+    translate(-50%, 0.5rem);
+
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease,
+    visibility 220ms ease;
+}
+
+
+.coming_soon_toast.is_visible {
+  opacity: 1;
+  visibility: visible;
+
+  transform:
+    translate(-50%, 0);
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .coming_soon_toast {
+    transition:
+      opacity 220ms ease,
+      visibility 220ms ease;
+
+    transform:
+      translate(-50%, 0);
+  }
 }
