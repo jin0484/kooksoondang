@@ -525,8 +525,11 @@ html.lenis body {
     transform: translate(0, -50%);
 }
 
+/* 메뉴가 숨어 있을 때 화면 왼쪽에 남는 손잡이.
+   좁고 긴 자리라 글씨를 세로쓰기(writing-mode)로 흘리되,
+   글자는 눕히지 않고 똑바로 세워 한 자씩 쌓음 (text-orientation: upright) */
 .side_nav::after {
-    content: "";
+    content: "MENU";
     position: absolute;
     z-index: 0;
     top: 50%;
@@ -537,6 +540,17 @@ html.lenis body {
     pointer-events: auto;
     background: var(--side-nav-surface);
     border-radius: 0 var(--side-nav-handle-radius) var(--side-nav-handle-radius) 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    color: var(--kooksoondang_green);
+    font-size: 0.75rem;
+    font-weight: 600;
+    /* 세로쓰기에서 자간은 글자 사이 위아래 간격이 됨 */
+    letter-spacing: 0.08em;
 }
 
 .side_nav ul {

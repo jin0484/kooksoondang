@@ -25,9 +25,18 @@ body {
 /* ===================== 화면 틀 ===================== */
 
 /* 화면들을 같은 자리에 겹쳐 두고 .is_on 붙은 하나만 보여 줌.
-   바깥쪽은 종이 틀. 틀 폭은 --frame 하나로 관리하고 화면·HUD 가 같이 참고함 */
+   화면은 창을 꽉 채움. 틀 폭(--frame)은 0 이지만, 화면 크기 계산과
+   BACK / 진행 표시 위치가 모두 이 값을 참고하고 있어 변수는 남겨 둠 */
 .test {
-    --frame: clamp(10px, 1.4vw, 22px);
+    --frame: 0px;
+    /* 화면끼리 겹쳐 넘어가는 시간 */
+    --screen-fade: 450ms;
+    /* 위쪽에 한 겹 더 까는 어두운 띠의 높이 */
+    --top-shade: clamp(140px, 24vh, 240px);
+    /* 쓸고 지나가는 전환. 덮는 시간 / 걷는 시간 / 가속 곡선(gsap 의 power3.inOut 과 비슷한 값) */
+    --wipe-cover: 620ms;
+    --wipe-reveal: 620ms;
+    --wipe-ease: cubic-bezier(0.65, 0, 0.35, 1);
 
     position: relative;
     width: 100%;
@@ -42,13 +51,16 @@ body {
 }
 
 /* 틀 안쪽에 끼워 넣은 그림처럼 보이게 여백을 두고 모서리를 둥글림 */
+/* 화면을 display 로 껐다 켜면 지나간 화면이 먼저 사라져서
+   그 사이 종이 틀(밝은 색)이 그대로 드러나 번쩍인다.
+   그래서 화면들을 늘 겹쳐 둔 채 visibility 로만 감추고,
+   새 화면이 지나간 화면 "위에" 서서히 덮이게 함.
+   지나간 화면은 새 화면이 다 덮인 뒤에야 자리를 비움 (visibility 를 그만큼 늦게 바꿈) */
 .screen {
     position: absolute;
     inset: var(--frame);
-    border-radius: clamp(8px, 0.9vw, 16px);
     overflow: hidden;
-    box-shadow: 0 2px 16px rgba(58, 42, 30, 0.35);
-    display: none;
+    display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -56,38 +68,185 @@ body {
     padding: 80px 40px;
     background-size: cover;
     background-position: center;
+
+    z-index: 0;
+    visibility: hidden;
+    transition: visibility 0s linear var(--screen-fade);
 }
 
 .screen.is_on {
-    display: flex;
-    animation: screen_in 0.45s ease both;
+    z-index: 1;
+    visibility: visible;
+    transition: visibility 0s;
+    animation: screen_in var(--screen-fade) ease both;
 }
 
 @keyframes screen_in {
     from {
         opacity: 0;
-        transform: translateY(12px);
     }
 
     to {
         opacity: 1;
-        transform: none;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .screen {
+        transition: none;
+    }
+
     .screen.is_on {
         animation: none;
     }
 }
 
+/* ---------- 쓸고 지나가는 화면 전환 ---------- */
+
+/* 한쪽 끝에서 들어와 화면을 덮고, 다 덮인 순간 화면을 갈아 끼운 뒤
+   방향을 되돌리지 않고 그대로 반대쪽으로 빠져나가며 새 화면을 드러냄.
+   덮개가 도는 동안에는 화면끼리의 페이드를 꺼서 두 연출이 겹치지 않게 함 */
+.wipe {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    background: var(--test_night2, #0E121C);
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.wipe.is_cover,
+.wipe.is_reveal {
+    visibility: visible;
+    /* 덮여 있는 동안 뒤쪽이 눌리지 않게 */
+    pointer-events: auto;
+}
+
+/* ltr = 왼쪽에서 오른쪽으로 쓸어 감 (왼쪽 선택지) */
+.wipe[data-dir="ltr"].is_cover {
+    animation: wipe_in_left var(--wipe-cover) var(--wipe-ease) both;
+}
+
+.wipe[data-dir="ltr"].is_reveal {
+    animation: wipe_out_right var(--wipe-reveal) var(--wipe-ease) both;
+}
+
+/* rtl = 오른쪽에서 왼쪽으로 (오른쪽 선택지) */
+.wipe[data-dir="rtl"].is_cover {
+    animation: wipe_in_right var(--wipe-cover) var(--wipe-ease) both;
+}
+
+.wipe[data-dir="rtl"].is_reveal {
+    animation: wipe_out_left var(--wipe-reveal) var(--wipe-ease) both;
+}
+
+@keyframes wipe_in_left {
+    from {
+        transform: translateX(-100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes wipe_out_right {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes wipe_in_right {
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes wipe_out_left {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-100%);
+    }
+}
+
+/* 덮개가 도는 동안에는 화면끼리의 페이드를 끔 (덮개 뒤에서 조용히 갈아 끼워짐) */
+.test.is_wiping .screen {
+    transition: none;
+}
+
+/* 덮개만 움직이면 종이 한 장이 지나가는 것처럼 납작해 보여서,
+   지나갈 화면은 쓸리는 방향으로 조금 밀려 나가고
+   새 화면은 반대쪽에서 제자리로 따라 들어오게 함 (덮개와 층을 갈라 놓는 역할) */
+.test[data-wipe-dir="ltr"].is_wipe_cover .screen.is_on {
+    animation: screen_push_right var(--wipe-cover) var(--wipe-ease) both;
+}
+
+.test[data-wipe-dir="ltr"].is_wipe_reveal .screen.is_on {
+    animation: screen_pull_from_left var(--wipe-reveal) var(--wipe-ease) both;
+}
+
+.test[data-wipe-dir="rtl"].is_wipe_cover .screen.is_on {
+    animation: screen_push_left var(--wipe-cover) var(--wipe-ease) both;
+}
+
+.test[data-wipe-dir="rtl"].is_wipe_reveal .screen.is_on {
+    animation: screen_pull_from_right var(--wipe-reveal) var(--wipe-ease) both;
+}
+
+@keyframes screen_push_right {
+    from {
+        transform: none;
+    }
+
+    to {
+        transform: translateX(12%);
+    }
+}
+
+@keyframes screen_pull_from_left {
+    from {
+        transform: translateX(-12%);
+    }
+
+    to {
+        transform: none;
+    }
+}
+
+@keyframes screen_push_left {
+    from {
+        transform: none;
+    }
+
+    to {
+        transform: translateX(-12%);
+    }
+}
+
+@keyframes screen_pull_from_right {
+    from {
+        transform: translateX(12%);
+    }
+
+    to {
+        transform: none;
+    }
+}
+
 /* ===================== 인트로 ===================== */
 
-/* 인트로만 종이 틀 없이 화면을 꽉 채움 */
 .screen_intro {
-    inset: 0;
-    border-radius: 0;
-    box-shadow: none;
     justify-content: center;
     align-items: flex-start;
     background: var(--makgeolli_light4, #FAF8F7);
@@ -95,16 +254,51 @@ body {
     padding-left: 8%;
 }
 
-/* 인트로 등장 순서를 한곳에서 잡음: 제목 채우기 -> 잔 드로잉 -> 설명 문구.
-   값은 main.css 의 .hero_left 와 같음 */
+/* 오른쪽 화면 밖에서 걸어 들어와 가운데에서 멈추는 할머니.
+   left:50% 로 세워 두고 transform 으로만 옮기므로, 도착 지점 translateX(-50%) 가 곧 화면 가운데임.
+   시작 지점은 거기서 오른쪽으로 반 화면(50vw) + 자기 폭(100%) 만큼 더 나간 자리라 처음엔 안 보임.
+   한 번만 재생하고(both) 그 자리에 그대로 섬. 걸음 그림도 test.js 가 이때 같이 멈춤 */
+.intro_walker {
+    /* 그림 아래쪽 빈 여백만큼 내려서, 상자 밑이 아니라 발끝이 버튼 줄에 닿게 함 */
+    --walker-foot: 12%;
+
+    position: absolute;
+    left: 50%;
+    /* 버튼 줄 높이. 인트로 글 묶음이 세로 가운데라 창 크기마다 달라져서 test.js 가 재서 넣어 줌 */
+    bottom: var(--walker-bottom, 0px);
+    z-index: 1;
+    width: clamp(200px, 24vw, 400px);
+    height: auto;
+    pointer-events: none;
+    animation: intro_walk 16s linear both;
+}
+
+@keyframes intro_walk {
+    from {
+        transform: translateX(calc(50vw + 100%)) translateY(var(--walker-foot));
+    }
+
+    to {
+        transform: translateX(-50%) translateY(var(--walker-foot));
+    }
+}
+
+/* 모션을 끈 사용자에겐 걸어오는 연출 없이 처음부터 가운데에 서 있게 함 */
+@media (prefers-reduced-motion: reduce) {
+    .intro_walker {
+        animation: none;
+        transform: translateX(-50%) translateY(var(--walker-foot));
+    }
+}
+
+/* 인트로 등장 순서를 한곳에서 잡음: 제목 채우기 -> 잔 드로잉.
+   값은 main.css 의 .hero_left 와 같음 (설명 문구는 연출 없이 처음부터 보임) */
 .intro_text {
     --intro-pour-delay: 120ms;
     --intro-pour-duration: 900ms;
     /* 잔은 제목이 다 차오른 뒤 한 박자 쉬고 그려짐 */
     --intro-cup-start: calc(var(--intro-pour-delay) + var(--intro-pour-duration) + 100ms);
     --intro-cup-duration: 560ms;
-    /* 설명 문구는 잔이 다 그려지길 기다리지 않고 그리기 시작하자마자 겹쳐서 들어옴 */
-    --intro-desc-start: calc(var(--intro-cup-start) + 200ms);
 }
 
 /* 잔 svg 를 제목 위에 얹는 기준 상자. 폭을 글자에 맞춰 두면
@@ -250,26 +444,6 @@ body {
     color: var(--bekseju_dark2, #5D504A);
 }
 
-/* 설명 문구 글자 등장: 왼쪽 -> 오른쪽으로 한 글자씩 미끄러져 들어옴 */
-.intro_desc_word {
-    /* 글자를 inline-block 으로 만들면 단어 중간에서도 줄이 바뀌므로 단어를 한 겹 감쌈 */
-    display: inline-block;
-    white-space: nowrap;
-}
-
-.intro_desc.is_typing_ready .intro_desc_char {
-    display: inline-block;
-    opacity: 0;
-    transform: translateX(150px);
-}
-
-.intro_desc.is_typing_running .intro_desc_char {
-    opacity: 1;
-    transform: none;
-    transition: opacity 900ms cubic-bezier(0.4, 0, 0.6, 1) calc(var(--intro-desc-start) + var(--type-delay, 0ms)),
-        transform 640ms cubic-bezier(0.165, 0.84, 0.44, 1) calc(var(--intro-desc-start) + var(--type-delay, 0ms));
-}
-
 /* 시작 버튼과 메인으로 나가는 링크를 한 줄에 둠 */
 .intro_actions {
     display: flex;
@@ -324,99 +498,36 @@ body {
    글은 화면 위쪽에 붙임. 가운데 두면 배경 그림 속 인물 얼굴을 가려서,
    문제 화면과 전환 컷 모두 같은 높이에서 시작하도록 통일함 */
 .screen_question {
-    /* 아래에 깔리는 대사 종이가 차지하는 높이.
-       화면 안의 다른 요소(선택지·인물·술상)는 이만큼 위로 비켜 섬 */
-    --question-bar: clamp(7rem, 14vh, 9.5rem);
-
     background: radial-gradient(120% 90% at 50% 20%, var(--test_night1) 0%, var(--test_night2) 100%);
-    /* 질문이 흐름에서 빠져 바닥에 붙으므로 남은 자리(선택지)는 가운데에 둠 */
+    /* 질문이 흐름에서 빠져 위에 붙으므로 남은 자리(선택지)는 가운데에 둠 */
     justify-content: center;
-    /* +20px 은 대사 종이가 위아래로 10px 씩 커진 만큼 */
-    padding-bottom: calc(var(--question-bar) + 20px + clamp(1rem, 3vh, 2.25rem));
+    /* 질문 글이 어두운 띠를 다 차지하므로, 나머지 요소는 띠 아래에서 시작 */
+    padding-top: calc(var(--top-shade) + clamp(1rem, 3vh, 2.25rem));
 }
 
-/* 질문은 화면 아래에 깔리는 '찢어 낸 종이' 대사창.
-   비주얼 노벨 대사창처럼 화면 폭을 가로질러 바닥에 붙고, 글은 왼쪽부터 읽힘.
-   이미지를 쓰지 않고 css 만으로 만듦.
-   - 종이색/얼룩 : 배경 그라데이션 여러 겹
-   - 줄 노트     : 가로 반복 선 + 왼쪽 붉은 여백선
-   - 스프링 자국 : ::before 의 세로 반복 타원
-   - 찢긴 위·아래 가장자리 : clip-path
-     (clip-path 를 쓰면 box-shadow 가 사각형으로 남으므로 그림자는 filter 로 줌)
+/* 질문은 화면 위 어두운 띠(--top-shade) 안에 가로·세로 가운데로 놓임.
+   띠와 같은 자리·같은 높이를 잡아 두면 글이 한 줄이든 세 줄이든 띠 한가운데에 걸림.
    선택자에 부모를 붙인 건 뒤에 나오는 .screen_dim>* 규칙에 position 을 뺏기지 않게 하기 위함 */
 .screen_question>.question {
     position: absolute;
-    /* 좌우는 20px 씩 더 들여세우고(폭 40px 감소), 위아래로는 10px 씩 더 키움(높이 20px 증가) */
-    left: calc(clamp(10px, 2vw, 30px) + 20px);
-    right: calc(clamp(10px, 2vw, 30px) + 20px);
-    bottom: clamp(10px, 2vh, 24px);
+    left: clamp(10px, 2vw, 30px);
+    right: clamp(10px, 2vw, 30px);
+    top: 0;
+    height: var(--top-shade);
     z-index: 2;
 
-    /* 글이 한 줄이든 세 줄이든 대사창 높이가 크게 흔들리지 않게 최소 높이를 잡고 세로 가운데 정렬 */
     display: flex;
     align-items: center;
-    min-height: calc(var(--question-bar, 8rem) + 20px);
+    justify-content: center;
     max-width: none;
-    padding: calc(clamp(20px, 2.2vw, 28px) + 10px) clamp(24px, 3vw, 44px) calc(clamp(20px, 2.2vw, 28px) + 10px) clamp(46px, 4.4vw, 70px);
-    color: var(--test_label_ink);
+    padding: 0;
+    color: var(--test_ink);
     font: var(--PC-Heading1_28R);
     letter-spacing: var(--PC-Heading1_28R-letter-spacing);
-    text-align: left;
-    text-shadow: none;
-
-    background-color: #F1E4CB;
-    background-image:
-        /* 눅눅해진 자국 */
-        radial-gradient(70% 55% at 8% 96%, rgba(140, 100, 55, 0.22), transparent 70%),
-        radial-gradient(45% 40% at 96% 8%, rgba(140, 100, 55, 0.18), transparent 70%),
-        radial-gradient(30% 26% at 62% 90%, rgba(150, 110, 60, 0.14), transparent 70%),
-        /* 붉은 여백선 */
-        linear-gradient(90deg, transparent calc(clamp(46px, 4.4vw, 70px) - 14px), rgba(190, 90, 80, 0.45) calc(clamp(46px, 4.4vw, 70px) - 14px) calc(clamp(46px, 4.4vw, 70px) - 13px), transparent calc(clamp(46px, 4.4vw, 70px) - 13px)),
-        /* 줄 노트 */
-        repeating-linear-gradient(180deg, transparent 0 27px, rgba(120, 90, 50, 0.16) 27px 28px),
-        /* 종이 자체의 위→아래 톤 */
-        linear-gradient(160deg, #F7EEDA 0%, #EFE0C3 55%, #E6D4B4 100%);
-
-    /* 위·아래 가장자리를 손으로 찢은 듯 어긋나게 오려 냄.
-       세로 좌표는 % 대신 가장자리에서 잰 px 이라 문장이 길어져도 찢긴 폭이 그대로임 */
-    clip-path: polygon(0% 7px,
-            12% 0px,
-            30% 6px,
-            48% 1px,
-            66% 7px,
-            84% 1px,
-            100% 5px,
-            99.7% calc(100% - 4px),
-            82% calc(100% - 1px),
-            60% calc(100% - 7px),
-            38% calc(100% - 2px),
-            16% calc(100% - 8px),
-            0.3% calc(100% - 2px));
-    filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.5));
-    transform: rotate(-0.25deg);
+    text-align: center;
 }
 
-/* 스프링에서 뜯어낸 자국 */
-.question::before {
-    content: "";
-    position: absolute;
-    left: clamp(12px, 1.2vw, 18px);
-    top: 16px;
-    bottom: 16px;
-    width: clamp(10px, 1vw, 14px);
-    background-image: repeating-linear-gradient(180deg,
-            rgba(90, 66, 40, 0.55) 0 9px,
-            transparent 9px 30px);
-    border-radius: 6px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .question {
-        transform: none;
-    }
-}
-
-/* 선택지는 피그마처럼 배경 위에 얹힌 밝은 라벨 모양 */
+/* 선택지는 배경 위에 얹힌 주황 라벨 모양. 배경은 비쳐서 뒤 그림이 살짝 보임 */
 .choices {
     display: flex;
     flex-wrap: wrap;
@@ -428,17 +539,17 @@ body {
     padding: 14px 26px;
     border: 0;
     border-radius: 6px;
-    background: var(--test_label_bg);
-    color: var(--test_label_ink);
+    background: var(--bekseju_dark1, #4C3B33);
+    color: var(--makgeolli_White, #FFF);
     font: var(--PC-Body_Normal_16SB);
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s;
 }
 
+/* 눌리는 느낌은 그림자 없이 살짝 뜨는 움직임으로만 줌 */
 .choice:hover,
 .choice:focus-visible {
     transform: translateY(-3px);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
 }
 
 /* ---------- 그림이 딸린 선택지 ---------- */
@@ -470,19 +581,58 @@ body {
     cursor: pointer;
 }
 
-/* 인물 png 는 배경이 비어 있어서 그림자가 사람 모양대로 따라붙음.
-   덕분에 배경 그림 위에 얹혀 있지 않고 앞에 서 있는 것처럼 보임 */
+/* 그림만 감싸는 상자. 답 상자가 아래에 붙어도 바닥 그림자가 그림 발밑에 남게 하는 기준점 */
+.pick_figure {
+    position: relative;
+    display: block;
+}
+
+/* 발밑에 깔리는 바닥 그림자. 인물 모양을 따라가는 대신 땅에 눌린 동그란 자국으로 둠.
+   가장자리가 자연스럽게 흐려지도록 radial-gradient 로 그림 */
+.pick_figure::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 6px;
+    translate: -50% 0;
+    z-index: 0;
+    width: 88%;
+    height: 42px;
+    border-radius: 50%;
+    /* 가운데는 진하게 두고 바깥으로 갈수록 빠르게 옅어지게 단계를 하나 더 둠 */
+    background: radial-gradient(closest-side,
+            rgba(0, 0, 0, 0.5) 0%,
+            rgba(0, 0, 0, 0.28) 45%,
+            rgba(0, 0, 0, 0) 100%);
+    /* 가장자리를 한 번 더 뭉개 땅에 스며든 것처럼 보이게 함 */
+    filter: blur(10px);
+    pointer-events: none;
+}
+
+/* 인물은 바닥 그림자 위에 서야 발이 가려지지 않음.
+   display:block 이라야 감싼 상자에 인라인 여백이 생기지 않아 그림 바닥과 상자 바닥이 맞음 */
 .pick_img {
-    width: clamp(11.7rem, 34vw, 27.3rem);
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: clamp(15.2rem, 44vw, 35.5rem);
     height: auto;
-    filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.5));
+}
+
+/* 두 무리를 바깥쪽으로 벌려 가운데를 비워 둠.
+   transform 대신 translate 를 쓴 건 hover 때 .choice 가 쓰는 transform 과 안 겹치게 하기 위함 */
+.picks>.pick:first-child {
+    translate: -200px 0;
+}
+
+.picks>.pick:last-child {
+    translate: 200px 0;
 }
 
 /* 그림 쪽에 올려도 아래 답 상자가 같이 반응하게 */
 .pick:hover .choice,
 .pick:focus-visible .choice {
     transform: translateY(-3px);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
 }
 
 /* ---------- 배경 일러스트가 깔린 화면 ---------- */
@@ -502,12 +652,6 @@ body {
 /* 그림은 화면마다 다르므로 id 로 하나씩 지정.
    그림을 깐 화면에는 .screen_dim 을 같이 붙여 어두운 막을 씌움 */
 #q1 {
-    background-image: url("test_asset/background1.png");
-}
-
-/* 결과 화면 6개는 모두 같은 주막 앞 그림.
-   .screen 을 앞에 붙인 건 .screen_result 의 background 단축 속성에 지워지지 않게 하기 위함 */
-.screen.screen_result {
     background-image: url("test_asset/background1.png");
 }
 
@@ -542,26 +686,27 @@ body {
 
 /* 배경 그림 위에 어두운 막을 한 겹 깖.
    그림과 인물이 같은 연한 색이라 겹쳐 보이던 걸, 그림만 뒤로 물러나게 해서 갈라 놓음.
-   화면 전체에 --bekseju_darker_cold(#232323) 를 80% 로 균일하게 덮음 */
+   - 아래 겹 : 화면 전체에 --bekseju_darker_cold(#232323) 를 80% 로 균일하게
+   - 위 겹   : 질문 글이 놓이는 위쪽에만 #000000 을 30% 로 한 번 더
+   막 하나에 두 겹을 얹어야 해서 opacity 대신 색에 알파를 직접 넣음
+   (opacity 는 요소 전체에 걸려 겹마다 다른 진하기를 줄 수 없음) */
 .screen_dim::before {
     content: "";
     position: absolute;
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    background: var(--bekseju_darker_cold, #232323);
-    opacity: 0.8;
+    background:
+        linear-gradient(to bottom,
+            rgba(0, 0, 0, 0.3) 0 var(--top-shade),
+            transparent var(--top-shade)),
+        rgba(35, 35, 35, 0.8);
 }
 
 /* 어두운 막 위로 내용이 올라오게 */
 .screen_dim>* {
     position: relative;
     z-index: 1;
-}
-
-/* 밝은 답 상자도 그림자로 한 겹 띄워 둠 */
-.screen_dim .choice {
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
 /* ---------- 배경 그림 위에 물건 올리기 ---------- */
@@ -696,12 +841,15 @@ body {
     text-shadow: none;
 }
 
-.test:has(.screen_white.is_on) .btn_back {
+/* 결과 화면도 흰 배경이라 같이 묶어 둠 */
+.test:has(.screen_white.is_on) .btn_back,
+.test:has(.screen_result.is_on) .btn_back {
     color: var(--bekseju_dark2, #5D504A);
     border-color: rgba(39, 38, 37, 0.25);
 }
 
-.test:has(.screen_white.is_on) .btn_back:hover {
+.test:has(.screen_white.is_on) .btn_back:hover,
+.test:has(.screen_result.is_on) .btn_back:hover {
     color: var(--bekseju_darker_warm, #272625);
 }
 
@@ -756,8 +904,10 @@ body {
 
 /* ===================== 결과 ===================== */
 
+/* 결과 화면만 배경 그림 없이 흰 단색.
+   그래서 판 밖에 있는 글자(유형 이름·다시 하기)는 어두운 색으로 뒤집어 둠 */
 .screen_result {
-    background: radial-gradient(120% 100% at 50% 0%, #223049 0%, var(--test_night2) 100%);
+    background: var(--makgeolli_White, #FFF);
 }
 
 /* 결과 6개가 모두 같은 틀을 씀.
@@ -765,9 +915,10 @@ body {
    카드 자체는 자리만 잡고 색은 안쪽 상세 판이 냄 */
 .result_card {
     display: flex;
-    align-items: center;
-    gap: clamp(24px, 4vw, 64px);
-    width: min(1240px, 100%);
+    /* 왼쪽 칸(인물·버튼)의 바닥을 오른쪽 상세 판 바닥에 맞춤 */
+    align-items: flex-end;
+    gap: clamp(24px, 4vw, 72px);
+    width: min(1400px, 100%);
     text-align: left;
 }
 
@@ -779,14 +930,13 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 20px;
-    width: min(28%, 320px);
+    width: min(39%, 448px);
 }
 
-/* 인물 png 는 배경이 비어 있어서 그림자가 사람 모양대로 따라붙음 */
+/* 결과 인물은 흰 배경 위에 그대로 올려 둠 (그림자 없음) */
 .result_char {
     width: 100%;
     height: auto;
-    filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.45));
 }
 
 .result_actions {
@@ -794,28 +944,32 @@ body {
     gap: 12px;
 }
 
-.btn_save,
+/* 왼쪽은 메인으로 나가는 링크라 a, 오른쪽은 버튼이지만 생김새는 같은 알약 */
+.btn_main,
 .btn_share {
-    padding: 10px 18px;
+    padding: 12px 22px;
     border: 0;
     border-radius: 999px;
     color: var(--test_ink);
     font: var(--PC-Body_Small_14SB);
-    font-size: 12px;
-    letter-spacing: 1px;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    text-decoration: none;
     cursor: pointer;
     transition: transform 0.2s, filter 0.2s;
 }
 
-.btn_save {
-    background: rgba(255, 255, 255, 0.22);
+/* 왼쪽은 밝은 알약에 어두운 글씨, 오른쪽은 상세 판과 같은 갈색 알약에 밝은 글씨 */
+.btn_main {
+    background: var(--bekseju_dark4, #C7B7AC);
+    color: var(--bekseju_darker_warm, #272625);
 }
 
 .btn_share {
-    background: rgba(58, 42, 30, 0.75);
+    background: var(--bekseju_dark1, #4C3B33);
 }
 
-.btn_save:hover,
+.btn_main:hover,
 .btn_share:hover {
     transform: translateY(-2px);
     filter: brightness(1.12);
@@ -826,7 +980,7 @@ body {
     padding: 0;
     border: 0;
     background: none;
-    color: var(--test_dim);
+    color: var(--bekseju_dark2, #5D504A);
     font: var(--PC-Body_Small_14M);
     font-size: 12px;
     text-decoration: underline;
@@ -836,7 +990,7 @@ body {
 }
 
 .btn_restart:hover {
-    color: var(--test_ink);
+    color: var(--bekseju_darker_warm, #272625);
 }
 
 /* ---------- 오른쪽 : 유형 이름과 상세 판 ---------- */
@@ -847,27 +1001,29 @@ body {
 }
 
 .result_label {
-    font: var(--PC-Body_Normal_16SB);
-    color: var(--test_ink);
+    font: var(--PC-Body_Large_20SB);
+    letter-spacing: var(--PC-Body_Large_20SB-letter-spacing);
+    color: var(--bekseju_dark2, #5D504A);
 }
 
 .result_title {
-    margin-top: 6px;
+    margin-top: 2px;
+    color: var(--bekseju_darker_warm, #272625);
     font: var(--PC-Display3_48B);
-    letter-spacing: var(--PC-Display3_48B-letter-spacing);
+    font-size: clamp(40px, 3.6vw, 56px);
     letter-spacing: -1px;
 }
 
-/* 상세 판. 왼쪽 칸(잘 맞는 유형·음주 스타일·해시태그) / 오른쪽 칸(어울리는 술) */
+/* 상세 판. 왼쪽 칸(잘 맞는 유형·음주 스타일·해시태그) / 오른쪽 칸(어울리는 술).
+   갈색을 80% 로 비쳐 흰 배경이 살짝 올라오게 두고 테두리는 두지 않음 */
 .result_panel {
     display: grid;
-    grid-template-columns: 1.05fr 0.95fr;
+    grid-template-columns: 1.25fr 1fr;
     gap: clamp(24px, 3vw, 48px);
-    margin-top: 24px;
-    padding: clamp(20px, 2.2vw, 32px);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 20px;
-    background: rgba(76, 59, 51, 0.5);
+    margin-top: 28px;
+    padding: clamp(24px, 2.6vw, 40px);
+    border-radius: 24px;
+    background: rgba(76, 59, 51, 0.8);
 }
 
 /* 두 칸의 맨 아래 줄(해시태그 · VIEW MORE)이 같은 높이에 놓이도록 세로로 폄 */
@@ -878,32 +1034,39 @@ body {
 }
 
 .panel_head {
-    font: var(--PC-Body_Normal_16SB);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font: var(--PC-Body_Large_20SB);
+    letter-spacing: var(--PC-Body_Large_20SB-letter-spacing);
     color: var(--test_ink);
 }
 
+/* 제목 앞의 리본 표. 글꼴에 없는 모양이라 svg 를 그대로 넣어 씀 */
 .panel_head::before {
-    content: "♥";
-    margin-right: 8px;
-    font-size: 0.9em;
-    color: var(--kooksoondang_lighter, #FFD7BB);
+    content: "";
+    flex: 0 0 auto;
+    width: 18px;
+    height: 20px;
+    background: no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 20'%3E%3Cpath d='M3.6 0h10.8A3.6 3.6 0 0 1 18 3.6V20l-9-5.6L0 20V3.6A3.6 3.6 0 0 1 3.6 0z' fill='%23D8D0CA'/%3E%3C/svg%3E");
 }
 
 /* 한 칸에 제목이 둘 있는 경우(잘 맞는 유형 / 음주 스타일) 둘째부터 위를 띄움 */
 .panel_head~.panel_head {
-    margin-top: 28px;
+    margin-top: 36px;
 }
 
 /* ---------- 잘 맞는 유형 ---------- */
 
 .chemistry {
     display: flex;
-    gap: 12px;
-    margin-top: 12px;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 16px;
 }
 
 .chemistry li {
-    width: clamp(56px, 5.5vw, 84px);
+    width: clamp(72px, 6.5vw, 100px);
 }
 
 .chemistry img {
@@ -916,11 +1079,13 @@ body {
 
 .result_desc {
     display: grid;
-    gap: 8px;
-    margin-top: 12px;
-    font: var(--PC-Body_Small_14M);
-    font-size: 13px;
-    color: rgba(244, 239, 233, 0.8);
+    gap: 14px;
+    margin-top: 24px;
+    padding-left: 12px;
+    font: var(--PC-Body_Normal_16SB);
+    font-weight: 400;
+    font-size: 15px;
+    color: rgba(244, 239, 233, 0.92);
 }
 
 .result_desc li::before {
@@ -928,18 +1093,23 @@ body {
 }
 
 /* margin-top:auto 로 칸 바닥에 붙이고, 그래도 앞 글과 붙지 않게 padding 으로 사이를 벌림 */
+/* 태그 셋은 줄을 바꾸지 않고 한 줄에 나란히 둠 */
 .result_tags {
     display: flex;
-    flex-wrap: wrap;
-    gap: 4px 16px;
+    flex-wrap: nowrap;
+    gap: 24px;
     margin-top: auto;
-    padding-top: 20px;
-    font: var(--PC-Body_Small_14M);
-    font-size: 13px;
+    padding-top: 32px;
+    /* 손글씨 글꼴이라 같은 크기여도 본문보다 작아 보임 */
+    font: var(--PC-point_20R);
+    font-size: 16px;
+    letter-spacing: var(--PC-point_20R-letter-spacing);
     color: var(--kooksoondang_orange, #F29556);
 }
 
 .result_tags span {
+    /* 태그 하나가 가운데에서 끊기지 않게 */
+    white-space: nowrap;
     text-decoration: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 3px;
@@ -949,8 +1119,8 @@ body {
 
 .liquor {
     display: grid;
-    gap: 16px;
-    margin-top: 12px;
+    gap: 32px;
+    margin-top: 24px;
     /* VIEW MORE 가 바닥에 붙어도 술 목록과 붙지 않게 */
     margin-bottom: 20px;
 }
@@ -958,12 +1128,12 @@ body {
 .liquor_item {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 18px;
 }
 
 .liquor_bottle {
     flex: 0 0 auto;
-    width: clamp(22px, 2vw, 30px);
+    width: clamp(28px, 2.4vw, 38px);
     height: auto;
 }
 
@@ -973,8 +1143,10 @@ body {
 }
 
 .liquor_name {
-    font: var(--PC-Body_Small_14M);
-    font-size: 13px;
+    font: var(--PC-Body_Medium_18SB);
+    letter-spacing: var(--PC-Body_Medium_18SB-letter-spacing);
+    font-weight: 400;
+    font-size: 17px;
     color: var(--test_ink);
 }
 
@@ -983,13 +1155,13 @@ body {
     display: grid;
     grid-template-columns: auto 1fr;
     align-items: center;
-    gap: 6px 14px;
-    margin-top: 8px;
+    gap: 10px 20px;
+    margin-top: 12px;
 }
 
 .liquor_stat dt {
-    font-size: 11px;
-    color: rgba(244, 239, 233, 0.65);
+    font-size: 13px;
+    color: rgba(244, 239, 233, 0.8);
 }
 
 .liquor_stat dt::before {
@@ -999,9 +1171,9 @@ body {
 /* 막대. 채우는 길이는 HTML 에서 style="--v:00%" 로 줌 */
 .liquor_stat i {
     display: block;
-    height: 4px;
+    height: 7px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.18);
 }
 
 .liquor_stat i::before {
@@ -1014,15 +1186,15 @@ body {
 }
 
 .btn_more {
-    align-self: flex-end;
+    align-self: center;
     margin-top: auto;
-    padding: 9px 20px;
+    padding: 11px 24px;
     border-radius: 999px;
-    background: rgba(58, 42, 30, 0.8);
+    background: var(--bekseju_dark2, #5D504A);
     color: var(--test_ink);
     font: var(--PC-Body_Small_14SB);
-    font-size: 11px;
-    letter-spacing: 1px;
+    font-size: 12px;
+    letter-spacing: 0.5px;
     text-decoration: none;
     transition: filter 0.2s;
 }

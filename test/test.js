@@ -49,67 +49,38 @@
 
     /* ------------------------------------------------------------------
        인트로 연출 (main 히어로와 같은 순서)
-       제목이 물결로 차오름 -> 잔이 획순대로 그려짐 -> 설명 문구가 한 글자씩 들어옴.
+       제목이 물결로 차오름 -> 잔이 획순대로 그려짐. (설명 문구는 연출 없이 처음부터 보임)
        인트로 화면이 켜질 때마다(첫 진입 / 다시하기) 처음부터 다시 재생함
     ------------------------------------------------------------------ */
     var intro = (function () {
         var title = document.querySelector('.intro_title');
         var cup = document.querySelector('.intro_cup');
-        var desc = document.querySelector('.intro_desc');
+        var walker = document.querySelector('.intro_walker');
 
         var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         var supportsClip = typeof CSS === 'object'
             && typeof CSS.supports === 'function'
             && (CSS.supports('background-clip', 'text') || CSS.supports('-webkit-background-clip', 'text'));
 
-        /* 모션을 끈 사용자에겐 아무것도 안 하고 처음부터 다 보이는 상태로 둠 */
-        if (reduced) return { play: function () { } };
+        /* 할머니가 서는 높이를 TEST START 버튼 아랫줄에 맞춤.
+           인트로 글 묶음이 화면 세로 가운데에 놓여 그 줄 위치가 창 크기마다 달라지므로,
+           화면 바닥에서 버튼 줄까지의 거리를 재서 --walker-bottom 으로 넘겨 줌.
+           걸어오는 연출을 쓰지 않는 경우에도 서는 자리는 같아야 해서 모션 여부와 상관없이 돌림 */
+        function syncWalkerLine() {
+            var screen = document.getElementById(START);
+            var actions = document.querySelector('.intro_actions');
+            if (!walker || !screen || !actions) return;
 
-        /* 글자 수가 많아 간격은 main 과 같은 14ms */
-        var charStep = 14;
-        var pourDone = 0;
-
-        /* 설명 문구를 <br> 단위로 나누고, 단어 -> 글자 순으로 감싸 둠. 쪼개기는 한 번만 */
-        if (desc) {
-            var lines = [].slice.call(desc.childNodes).reduce(function (acc, node) {
-                if (node.nodeName === 'BR') acc.push('');
-                else acc[acc.length - 1] += node.textContent;
-
-                return acc;
-            }, ['']).map(function (line) {
-                return line.replace(/\s+/g, ' ').trim();
-            }).filter(Boolean);
-
-            var fragment = document.createDocumentFragment();
-            var delay = 0;
-
-            lines.forEach(function (line, lineIndex) {
-                if (lineIndex) fragment.appendChild(document.createElement('br'));
-
-                line.split(' ').forEach(function (word, wordIndex) {
-                    /* 단어 사이 공백은 실제 공백 문자로 남겨 둬야 이 자리에서만 줄이 바뀜 */
-                    if (wordIndex) fragment.appendChild(document.createTextNode(' '));
-
-                    var wordSpan = document.createElement('span');
-                    wordSpan.className = 'intro_desc_word';
-
-                    word.split('').forEach(function (character) {
-                        var span = document.createElement('span');
-
-                        span.className = 'intro_desc_char';
-                        span.textContent = character;
-                        span.style.setProperty('--type-delay', delay + 'ms');
-                        wordSpan.appendChild(span);
-
-                        delay += charStep;
-                    });
-
-                    fragment.appendChild(wordSpan);
-                });
-            });
-
-            if (lines.length) desc.replaceChildren(fragment);
+            var gap = screen.getBoundingClientRect().bottom - actions.getBoundingClientRect().bottom;
+            screen.style.setProperty('--walker-bottom', Math.round(gap) + 'px');
         }
+
+        window.addEventListener('resize', syncWalkerLine);
+
+        /* 모션을 끈 사용자에겐 등장 연출 없이 자리만 맞춰 두고 끝냄 */
+        if (reduced) return { play: syncWalkerLine };
+
+        var pourDone = 0;
 
         /* 채우기가 끝나면 클래스를 떼어 평범하게 칠해진 글자로 되돌림 */
         function endPour() {
@@ -121,16 +92,24 @@
             endPour();
 
             if (cup) cup.classList.remove('is_draw_running');
-            if (desc) desc.classList.remove('is_typing_running');
+
+            syncWalkerLine();
+
+            /* 할머니는 css 애니메이션이라 한 번 끝나면 그대로 서 있음.
+               다시하기로 인트로에 돌아왔을 때 또 걸어 들어오도록 애니메이션을 끊었다 다시 붙임
+               (offsetWidth 를 읽어 브라우저가 "없는 상태"를 한 번 계산하게 만듦) */
+            if (walker) {
+                walker.style.animation = 'none';
+                void walker.offsetWidth;
+                walker.style.animation = '';
+            }
 
             if (title && supportsClip) title.classList.add('is_pour_ready');
-            if (desc) desc.classList.add('is_typing_ready');
 
             /* 대기 상태가 한 프레임 그려진 뒤라야 처음부터 재생됨 */
             window.requestAnimationFrame(function () {
                 if (title && supportsClip) title.classList.add('is_pour_running');
                 if (cup) cup.classList.add('is_draw_running');
-                if (desc) desc.classList.add('is_typing_running');
             });
 
             /* 애니메이션이 끝내 재생되지 않아도 글자가 투명한 채로 남지 않도록 */
@@ -147,6 +126,128 @@
     })();
 
     /* ------------------------------------------------------------------
+       그림 넘기기 (flipbook)
+       data-frames 에 적힌 그림 목록을 data-frame-ms 간격으로 돌려 끼워
+       두 장짜리 손그림이 움직이는 것처럼 보이게 함.
+       켜진 화면 안의 그림만 돌리고, 화면을 나가면 멈추고 첫 장으로 되돌림
+    ------------------------------------------------------------------ */
+    var flipbook = (function () {
+        var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var timers = [];
+
+        function frames(img) {
+            return (img.getAttribute('data-frames') || '').split(',').map(function (src) {
+                return src.trim();
+            }).filter(Boolean);
+        }
+
+        /* 첫 전환에서 그림이 깜빡이지 않게 미리 받아 둠 */
+        [].forEach.call(document.querySelectorAll('[data-frames]'), function (img) {
+            frames(img).forEach(function (src) {
+                var preload = new Image();
+                preload.src = src;
+            });
+        });
+
+        function stop() {
+            timers.forEach(window.clearInterval);
+            timers = [];
+
+            [].forEach.call(document.querySelectorAll('[data-frames]'), function (img) {
+                var list = frames(img);
+                if (list.length) img.src = list[0];
+            });
+        }
+
+        function start(screen) {
+            if (reduced) return;
+
+            [].forEach.call(screen.querySelectorAll('[data-frames]'), function (img) {
+                var list = frames(img);
+                if (list.length < 2) return;
+
+                var step = Number(img.getAttribute('data-frame-ms')) || 450;
+                var index = 0;
+
+                var timer = window.setInterval(function () {
+                    index = (index + 1) % list.length;
+                    img.src = list[index];
+                }, step);
+
+                timers.push(timer);
+
+                /* 자리를 옮기는 연출(css 애니메이션)이 붙어 있으면 그게 끝날 때 걸음도 멈추고
+                   선 자세(첫 장)로 돌아감. 할머니가 가운데 도착해서 멈추는 게 이 경우 */
+                img.addEventListener('animationend', function onArrive() {
+                    img.removeEventListener('animationend', onArrive);
+                    window.clearInterval(timer);
+                    img.src = list[0];
+                });
+            });
+        }
+
+        return { start: start, stop: stop };
+    })();
+
+    /* ------------------------------------------------------------------
+       쓸고 지나가는 화면 전환
+       덮개가 한쪽 끝에서 들어와 화면을 다 덮은 순간에 화면을 갈아 끼우고,
+       방향을 되돌리지 않고 그대로 반대쪽으로 빠져나가며 새 화면을 드러냄.
+       움직임은 css 가 맡고 여기서는 단계(클래스)와 시점만 잡아 줌
+    ------------------------------------------------------------------ */
+    var wipe = (function () {
+        var el = document.getElementById('wipe');
+        var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var busy = false;
+
+        /* css 의 --wipe-cover / --wipe-reveal 을 그대로 읽어 씀. 두 곳에 같은 값을 적지 않으려고 */
+        function ms(name) {
+            var raw = window.getComputedStyle(test).getPropertyValue(name).trim();
+            return parseFloat(raw) * (raw.indexOf('ms') > -1 ? 1 : 1000) || 600;
+        }
+
+        function reset() {
+            el.classList.remove('is_cover', 'is_reveal');
+            test.classList.remove('is_wiping', 'is_wipe_cover', 'is_wipe_reveal');
+            test.removeAttribute('data-wipe-dir');
+            busy = false;
+        }
+
+        /* dir 은 'ltr'(왼→오) 또는 'rtl'(오→왼). swap 은 다 덮인 순간에 부를 화면 교체 */
+        function run(dir, swap) {
+            if (!el || reduced) {
+                swap();
+                return;
+            }
+
+            /* 도는 중에 또 눌러도 덮개가 다시 그려지지 않게 한 번만 받음 */
+            if (busy) return;
+            busy = true;
+
+            var cover = ms('--wipe-cover');
+            var reveal = ms('--wipe-reveal');
+
+            el.setAttribute('data-dir', dir);
+            test.setAttribute('data-wipe-dir', dir);
+            test.classList.add('is_wiping', 'is_wipe_cover');
+            el.classList.add('is_cover');
+
+            window.setTimeout(function () {
+                swap();
+
+                test.classList.remove('is_wipe_cover');
+                test.classList.add('is_wipe_reveal');
+                el.classList.remove('is_cover');
+                el.classList.add('is_reveal');
+
+                window.setTimeout(reset, reveal);
+            }, cover);
+        }
+
+        return { run: run };
+    })();
+
+    /* ------------------------------------------------------------------
        화면 전환
     ------------------------------------------------------------------ */
     function show(id) {
@@ -156,8 +257,12 @@
         var on = test.querySelector('.screen.is_on');
         if (on) on.classList.remove('is_on');
 
+        flipbook.stop();
+
         target.classList.add('is_on');
         current = id;
+
+        flipbook.start(target);
 
         /* 애니메이션을 다시 태우려면 클래스가 한 번 빠졌다 붙어야 해서 순서상 여기서 초기화 */
         window.scrollTo(0, 0);
@@ -225,6 +330,16 @@
         if (set) {
             var pair = set.split(':');
             answers[pair[0]] = pair[1];
+        }
+
+        /* data-wipe 가 붙은 선택지는 그 방향으로 화면을 쓸며 넘어감 */
+        var dir = trigger.getAttribute('data-wipe');
+
+        if (dir) {
+            wipe.run(dir, function () {
+                go(next);
+            });
+            return;
         }
 
         go(next);
