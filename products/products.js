@@ -459,99 +459,6 @@
 })();
 
 
-/* =========================================================
-   2. TOP 버튼
-========================================================= */
-
-(() => {
-
-    const topButton =
-        document.querySelector(
-            '[data-top-button]'
-        );
-
-
-    if (!topButton) return;
-
-
-    const revealPoint = 400;
-
-
-    let scrollFrame = 0;
-
-
-    function updateTopButton() {
-
-        scrollFrame = 0;
-
-
-        topButton.classList.toggle(
-            'is_visible',
-
-            window.scrollY >
-            revealPoint
-        );
-    }
-
-
-    function handleScroll() {
-
-        if (scrollFrame) return;
-
-
-        scrollFrame =
-            window.requestAnimationFrame(
-                updateTopButton
-            );
-    }
-
-
-    function handleTopClick() {
-
-        const behavior =
-            window.matchMedia(
-                '(prefers-reduced-motion: reduce)'
-            ).matches
-
-                ? 'auto'
-
-                : 'smooth';
-
-
-        if (window.siteLenis) {
-
-            window.siteLenis.scrollTo(0);
-
-        } else {
-
-            window.scrollTo({
-                top: 0,
-                behavior
-            });
-
-        }
-    }
-
-
-    window.addEventListener(
-        'scroll',
-        handleScroll,
-        {
-            passive: true
-        }
-    );
-
-
-    topButton.addEventListener(
-        'click',
-        handleTopClick
-    );
-
-
-    updateTopButton();
-
-})();
-
 
 /* =========================================================
    3. Products Hero Intro Animation
@@ -833,6 +740,8 @@
     }
 
 
+
+
     /* 백세주 */
 
     if (center) {
@@ -859,6 +768,13 @@
         );
 
     }
+
+
+    /*
+     * 이 연출이 언제 끝나는지 아래 4번(화면 잠금)에서 알아야 해서 내보냄.
+     * 스크롤 잠금이 풀리는 기준이 곧 이 타임라인의 완료 시점
+     */
+    window.productsHeroIntro = introTl;
 
 })();
 
@@ -910,6 +826,26 @@
     );
 
 
+    /*
+     * Lenis 가 스크롤을 대신 굴리고 있으므로
+     * 스크롤할 때마다 ScrollTrigger 에 알려 줌.
+     * 안 그러면 둘이 보는 위치가 미세하게 어긋나
+     * 고정 구간이 밀리거나 튄다
+     */
+    if (
+        window.siteLenis &&
+        !window.siteLenis._scrollTriggerWired
+    ) {
+
+        window.siteLenis.on(
+            'scroll',
+            ScrollTrigger.update
+        );
+
+        window.siteLenis._scrollTriggerWired = true;
+    }
+
+
     const prefersReducedMotion =
         window.matchMedia(
             '(prefers-reduced-motion: reduce)'
@@ -935,8 +871,205 @@
     );
 
 
+    const centerBottle =
+        hero.querySelector(
+            '.hero_bottle_center'
+        );
+
+
     /* =========================================
-       Hero 고정 + 다음 콘텐츠가 자연스럽게
+       화면 잠금 (Hero 모션이 끝날 때까지)
+
+       들어오면 스크롤을 아예 막아 두고
+       Hero 등장 연출이 다 끝나면 잠금을 푼다.
+
+       ScrollTrigger 의 pin 은 "스크롤한 만큼" 진행되므로
+       아무리 잡아 둬도 화면이 조금씩 움직인다.
+       완전히 멈춰 있어야 하므로 잠금은 스크롤 자체를
+       막는 방식으로 따로 둠
+    ========================================= */
+
+    /* 마지막에 백세주가 커지는 배율 */
+    const BOTTLE_SCALE = 1.2;
+
+    /* 백세주가 커지는 시간(초) */
+    const BOTTLE_SCALE_TIME = 0.8;
+
+    let gateReleased = false;
+
+    let gateFallback = 0;
+
+
+    /*
+     * 중앙 백세주는 css 에서 translate(-50%, -50%) 로
+     * 가운데를 잡고 있음.
+     * gsap 이 transform 을 넘겨받을 때 그 값을 잃지 않도록
+     * 같은 값을 gsap 방식으로 먼저 심어 둠
+     */
+    if (centerBottle) {
+
+        gsap.set(
+            centerBottle,
+
+            {
+                xPercent: -50,
+
+                yPercent: -50
+            }
+        );
+
+    }
+
+
+    /* 잠겨 있는 동안 들어오는 스크롤 입력을 전부 막음 */
+
+    function onGateWheel(event) {
+        event.preventDefault();
+    }
+
+
+    function onGateTouchMove(event) {
+        event.preventDefault();
+    }
+
+
+    /* 스페이스 · 화살표 · PageDown 으로도 내려가지 않게 */
+    function onGateKey(event) {
+
+        const keys = [
+            ' ',
+            'ArrowDown',
+            'ArrowUp',
+            'PageDown',
+            'PageUp',
+            'Home',
+            'End'
+        ];
+
+        if (keys.indexOf(event.key) === -1) return;
+
+        event.preventDefault();
+    }
+
+
+    function lockGate() {
+
+        /* 새로고침으로 중간에서 시작했을 수 있으니 맨 위로 */
+        window.scrollTo(0, 0);
+
+        window.siteLenis?.stop();
+
+        window.addEventListener(
+            'wheel',
+            onGateWheel,
+            { passive: false }
+        );
+
+        window.addEventListener(
+            'touchmove',
+            onGateTouchMove,
+            { passive: false }
+        );
+
+        window.addEventListener(
+            'keydown',
+            onGateKey
+        );
+    }
+
+
+    function releaseGate() {
+
+        if (gateReleased) return;
+
+        gateReleased = true;
+
+        window.clearTimeout(gateFallback);
+
+        window.removeEventListener(
+            'wheel',
+            onGateWheel
+        );
+
+        window.removeEventListener(
+            'touchmove',
+            onGateTouchMove
+        );
+
+        window.removeEventListener(
+            'keydown',
+            onGateKey
+        );
+
+        window.siteLenis?.start();
+
+        ScrollTrigger.refresh();
+    }
+
+
+    /* Hero 등장 연출의 마지막 장면. 끝나면 잠금을 푼다 */
+    function playFinalBeat() {
+
+        if (!centerBottle) {
+            releaseGate();
+            return;
+        }
+
+        gsap.to(
+            centerBottle,
+
+            {
+                scale: BOTTLE_SCALE,
+
+                duration: BOTTLE_SCALE_TIME,
+
+                ease: 'power2.out',
+
+                onComplete: releaseGate
+            }
+        );
+    }
+
+
+    lockGate();
+
+
+    const heroIntro = window.productsHeroIntro;
+
+
+    if (heroIntro) {
+
+        /*
+         * gsap 타임라인은 then 을 갖고 있어서
+         * 다 재생되면 여기로 온다
+         */
+        heroIntro.then(playFinalBeat);
+
+    } else {
+
+        /* 등장 연출이 없으면 바로 마지막 장면만 */
+        playFinalBeat();
+    }
+
+
+    /*
+     * 안전장치.
+     * 어떤 이유로든 연출이 끝나지 않아도 화면이 영영
+     * 잠긴 채로 남지 않게 함
+     */
+    gateFallback =
+        window.setTimeout(
+            releaseGate,
+
+            ((heroIntro ? heroIntro.duration() : 0) +
+                BOTTLE_SCALE_TIME + 2) * 1000
+        );
+
+
+    /* =========================================
+       잠금이 풀린 뒤의 스크롤 연출
+
+       Hero 를 고정한 채 다음 콘텐츠가
        아래에서 올라와 덮음
     ========================================= */
 
@@ -949,13 +1082,10 @@
 
                 start: 'top top',
 
-                /*
-                 * Hero 고정 시간
-                 * 길수록 천천히 진행
-                 */
+                /* Hero 고정 시간. 길수록 천천히 진행 */
                 end: '+=150%',
 
-                scrub: 1,
+                scrub: true,
 
                 /* Hero 고정 */
                 pin: true,
@@ -964,8 +1094,7 @@
                  * 중요!
                  * pin 공간을 만들지 않음
                  *
-                 * → 다음 콘텐츠가
-                 *   Hero 위로 올라옴
+                 * → 다음 콘텐츠가 Hero 위로 올라옴
                  */
                 pinSpacing: false,
 
@@ -978,16 +1107,7 @@
 
 
     /* =========================================
-       Hero 자체는 움직이지 않음
-
-       heroInner scale X
-       heroStage scale X
-       hero y X
-    ========================================= */
-
-
-    /* =========================================
-       Hero만 살짝 어두워짐
+       덮이는 동안 Hero 만 살짝 어두워짐
     ========================================= */
 
     if (heroDim) {
@@ -1208,6 +1328,16 @@
             });
 
 
+        /*
+         * 넣는 시각은 전부 절대값(초).
+         * '-=' 같은 상대값은 앞 tween 이 길어지면 뒤가 통째로
+         * 밀려서 전체 길이를 장담할 수 없다.
+         *
+         * 0.7초 안에 다 나와야 하므로 가장 늦게 끝나는 것이
+         * 카드 마지막 장(0.16 + 0.03 x 7 + 0.30 = 0.67초)
+         */
+
+
         /* =========================================
            1. 제목
         ========================================= */
@@ -1222,8 +1352,10 @@
 
                     y: 0,
 
-                    duration: 0.8
-                }
+                    duration: 0.32
+                },
+
+                0
             );
 
         }
@@ -1246,13 +1378,12 @@
 
                     y: 0,
 
-                    duration: 0.6,
+                    duration: 0.28,
 
-                    /* 버튼 하나씩 조금 더 천천히 */
-                    stagger: 0.15
+                    stagger: 0.04
                 },
 
-                '-=0.1'
+                0.08
             );
 
         }
@@ -1272,12 +1403,12 @@
                 {
                     opacity: 1,
 
-                    duration: 0.5,
+                    duration: 0.3,
 
-                    stagger: 0.1
+                    stagger: 0.03
                 },
 
-                '-=0.05'
+                0.16
             );
 
         }
@@ -1297,10 +1428,10 @@
 
                     y: 0,
 
-                    duration: 0.4
+                    duration: 0.28
                 },
 
-                '-=0.1'
+                0.38
             );
 
         }

@@ -56,8 +56,7 @@
 
 
 .products_main
-:where(a, button, input, [tabindex]):focus-visible,
-.products_top_button:focus-visible {
+:where(a, button, input, [tabindex]):focus-visible {
 
   outline:
     3px solid
@@ -134,8 +133,10 @@
 .products_hero_title {
   font: var(--PC-Banner_96B);
 
-  font-size:
-    clamp(2.25rem, 5.1vw, 6rem);
+  font-size: 96px;
+
+  /* 위로 40px */
+  margin-top: -40px;
 
   letter-spacing:
     var(--PC-Banner_96B-letter-spacing);
@@ -182,7 +183,7 @@
   top: 70%;
 
   width:
-    clamp(26rem, 45vw, 54rem);
+    clamp(31.2rem, 54vw, 64.8rem);
 
   height: auto;
 
@@ -233,9 +234,10 @@
 
 .hero_bottle_center {
   left: 50%;
-  top: 71%;
+  /* 아래로 200px 내렸다가 다시 100px 올림 */
+  top: calc(71% + 100px);
 
-  height: 58%;
+  height: 69.6%;
 
   z-index: 4;
 
@@ -246,28 +248,32 @@
 
 /* 왼쪽 위 Rice */
 .hero_bottle_rice {
-  left: 11.5%;
-  top: 38%;
+  /* 왼쪽 아래 대각선으로 200px (한 축당 200 / √2 ≒ 141px) */
+  left: calc(11.5% - 141px);
+  top: calc(38% + 141px);
 
-  height: 39%;
+  height: 46.8%;
 
+  /* 시안 기울기 -46.41° (시계 방향) */
   transform:
     translate(-50%, -50%)
-    rotate(38deg);
+    rotate(46.41deg);
 }
 
 
 /* 왼쪽 아래 Draft */
 
 .hero_bottle_draft {
-  left: 9.2%;
-  top: 80%;
+  /* 오른쪽 아래 대각선 141px 에서 다시 왼쪽 50px / 위 100px / 아래 50px */
+  left: calc(9.2% + 91px);
+  top: calc(80% + 91px);
 
-  height: 44%;
+  height: 52.8%;
 
+  /* 시안 기울기 -20.98° (시계 방향) */
   transform:
     translate(-50%, -50%)
-    rotate(27deg);
+    rotate(20.98deg);
 }
 
 
@@ -275,9 +281,10 @@
 
 .hero_bottle_prebiotics {
   left: 87.4%;
-  top: 33%;
+  /* 아래로 20px */
+  top: calc(33% + 20px);
 
-  height: 33%;
+  height: 41.58%;
 
   transform:
     translate(-50%, -50%)
@@ -289,9 +296,10 @@
 
 .hero_bottle_strawberry {
   left: 92.6%;
-  top: 81%;
+  /* 아래로 80px */
+  top: calc(81% + 80px);
 
-  height: 40%;
+  height: 50.4%;
 
   transform:
     translate(-50%, -50%)
@@ -745,6 +753,17 @@
 
 
 .product_card > article {
+  /*
+   * 좌우 안쪽 여백.
+   * hover 때 뒤 배경이 카드 끝까지 꽉 차야 해서
+   * 그 폭을 여기서 변수로 잡아 두고 아래에서 다시 씀
+   */
+  --card_pad_x:
+    clamp(0.5rem, 1.05vw, 1.25rem);
+
+  /* 카드를 덮는 링크(.product_link)의 기준 */
+  position: relative;
+
   display: flex;
 
   flex-direction: column;
@@ -755,7 +774,7 @@
 
   padding:
     clamp(1.25rem, 1.7vw, 1.75rem)
-    clamp(0.5rem, 1.05vw, 1.25rem)
+    var(--card_pad_x)
     clamp(1.25rem, 1.7vw, 2rem);
 
   border-radius: inherit;
@@ -766,11 +785,25 @@
 
 
 .product_card > article:hover,
-.product_card > article:focus-visible {
+.product_card > article:focus-visible,
+.product_card > article:focus-within {
 
   box-shadow:
     0 1rem 2rem
     rgba(76, 59, 51, 0.10);
+}
+
+
+/* 카드 전체를 덮는 링크.
+   병(z-index 2)보다 위에 둬야 어디를 눌러도 링크가 받음 */
+.product_link {
+  position: absolute;
+
+  inset: 0;
+
+  z-index: 3;
+
+  border-radius: inherit;
 }
 
 
@@ -786,7 +819,11 @@
   aspect-ratio:
     260 / 280;
 
-  overflow: hidden;
+  /*
+   * hover 때 뒤 배경이 카드 좌우 여백 바깥까지 넓어져야 해서
+   * 잘라 내지 않음 (원래는 hidden 이었음)
+   */
+  overflow: visible;
 
   border-radius:
     0.5rem;
@@ -801,9 +838,19 @@
   top: 50%;
   left: 50%;
 
-  width: 96%;
+  /* 96% 에서 5% + 10% 줄임 */
+  width: 82.08%;
 
-  aspect-ratio: 1;
+  /*
+   * 세로도 % 로 직접 적음. aspect-ratio 로 정사각형을 만들면
+   * 그 속성은 전환이 안 걸려서, hover 를 뗄 때 폭이 아직 넓은 상태로
+   * aspect-ratio 만 먼저 되돌아가 커다란 원이 되었다가 줄어든다.
+   *
+   * 값은 aspect-ratio: 1 일 때와 같은 픽셀.
+   * .product_media 가 260 / 280 이므로
+   * 82.08% x (260 / 280) = 76.22%
+   */
+  height: 76.22%;
 
   border-radius: 50%;
 
@@ -852,20 +899,24 @@
 .product_tone,
 
 .product_card > article:focus-visible
+.product_tone,
+
+.product_card > article:focus-within
 .product_tone {
 
-  width: 100%;
+  /* 카드 좌우 여백까지 먹고 들어가 끝에서 끝까지 참 */
+  width:
+    calc(100% + var(--card_pad_x) * 2);
 
+  /* 동그라미와 같은 비율로 5% + 10% 줄임 */
   height:
     clamp(
-      150px,
-      12.2vw,
-      234px
+      128.25px,
+      10.43vw,
+      200.07px
     );
 
-  aspect-ratio: auto;
-
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 
@@ -873,6 +924,10 @@
    FRUIT
 ========================================================= */
 
+/* 평소에는 숨어 있다가 hover 때 뒤 배경이 네모로 바뀌는 것과
+   거의 동시에(0.1초 뒤) 튀어 나옴.
+   지연은 hover 쪽 transition 에만 걸어 둠.
+   여기(기본값)에 걸면 커서를 뗄 때도 0.1초 늦게 사라져 굼떠 보인다 */
 .product_fruit {
   position: absolute;
 
@@ -881,21 +936,27 @@
 
   z-index: 1;
 
-  width: 78%;
+  /* 78% 에서 10% 키움 */
+  width: 85.8%;
 
   height: auto;
 
+  opacity: 0;
+
   transform:
-    translate(-50%, -50%);
+    translate(-50%, -50%)
+    scale(0.8);
 
   transition:
-    transform 0.45s
+    transform 0.3s
       cubic-bezier(
         0.22,
         1,
         0.36,
         1
-      );
+      ),
+
+    opacity 0.22s ease;
 }
 
 
@@ -903,11 +964,29 @@
 .product_fruit,
 
 .product_card > article:focus-visible
+.product_fruit,
+
+.product_card > article:focus-within
 .product_fruit {
+
+  opacity: 1;
 
   transform:
     translate(-50%, -50%)
     scale(1.03);
+
+  /* 살짝 넘쳤다 돌아오는 곡선이라 "톡" 튀어나오는 느낌이 남 */
+  transition:
+    transform 0.42s
+      cubic-bezier(
+        0.34,
+        1.56,
+        0.64,
+        1
+      )
+      0.1s,
+
+    opacity 0.24s ease 0.1s;
 }
 
 
@@ -953,6 +1032,9 @@
 .product_bottle,
 
 .product_card > article:focus-visible
+.product_bottle,
+
+.product_card > article:focus-within
 .product_bottle {
 
   transform:
@@ -1075,8 +1157,9 @@
 .view_all_chevron {
   display: block;
 
-  width: 1.375rem;
-  height: 0.875rem;
+  /* 30% + 30% 키움 */
+  width: 2.32375rem;
+  height: 1.47875rem;
 
   background:
     currentColor;
@@ -1195,8 +1278,9 @@
   height:
     clamp(2.5rem, 2.4vw, 2.875rem);
 
+  /* 아래로 30px */
   margin-top:
-    clamp(1.5rem, 2.6vw, 3.125rem);
+    calc(clamp(1.5rem, 2.6vw, 3.125rem) + 30px);
 
   padding-inline: 1.5rem;
 
@@ -1270,7 +1354,8 @@
   right:
     clamp(0rem, 6vw, 6rem);
 
-  bottom: 0;
+  /* 아래로 30px */
+  bottom: -30px;
 
   width: 270px;
   height: 270px;
@@ -1686,111 +1771,6 @@
 }
 
 
-/* =========================================================
-   TOP BUTTON
-========================================================= */
-
-.products_top_button {
-  position: fixed;
-
-  right:
-    clamp(1rem, 2.1vw, 2.5rem);
-
-  bottom:
-    clamp(1rem, 2.1vw, 2.5rem);
-
-  z-index: 100;
-
-  display: grid;
-
-  justify-items: center;
-
-  align-items: center;
-
-  /* 캐릭터와 TOP 이미지 사이 간격 */
-  row-gap: 14px;
-
-  width:
-    clamp(4rem, 5.3vw, 6.3125rem);
-
-  padding: 0;
-
-  border: 0;
-
-  background: transparent;
-
-  cursor: pointer;
-
-  opacity: 0;
-
-  visibility: hidden;
-
-  transform:
-    translateY(0.75rem);
-
-  transition:
-    opacity 260ms ease,
-    transform 260ms ease,
-    visibility 260ms ease;
-}
-
-
-/* 스크롤하면 TOP 버튼 등장 */
-
-.products_top_button.is_visible {
-  opacity: 1;
-
-  visibility: visible;
-
-  transform:
-    translateY(0);
-}
-
-
-/* Hover */
-
-.products_top_button:hover {
-  transform:
-    translateY(-0.25rem);
-}
-
-
-/* =========================================================
-   TOP CHARACTER
-========================================================= */
-
-.products_top_character {
-  display: block;
-
-  width: 78%;
-
-  height: auto;
-
-  margin: 0;
-
-  object-fit: contain;
-
-  pointer-events: none;
-}
-
-
-/* =========================================================
-   TOP BOWL / TOP IMAGE
-========================================================= */
-
-.products_top_bowl {
-  display: block;
-
-  width: 100%;
-
-  height: auto;
-
-  margin: 0;
-
-  object-fit: contain;
-
-  pointer-events: none;
-}
 
 /* =========================================================
    LARGE DESKTOP
@@ -2150,13 +2130,6 @@
 
   .keyword_group img {
     width: clamp(1.8rem, 4vw, 2.5rem);
-  }
-
-  .products_top_button {
-    right: clamp(1.5rem, 3.5vw, 2.25rem);
-    bottom: clamp(1.5rem, 3.5vw, 2.25rem);
-    row-gap: 0.5rem;
-    width: clamp(3.75rem, 8vw, 5rem);
   }
 
   .site_footer {
@@ -2556,13 +2529,6 @@
     width: clamp(1.5rem, 7vw, 1.85rem);
   }
 
-  .products_top_button {
-    right: 1rem;
-    bottom: 1rem;
-    row-gap: 0.4rem;
-    width: clamp(3.25rem, 15vw, 3.75rem);
-  }
-
   .site_footer {
     padding: clamp(3rem, 14vw, 4rem) 0 2rem;
   }
@@ -2660,9 +2626,7 @@
 
 @media (prefers-reduced-motion: reduce) {
 
-  .products_main *,
-  .products_top_button,
-  .products_top_button * {
+  .products_main * {
 
     animation:
       none !important;

@@ -210,3 +210,43 @@
         wheelMultiplier: 1
     });
 })();
+
+
+/* ---------- shared TOP button ---------- */
+/* products / aboutbrand / pairing 이 함께 씀.
+   조금 내려가면 나타나고, 누르면 맨 위로 돌아감.
+   Lenis 가 있으면 그쪽에 맡겨야 부드러운 스크롤과 따로 놀지 않음 */
+(() => {
+    const topButton = document.querySelector('[data-top-button]');
+    if (!topButton) return;
+
+    // 이만큼 내려가야 버튼이 나타남(px)
+    const revealPoint = 400;
+    let scrollFrame = 0;
+
+    function updateTopButton() {
+        scrollFrame = 0;
+        topButton.classList.toggle('is_visible', window.scrollY > revealPoint);
+    }
+
+    // 스크롤마다 계산하지 않고 한 프레임에 한 번만
+    function handleScroll() {
+        if (scrollFrame) return;
+        scrollFrame = window.requestAnimationFrame(updateTopButton);
+    }
+
+    function handleTopClick() {
+        if (window.siteLenis) {
+            window.siteLenis.scrollTo(0);
+            return;
+        }
+
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    topButton.addEventListener('click', handleTopClick);
+
+    updateTopButton();
+})();

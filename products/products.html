@@ -104,7 +104,7 @@
 
       <div class="products_hero_stage" aria-hidden="true">
 
-        <img class="hero_splash" src="./products_asset/img/splash.png" alt="">
+        <img class="hero_splash" src="./products_asset/img/splash.svg" alt="">
 
         <img class="hero_bottle hero_bottle_rice" src="./products_asset/img/rice_makgeolli.png" alt="">
 
@@ -239,6 +239,11 @@
               data-experience="intermediate vegan" data-product="draft">
 
               <article tabindex="0">
+
+                <!-- 카드 전체를 덮는 링크. 상세 페이지로 이동함.
+                     새 탭 열기 같은 브라우저 기본 동작을 살리려고 a 로 둠 -->
+                <a class="product_link" href="../product_detail/draft.html"
+                  aria-label="DRAFT MAKGEOLLI 자세히 보기"></a>
 
                 <div class="product_media">
                   <span class="product_tone" aria-hidden="true"></span>
@@ -692,9 +697,10 @@
 
   </main>
 
-  <button class="products_top_button" type="button" aria-label="Back to top" data-top-button>
-    <img class="products_top_character" src="products_asset/img/topimg.png" alt="back to top character">
-    <img class="products_top_bowl" src="products_asset/icon/top_btn.svg" alt="true">
+  <!-- 세 페이지가 함께 쓰는 TOP 버튼. 모양은 common.css, 동작은 common.js 가 맡음 -->
+  <button class="site_top_button" type="button" aria-label="Back to top" data-top-button>
+    <img class="site_top_character" src="../asset/img/top_character.png" alt="">
+    <img class="site_top_bowl" src="../asset/icon/top_btn.svg" alt="">
   </button>
 
   <footer class="site_footer" id="site_footer">

@@ -991,3 +991,100 @@ html.lenis body {
         transform: translate(-50%, 0);
     }
 }
+
+/* ---------- shared TOP button ---------- */
+
+/* products / aboutbrand / pairing 이 같은 자리·같은 크기로 씀.
+   마크업은 각 페이지 </main> 뒤에 두고, 동작은 common.js 가 맡음 */
+.site_top_button {
+    position: fixed;
+
+    right: clamp(1rem, 2.1vw, 2.5rem);
+    bottom: clamp(1rem, 2.1vw, 2.5rem);
+
+    z-index: 100;
+
+    display: grid;
+    justify-items: center;
+    align-items: center;
+
+    /* 캐릭터와 TOP 그림 사이 간격 */
+    row-gap: 14px;
+
+    width: clamp(4rem, 5.3vw, 6.3125rem);
+
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(0.75rem);
+
+    transition:
+        opacity 260ms ease,
+        transform 260ms ease,
+        visibility 260ms ease;
+}
+
+/* 스크롤하면 등장 */
+.site_top_button.is_visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.site_top_button:hover {
+    transform: translateY(-0.25rem);
+}
+
+.site_top_button:focus-visible {
+    outline: 2px solid var(--kooksoondang_orange, #F29556);
+    outline-offset: 4px;
+}
+
+.site_top_character {
+    display: block;
+    width: 78%;
+    height: auto;
+    margin: 0;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+.site_top_bowl {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 0;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+@media (max-width: 80rem) {
+    .site_top_button {
+        right: clamp(1.5rem, 3.5vw, 2.25rem);
+        bottom: clamp(1.5rem, 3.5vw, 2.25rem);
+        row-gap: 0.5rem;
+        width: clamp(3.75rem, 8vw, 5rem);
+    }
+}
+
+@media (max-width: 48rem) {
+    .site_top_button {
+        right: 1rem;
+        bottom: 1rem;
+        row-gap: 0.4rem;
+        width: clamp(3.25rem, 15vw, 3.75rem);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .site_top_button,
+    .site_top_button * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
