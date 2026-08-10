@@ -95,31 +95,190 @@ body {
     padding-left: 8%;
 }
 
-.intro_title {
-    font: var(--PC-Banner_96B, 700 96px/0.9 sans-serif);
-    letter-spacing: -2px;
+/* 인트로 등장 순서를 한곳에서 잡음: 제목 채우기 -> 잔 드로잉 -> 설명 문구.
+   값은 main.css 의 .hero_left 와 같음 */
+.intro_text {
+    --intro-pour-delay: 120ms;
+    --intro-pour-duration: 900ms;
+    /* 잔은 제목이 다 차오른 뒤 한 박자 쉬고 그려짐 */
+    --intro-cup-start: calc(var(--intro-pour-delay) + var(--intro-pour-duration) + 100ms);
+    --intro-cup-duration: 560ms;
+    /* 설명 문구는 잔이 다 그려지길 기다리지 않고 그리기 시작하자마자 겹쳐서 들어옴 */
+    --intro-desc-start: calc(var(--intro-cup-start) + 200ms);
 }
 
-.intro_title em {
+/* 잔 svg 를 제목 위에 얹는 기준 상자. 폭을 글자에 맞춰 두면
+   잔의 % 좌표가 화면 폭이 바뀌어도 제목과 같은 비율로 따라감 */
+.intro_title_wrap {
+    position: relative;
+    width: max-content;
+}
+
+.intro_title {
+    font: var(--PC-Banner_96B);
+    letter-spacing: var(--PC-Banner_96B-letter-spacing);
+    text-transform: uppercase;
+}
+
+.intro_title .line {
+    display: block;
+    font-size: clamp(2.75rem, 5.2vw, 6rem);
+}
+
+.intro_title .line_regular {
+    white-space: nowrap;
+    font-weight: 400;
+}
+
+.intro_title .line_hand {
     font-family: var(--font-ROH_HOE-CHAN, serif);
     font-weight: 400;
-    font-style: normal;
+}
+
+.intro_title .line_bold {
+    font-weight: 700;
+}
+
+/* 제목 채우기: 잔에 술이 차오르듯 아래에서 위로 색이 채워짐.
+   세 줄을 한 덩어리로 보이게 하려고 제목 전체에 배경 하나를 깔고 글자 모양으로 오려 냄.
+   경계는 일자 대신 물결 곡선이고 주황 선이 액체 표면 역할을 함.
+   (data URI 안에서는 CSS 변수를 못 쓰므로 색은 --bekseju_darker_warm / --kooksoondang_orange 값을 직접 적음) */
+@supports ((background-clip: text) or (-webkit-background-clip: text)) {
+    .intro_title.is_pour_ready {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 200' preserveAspectRatio='none'%3E%3Cpath d='M0 100Q12.5 95.5 25 100T50 100T75 100T100 100V200H0Z' fill='%23272625'/%3E%3Cpath d='M0 100Q12.5 95.5 25 100T50 100T75 100T100 100' fill='none' stroke='%23F29556' stroke-width='1.2'/%3E%3C/svg%3E");
+        background-repeat: repeat-x;
+        background-size: 50% 200%;
+        background-position: 0% 0%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .intro_title.is_pour_running {
+        animation: intro_title_pour var(--intro-pour-duration) cubic-bezier(0.4, 0, 0.2, 1) var(--intro-pour-delay) forwards;
+    }
+}
+
+@keyframes intro_title_pour {
+    from {
+        background-position: 0% 0%;
+    }
+
+    to {
+        background-position: 100% 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .intro_title.is_pour_ready,
+    .intro_title.is_pour_running {
+        animation: none;
+        background-image: none;
+        color: var(--bekseju_darker_warm, #272625);
+        -webkit-text-fill-color: currentColor;
+    }
+}
+
+.intro_cup {
+    position: absolute;
+    display: block;
+    width: clamp(3.75rem, 6vw, 5.5rem);
+    height: auto;
+    left: calc(28% - 20px);
+    top: calc(42% + 4px);
+}
+
+/* 대기 상태에서는 획이 지워진 채로 있다가 js 가 재생 클래스를 붙이면 그려짐 */
+.intro_cup path {
+    opacity: 0;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+}
+
+.intro_cup.is_draw_running path {
+    animation: intro_cup_draw var(--intro-cup-duration) cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* 획 사이 간격(0 / 350 / 460 / 560ms) */
+.intro_cup.is_draw_running path:nth-child(1) {
+    animation-delay: var(--intro-cup-start);
+}
+
+.intro_cup.is_draw_running path:nth-child(2) {
+    animation-delay: calc(var(--intro-cup-start) + 350ms);
+}
+
+.intro_cup.is_draw_running path:nth-child(3) {
+    animation-delay: calc(var(--intro-cup-start) + 460ms);
+}
+
+.intro_cup.is_draw_running path:nth-child(4) {
+    animation-delay: calc(var(--intro-cup-start) + 560ms);
+}
+
+@keyframes intro_cup_draw {
+    0% {
+        opacity: 0;
+        stroke-dashoffset: 1;
+    }
+
+    1% {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 1;
+        stroke-dashoffset: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .intro_cup path {
+        animation: none;
+        opacity: 1;
+        stroke-dasharray: none;
+        stroke-dashoffset: 0;
+    }
 }
 
 .intro_desc {
     margin-top: 32px;
-    font: var(--PC-Body1_16R, 400 16px/1.7 sans-serif);
+    font: var(--PC-Body_Normal_16SB);
+    letter-spacing: var(--PC-Body_Normal_16SB-letter-spacing);
     color: var(--bekseju_dark2, #5D504A);
+}
+
+/* 설명 문구 글자 등장: 왼쪽 -> 오른쪽으로 한 글자씩 미끄러져 들어옴 */
+.intro_desc_word {
+    /* 글자를 inline-block 으로 만들면 단어 중간에서도 줄이 바뀌므로 단어를 한 겹 감쌈 */
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.intro_desc.is_typing_ready .intro_desc_char {
+    display: inline-block;
+    opacity: 0;
+    transform: translateX(150px);
+}
+
+.intro_desc.is_typing_running .intro_desc_char {
+    opacity: 1;
+    transform: none;
+    transition: opacity 900ms cubic-bezier(0.4, 0, 0.6, 1) calc(var(--intro-desc-start) + var(--type-delay, 0ms)),
+        transform 640ms cubic-bezier(0.165, 0.84, 0.44, 1) calc(var(--intro-desc-start) + var(--type-delay, 0ms));
 }
 
 .btn_start {
     margin-top: 40px;
     padding: 12px 28px;
     border: 0;
-    border-radius: 999px;
+    /* 위 모서리는 4px, 아래 모서리는 28px */
+    border-radius: 4px 4px 28px 28px;
     background: var(--kooksoondang_orange, #F29556);
     color: var(--makgeolli_White, #FFF);
-    font: var(--PC-Body2_14B, 700 14px/1.4 sans-serif);
+    font: var(--PC-Body_Small_14SB);
     letter-spacing: 1px;
     cursor: pointer;
     transition: transform 0.2s, filter 0.2s;
@@ -136,15 +295,95 @@ body {
    글은 화면 위쪽에 붙임. 가운데 두면 배경 그림 속 인물 얼굴을 가려서,
    문제 화면과 전환 컷 모두 같은 높이에서 시작하도록 통일함 */
 .screen_question {
+    /* 아래에 깔리는 대사 종이가 차지하는 높이.
+       화면 안의 다른 요소(선택지·인물·술상)는 이만큼 위로 비켜 섬 */
+    --question-bar: clamp(7rem, 14vh, 9.5rem);
+
     background: radial-gradient(120% 90% at 50% 20%, var(--test_night1) 0%, var(--test_night2) 100%);
-    justify-content: flex-start;
+    /* 질문이 흐름에서 빠져 바닥에 붙으므로 남은 자리(선택지)는 가운데에 둠 */
+    justify-content: center;
+    /* +20px 은 대사 종이가 위아래로 10px 씩 커진 만큼 */
+    padding-bottom: calc(var(--question-bar) + 20px + clamp(1rem, 3vh, 2.25rem));
 }
 
-.question {
-    max-width: 900px;
-    font: var(--PC-Heading1_32R, 400 32px/1.4 sans-serif);
-    text-align: center;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+/* 질문은 화면 아래에 깔리는 '찢어 낸 종이' 대사창.
+   비주얼 노벨 대사창처럼 화면 폭을 가로질러 바닥에 붙고, 글은 왼쪽부터 읽힘.
+   이미지를 쓰지 않고 css 만으로 만듦.
+   - 종이색/얼룩 : 배경 그라데이션 여러 겹
+   - 줄 노트     : 가로 반복 선 + 왼쪽 붉은 여백선
+   - 스프링 자국 : ::before 의 세로 반복 타원
+   - 찢긴 위·아래 가장자리 : clip-path
+     (clip-path 를 쓰면 box-shadow 가 사각형으로 남으므로 그림자는 filter 로 줌)
+   선택자에 부모를 붙인 건 뒤에 나오는 .screen_dim>* 규칙에 position 을 뺏기지 않게 하기 위함 */
+.screen_question>.question {
+    position: absolute;
+    /* 좌우는 20px 씩 더 들여세우고(폭 40px 감소), 위아래로는 10px 씩 더 키움(높이 20px 증가) */
+    left: calc(clamp(10px, 2vw, 30px) + 20px);
+    right: calc(clamp(10px, 2vw, 30px) + 20px);
+    bottom: clamp(10px, 2vh, 24px);
+    z-index: 2;
+
+    /* 글이 한 줄이든 세 줄이든 대사창 높이가 크게 흔들리지 않게 최소 높이를 잡고 세로 가운데 정렬 */
+    display: flex;
+    align-items: center;
+    min-height: calc(var(--question-bar, 8rem) + 20px);
+    max-width: none;
+    padding: calc(clamp(20px, 2.2vw, 28px) + 10px) clamp(24px, 3vw, 44px) calc(clamp(20px, 2.2vw, 28px) + 10px) clamp(46px, 4.4vw, 70px);
+    color: var(--test_label_ink);
+    font: var(--PC-Heading1_28R, 400 28px/1.5 sans-serif);
+    text-align: left;
+    text-shadow: none;
+
+    background-color: #F1E4CB;
+    background-image:
+        /* 눅눅해진 자국 */
+        radial-gradient(70% 55% at 8% 96%, rgba(140, 100, 55, 0.22), transparent 70%),
+        radial-gradient(45% 40% at 96% 8%, rgba(140, 100, 55, 0.18), transparent 70%),
+        radial-gradient(30% 26% at 62% 90%, rgba(150, 110, 60, 0.14), transparent 70%),
+        /* 붉은 여백선 */
+        linear-gradient(90deg, transparent calc(clamp(46px, 4.4vw, 70px) - 14px), rgba(190, 90, 80, 0.45) calc(clamp(46px, 4.4vw, 70px) - 14px) calc(clamp(46px, 4.4vw, 70px) - 13px), transparent calc(clamp(46px, 4.4vw, 70px) - 13px)),
+        /* 줄 노트 */
+        repeating-linear-gradient(180deg, transparent 0 27px, rgba(120, 90, 50, 0.16) 27px 28px),
+        /* 종이 자체의 위→아래 톤 */
+        linear-gradient(160deg, #F7EEDA 0%, #EFE0C3 55%, #E6D4B4 100%);
+
+    /* 위·아래 가장자리를 손으로 찢은 듯 어긋나게 오려 냄.
+       세로 좌표는 % 대신 가장자리에서 잰 px 이라 문장이 길어져도 찢긴 폭이 그대로임 */
+    clip-path: polygon(0% 7px,
+            12% 0px,
+            30% 6px,
+            48% 1px,
+            66% 7px,
+            84% 1px,
+            100% 5px,
+            99.7% calc(100% - 4px),
+            82% calc(100% - 1px),
+            60% calc(100% - 7px),
+            38% calc(100% - 2px),
+            16% calc(100% - 8px),
+            0.3% calc(100% - 2px));
+    filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.5));
+    transform: rotate(-0.25deg);
+}
+
+/* 스프링에서 뜯어낸 자국 */
+.question::before {
+    content: "";
+    position: absolute;
+    left: clamp(12px, 1.2vw, 18px);
+    top: 16px;
+    bottom: 16px;
+    width: clamp(10px, 1vw, 14px);
+    background-image: repeating-linear-gradient(180deg,
+            rgba(90, 66, 40, 0.55) 0 9px,
+            transparent 9px 30px);
+    border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .question {
+        transform: none;
+    }
 }
 
 /* 선택지는 피그마처럼 배경 위에 얹힌 밝은 라벨 모양 */
@@ -175,9 +414,9 @@ body {
 /* ---------- 그림이 딸린 선택지 ---------- */
 
 /* 인물 그림을 좌우로 벌려 세우고 답 상자를 그 아래에 붙임.
-   화면에 .screen_pick 을 같이 붙이면 질문은 위, 그림은 아래로 나뉘어 바닥에 선 느낌이 남 */
+   그림은 바닥(대사 종이 바로 위)에 붙어야 땅에 선 것처럼 보임 */
 .screen_pick {
-    justify-content: space-between;
+    justify-content: flex-end;
 }
 
 .picks {

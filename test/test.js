@@ -48,6 +48,105 @@
     }
 
     /* ------------------------------------------------------------------
+       인트로 연출 (main 히어로와 같은 순서)
+       제목이 물결로 차오름 -> 잔이 획순대로 그려짐 -> 설명 문구가 한 글자씩 들어옴.
+       인트로 화면이 켜질 때마다(첫 진입 / 다시하기) 처음부터 다시 재생함
+    ------------------------------------------------------------------ */
+    var intro = (function () {
+        var title = document.querySelector('.intro_title');
+        var cup = document.querySelector('.intro_cup');
+        var desc = document.querySelector('.intro_desc');
+
+        var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var supportsClip = typeof CSS === 'object'
+            && typeof CSS.supports === 'function'
+            && (CSS.supports('background-clip', 'text') || CSS.supports('-webkit-background-clip', 'text'));
+
+        /* 모션을 끈 사용자에겐 아무것도 안 하고 처음부터 다 보이는 상태로 둠 */
+        if (reduced) return { play: function () { } };
+
+        /* 글자 수가 많아 간격은 main 과 같은 14ms */
+        var charStep = 14;
+        var pourDone = 0;
+
+        /* 설명 문구를 <br> 단위로 나누고, 단어 -> 글자 순으로 감싸 둠. 쪼개기는 한 번만 */
+        if (desc) {
+            var lines = [].slice.call(desc.childNodes).reduce(function (acc, node) {
+                if (node.nodeName === 'BR') acc.push('');
+                else acc[acc.length - 1] += node.textContent;
+
+                return acc;
+            }, ['']).map(function (line) {
+                return line.replace(/\s+/g, ' ').trim();
+            }).filter(Boolean);
+
+            var fragment = document.createDocumentFragment();
+            var delay = 0;
+
+            lines.forEach(function (line, lineIndex) {
+                if (lineIndex) fragment.appendChild(document.createElement('br'));
+
+                line.split(' ').forEach(function (word, wordIndex) {
+                    /* 단어 사이 공백은 실제 공백 문자로 남겨 둬야 이 자리에서만 줄이 바뀜 */
+                    if (wordIndex) fragment.appendChild(document.createTextNode(' '));
+
+                    var wordSpan = document.createElement('span');
+                    wordSpan.className = 'intro_desc_word';
+
+                    word.split('').forEach(function (character) {
+                        var span = document.createElement('span');
+
+                        span.className = 'intro_desc_char';
+                        span.textContent = character;
+                        span.style.setProperty('--type-delay', delay + 'ms');
+                        wordSpan.appendChild(span);
+
+                        delay += charStep;
+                    });
+
+                    fragment.appendChild(wordSpan);
+                });
+            });
+
+            if (lines.length) desc.replaceChildren(fragment);
+        }
+
+        /* 채우기가 끝나면 클래스를 떼어 평범하게 칠해진 글자로 되돌림 */
+        function endPour() {
+            window.clearTimeout(pourDone);
+            if (title) title.classList.remove('is_pour_ready', 'is_pour_running');
+        }
+
+        function play() {
+            endPour();
+
+            if (cup) cup.classList.remove('is_draw_running');
+            if (desc) desc.classList.remove('is_typing_running');
+
+            if (title && supportsClip) title.classList.add('is_pour_ready');
+            if (desc) desc.classList.add('is_typing_ready');
+
+            /* 대기 상태가 한 프레임 그려진 뒤라야 처음부터 재생됨 */
+            window.requestAnimationFrame(function () {
+                if (title && supportsClip) title.classList.add('is_pour_running');
+                if (cup) cup.classList.add('is_draw_running');
+                if (desc) desc.classList.add('is_typing_running');
+            });
+
+            /* 애니메이션이 끝내 재생되지 않아도 글자가 투명한 채로 남지 않도록 */
+            if (title && supportsClip) pourDone = window.setTimeout(endPour, 3000);
+        }
+
+        if (title) {
+            title.addEventListener('animationend', function (e) {
+                if (e.animationName === 'intro_title_pour') endPour();
+            });
+        }
+
+        return { play: play };
+    })();
+
+    /* ------------------------------------------------------------------
        화면 전환
     ------------------------------------------------------------------ */
     function show(id) {
@@ -63,6 +162,8 @@
         /* 애니메이션을 다시 태우려면 클래스가 한 번 빠졌다 붙어야 해서 순서상 여기서 초기화 */
         window.scrollTo(0, 0);
         updateHud(target);
+
+        if (id === START) intro.play();
     }
 
     /* 진행 표시와 뒤로가기 버튼은 문제 화면에서만 보여 줌 */
