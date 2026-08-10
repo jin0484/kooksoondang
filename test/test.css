@@ -1164,6 +1164,12 @@ body {
     filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45));
 }
 
+/* 선택지와 같은 프레임 애니메이션을 술 그림 위에서도 바로 확인할 수 있게 함 */
+.drink[data-hover-frames] {
+    pointer-events: auto;
+    cursor: pointer;
+}
+
 /* 주막 실내(양반) — 낮은 상 위 */
 #q3_yangban .drink {
     --y: 21%;
@@ -1365,6 +1371,11 @@ body {
 .btn_share:hover {
     transform: translateY(-2px);
     filter: brightness(1.12);
+}
+
+.btn_share:focus-visible {
+    outline: 2px solid var(--kooksoondang_orange, #F29556);
+    outline-offset: 3px;
 }
 
 /* 다시 하기는 디자인에 없는 버튼이라 두 버튼 아래에 글자만 작게 둠 */
@@ -1588,11 +1599,11 @@ body {
     font-size: 12px;
     letter-spacing: 0.5px;
     text-decoration: none;
-    transition: filter 0.2s;
+    transition: opacity 0.2s;
 }
 
 .btn_more:hover {
-    filter: brightness(1.15);
+    opacity: 0.8;
 }
 
 /* ===================== 진행 표시 / 뒤로가기 ===================== */

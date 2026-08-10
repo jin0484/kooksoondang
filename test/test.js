@@ -229,11 +229,16 @@
             var selector = button.getAttribute('data-hover-animate');
             var screen = button.closest('.screen');
             var img = screen && selector ? screen.querySelector(selector) : null;
+
+            startImage(button, img);
+        }
+
+        function startImage(source, img) {
             var list = img && frames(img);
 
             if (reduced || !list || list.length < 2) return;
 
-            stop(button);
+            stop(source);
 
             var index = 0;
             var step = Number(img.getAttribute('data-hover-frame-ms')) || 220;
@@ -242,7 +247,7 @@
                 img.src = list[index];
             }, step);
 
-            active.push({ button: button, img: img, timer: timer });
+            active.push({ button: source, img: img, timer: timer });
         }
 
         /* 그림이 보이는 시점에 미리 불러 둬 첫 hover가 끊기지 않게 함. */
@@ -258,6 +263,11 @@
             button.addEventListener('mouseleave', function () { stop(button); });
             button.addEventListener('focus', function () { start(button); });
             button.addEventListener('blur', function () { stop(button); });
+        });
+
+        [].forEach.call(test.querySelectorAll('.drink[data-hover-frames]'), function (img) {
+            img.addEventListener('mouseenter', function () { startImage(img, img); });
+            img.addEventListener('mouseleave', function () { stop(img); });
         });
 
         return { stopAll: function () { stop(); } };
@@ -419,6 +429,75 @@
         show(START);
     }
 
+    function shareFeedback(button, message) {
+        var original = button.dataset.shareLabel || button.textContent.trim();
+        button.dataset.shareLabel = original;
+        button.textContent = message;
+
+        window.clearTimeout(button.shareFeedbackTimer);
+        button.shareFeedbackTimer = window.setTimeout(function () {
+            button.textContent = original;
+        }, 2200);
+    }
+
+    function copyShareUrl(url) {
+        if (navigator.clipboard && window.isSecureContext) {
+            return navigator.clipboard.writeText(url);
+        }
+
+        return new Promise(function (resolve, reject) {
+            var field = document.createElement('textarea');
+            field.value = url;
+            field.setAttribute('readonly', '');
+            field.style.position = 'fixed';
+            field.style.opacity = '0';
+            document.body.appendChild(field);
+            field.select();
+
+            var copied = document.execCommand('copy');
+            field.remove();
+
+            if (copied) resolve();
+            else reject(new Error('Copy failed'));
+        });
+    }
+
+    function shareResult(button) {
+        var screen = button.closest('.screen_result');
+        var title = screen && screen.querySelector('.result_title');
+        if (!screen || !title) return;
+
+        var shareUrl = new URL(window.location.href);
+        shareUrl.searchParams.set('result', screen.id);
+        shareUrl.hash = screen.id;
+
+        var shareData = {
+            title: 'kooksoondang drinking type',
+            text: 'My kooksoondang drinking type is ' + title.textContent.trim() + '. Find yours!',
+            url: shareUrl.href
+        };
+
+        function copyLink() {
+            copyShareUrl(shareData.url).then(function () {
+                shareFeedback(button, 'LINK COPIED');
+            }).catch(function () {
+                shareFeedback(button, 'COPY FAILED');
+            });
+        }
+
+        if (!navigator.share) {
+            copyLink();
+            return;
+        }
+
+        navigator.share(shareData).then(function () {
+            shareFeedback(button, 'SHARED');
+        }).catch(function (error) {
+            if (error && error.name === 'AbortError') return;
+            copyLink();
+        });
+    }
+
     /* ------------------------------------------------------------------
        클릭 처리
        선택지 버튼, 전환 컷(섹션 전체), 시작/다시하기 버튼이 모두 data-next 를 갖고 있음
@@ -432,6 +511,12 @@
 
         if (e.target.closest('#btn_back')) {
             back();
+            return;
+        }
+
+        var shareButton = e.target.closest('.btn_share');
+        if (shareButton && test.contains(shareButton)) {
+            shareResult(shareButton);
             return;
         }
 
@@ -476,5 +561,6 @@
         go(screen.getAttribute('data-next'));
     });
 
-    show(START);
+    var sharedResult = new URLSearchParams(window.location.search).get('result');
+    show(/^result_[a-f]$/.test(sharedResult || '') ? sharedResult : START);
 })();
