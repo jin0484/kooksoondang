@@ -35,6 +35,7 @@
             label: 'Q3',
             prompt: "What's the occasion?",
             color: '#d4e20f',
+            selectedColor: '#708900',
             tint: 'rgba(212, 226, 15, 0.24)',
             options: [
                 { id: 'party', label: 'Party', icon: 'icon/question/q3_party.png' },
@@ -350,7 +351,7 @@
         const panelId = getQuestionPanelId(question);
         const contentId = getQuestionContentId(question);
         const headingId = `pairing_question_heading_${question.id}`;
-        const questionStyle = `--pairing-question-color: ${question.color}; --pairing-question-tint: ${question.tint};`;
+        const questionStyle = `--pairing-question-color: ${question.color}; --pairing-question-selected-color: ${question.selectedColor || question.color}; --pairing-question-tint: ${question.tint};`;
         const optionMarkup = question.options.map((option) => {
             const isSelected = selectedAnswer === option.id;
             return `

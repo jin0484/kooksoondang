@@ -221,7 +221,7 @@
     border-color: var(--pairing-question-color);
     box-shadow: inset 0 0 0 1px var(--pairing-question-color);
     background: var(--pairing-question-tint);
-    color: var(--pairing-question-color);
+    color: var(--pairing-question-selected-color, var(--pairing-question-color));
 }
 
 .pairing_page .pairing_question_icon {
