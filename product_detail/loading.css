@@ -1,0 +1,618 @@
+@charset "UTF-8";
+
+
+:root {
+  --loading_green: #39936f;
+  --loading_white: #ffffff;
+}
+
+
+/* =========================================================
+   RESET
+========================================================= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+
+html,
+body {
+  width: 100%;
+  min-width: 320px;
+  min-height: 100%;
+}
+
+
+body {
+  margin: 0;
+
+  overflow: hidden;
+
+  background: var(--loading_green);
+
+  color: var(--loading_white);
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+
+/* =========================================================
+   LOADING SCREEN
+========================================================= */
+
+.loading_screen {
+  display: grid;
+
+  width: 100%;
+
+  min-height: 100vh;
+  min-height: 100svh;
+
+  place-items: center;
+
+  background: var(--loading_green);
+}
+
+
+/* =========================================================
+   LOADING CONTENT
+========================================================= */
+
+.loading_content {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  width: min(100%, 24rem);
+
+  transform: translateY(0.7rem);
+}
+
+
+/* =========================================================
+   CUP + BOTTLE AREA
+========================================================= */
+
+.loading_illustration {
+  position: relative;
+
+  width: 15.8rem;
+  height: 15.5rem;
+
+  /* 컵 + 병 전체를 왼쪽으로 이동 */
+  transform: translateX(-0.8rem);
+}
+
+
+/* =========================================================
+   BOTTLE
+========================================================= */
+
+.loading_bottle {
+  position: absolute;
+
+  top: 1.2rem;
+  right: 0.3rem;
+
+  width: 7.8rem;
+  height: auto;
+
+  transform-origin: 32% 20%;
+
+  animation:
+    bottle_brew
+    2.8s
+    ease-in-out
+    infinite;
+
+  z-index: 2;
+}
+
+
+/* =========================================================
+   CUP GROUP
+========================================================= */
+
+.cup_group {
+  position: absolute;
+
+  left: 1.5rem;
+
+  bottom: 0.1rem;
+
+  width: 5.6rem;
+
+  height: 7rem;
+}
+
+
+/* =========================================================
+   CUP
+========================================================= */
+
+.loading_cup {
+  position: absolute;
+
+  left: 0;
+
+  bottom: 0;
+
+  width: 4.875rem;
+
+  height: auto;
+
+  transform-origin: center bottom;
+
+  animation:
+    cup_bounce
+    2.4s
+    ease-in-out
+    infinite;
+
+  z-index: 2;
+}
+
+
+/* =========================================================
+   DOT COMMON
+========================================================= */
+
+.loading_dot {
+  position: absolute;
+
+  height: auto;
+
+  opacity: 0;
+
+  transform-origin: center;
+
+  z-index: 3;
+}
+
+
+/* =========================================================
+   DOT 1
+========================================================= */
+
+.loading_dot_one {
+  top: 0.95rem;
+
+  left: 0.5rem;
+
+  width: 1.125rem;
+
+  animation:
+    dot_one_drop
+    2.4s
+    ease-in-out
+    infinite;
+}
+
+
+/* =========================================================
+   DOT 2
+========================================================= */
+
+.loading_dot_two {
+  top: 0.55rem;
+
+  left: 2.5rem;
+
+  width: 1.75rem;
+
+  animation:
+    dot_two_drop
+    2.4s
+    ease-in-out
+    infinite;
+}
+
+
+/* =========================================================
+   BREWING TEXT
+========================================================= */
+
+/* =========================================================
+   BREWING TEXT
+========================================================= */
+
+.loading_title {
+  width: 100%;
+
+  margin-top: 1.8rem;
+
+  /* 컵 + 병의 시각적 가운데에 맞춤 */
+  text-align: center;
+
+  transform: translateX(0.8rem);
+
+  font-size:
+    clamp(
+      1.6rem,
+      2vw,
+      2.4rem
+    );
+
+  /* 글자 굵기 */
+  font-weight: 500;
+
+  line-height: 1;
+
+  letter-spacing: -0.04em;
+
+  white-space: nowrap;
+
+  color: var(--loading_white);
+}
+
+/* =========================================================
+   BOTTLE ANIMATION
+========================================================= */
+
+@keyframes bottle_brew {
+
+  /* 처음 */
+  0%,
+  15% {
+    transform:
+      translate(0, 0)
+      rotate(0deg);
+  }
+
+
+  /* 컵 쪽으로 기울기 */
+  30% {
+    transform:
+      translate(-0.5rem, -0.25rem)
+      rotate(-28deg);
+  }
+
+
+  /* 따르는 동안 유지 */
+  65% {
+    transform:
+      translate(-0.5rem, -0.25rem)
+      rotate(-28deg);
+  }
+
+
+  /* 다시 세우기 */
+  82% {
+    transform:
+      translate(0, 0)
+      rotate(0deg);
+  }
+
+
+  /* 잠시 정지 */
+  100% {
+    transform:
+      translate(0, 0)
+      rotate(0deg);
+  }
+}
+
+
+/* =========================================================
+   CUP ANIMATION
+========================================================= */
+
+@keyframes cup_bounce {
+
+  0%,
+  38% {
+    transform:
+      translateY(0)
+      rotate(0deg)
+      scale(1);
+  }
+
+  /* 첫 방울 받을 때 오른쪽으로 살짝 기울기 */
+  47% {
+    transform:
+      translateY(0.12rem)
+      rotate(2deg)
+      scale(0.98);
+  }
+
+  /* 살짝 튀어오르면서 조금 더 오른쪽 */
+  54% {
+    transform:
+      translateY(-0.22rem)
+      rotate(3deg)
+      scale(1.025);
+  }
+
+  /* 두 번째 방울 */
+  61% {
+    transform:
+      translateY(0.1rem)
+      rotate(2deg)
+      scale(0.99);
+  }
+
+  /* 다시 살짝 올라옴 */
+  68% {
+    transform:
+      translateY(-0.12rem)
+      rotate(1deg)
+      scale(1.015);
+  }
+
+  /* 원래 위치 */
+  80%,
+  100% {
+    transform:
+      translateY(0)
+      rotate(0deg)
+      scale(1);
+  }
+}
+
+
+/* =========================================================
+   DOT 1 ANIMATION
+========================================================= */
+
+@keyframes dot_one_drop {
+
+  0%,
+  30% {
+    opacity: 0;
+
+    transform:
+      translateY(-1rem)
+      scale(0.7);
+  }
+
+
+  /* 등장 */
+  38% {
+    opacity: 1;
+
+    transform:
+      translateY(-0.4rem)
+      scale(1);
+  }
+
+
+  /* 아래로 떨어짐 */
+  50% {
+    opacity: 1;
+
+    transform:
+      translateY(1.2rem)
+      scale(0.9);
+  }
+
+
+  /* 컵 안으로 들어가며 사라짐 */
+  58% {
+    opacity: 0;
+
+    transform:
+      translateY(2.3rem)
+      scale(0.6);
+  }
+
+
+  100% {
+    opacity: 0;
+
+    transform:
+      translateY(2.3rem)
+      scale(0.6);
+  }
+}
+
+
+/* =========================================================
+   DOT 2 ANIMATION
+========================================================= */
+
+@keyframes dot_two_drop {
+
+  0%,
+  42% {
+    opacity: 0;
+
+    transform:
+      translateY(-1rem)
+      scale(0.7);
+  }
+
+
+  /* 조금 늦게 등장 */
+  48% {
+    opacity: 1;
+
+    transform:
+      translateY(-0.4rem)
+      scale(1);
+  }
+
+
+  /* 아래로 떨어짐 */
+  60% {
+    opacity: 1;
+
+    transform:
+      translateY(1.4rem)
+      scale(0.9);
+  }
+
+
+  /* 컵 안으로 들어가며 사라짐 */
+  68% {
+    opacity: 0;
+
+    transform:
+      translateY(2.5rem)
+      scale(0.6);
+  }
+
+
+  100% {
+    opacity: 0;
+
+    transform:
+      translateY(2.5rem)
+      scale(0.6);
+  }
+}
+
+
+/* =========================================================
+   TABLET / MOBILE
+========================================================= */
+
+@media (max-width: 48rem) {
+
+  .loading_content {
+    transform:
+      translateY(0.35rem)
+      scale(0.82);
+  }
+}
+
+
+@media (max-width: 22.5rem) {
+
+  .loading_content {
+    transform:
+      scale(0.72);
+  }
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .loading_bottle,
+  .loading_dot,
+  .loading_cup {
+    animation: none;
+  }
+
+
+  .loading_dot {
+    opacity: 1;
+  }
+}
+
+/* =========================================================
+   BREWING DOT ANIMATION
+========================================================= */
+
+.loading_dots::after {
+  content: ".";
+
+  display: inline-block;
+
+  width: 1.2em;
+
+  text-align: left;
+
+  animation:
+    brewing_dots
+    1.2s
+    steps(1, end)
+    infinite;
+}
+
+
+@keyframes brewing_dots {
+
+  0% {
+    content: ".";
+  }
+
+
+  33% {
+    content: "..";
+  }
+
+
+  66% {
+    content: "...";
+  }
+
+
+  100% {
+    content: ".";
+  }
+
+}
+
+/* =========================================================
+   EXTRA CUTE EFFECT
+========================================================= */
+
+
+/* 컵에 술이 들어왔을 때 살짝 반짝 */
+.loading_cup {
+  animation:
+    cup_bounce 2.8s ease-in-out infinite,
+    cup_glow 2.8s ease-in-out infinite;
+}
+
+
+@keyframes cup_glow {
+
+  0%,
+  40% {
+    filter:
+      drop-shadow(0 0 0 rgba(255, 255, 255, 0));
+  }
+
+
+  52% {
+    filter:
+      drop-shadow(0 0 0.45rem rgba(255, 255, 255, 0.45));
+  }
+
+
+  65% {
+    filter:
+      drop-shadow(0 0 0.2rem rgba(255, 255, 255, 0.2));
+  }
+
+
+  80%,
+  100% {
+    filter:
+      drop-shadow(0 0 0 rgba(255, 255, 255, 0));
+  }
+}
+
+
+/* 컵 + 병 전체가 아주 미세하게 숨 쉬는 느낌 */
+.loading_illustration {
+  animation:
+    loading_float 3.6s ease-in-out infinite;
+}
+
+
+@keyframes loading_float {
+
+  0%,
+  100% {
+    translate: -0.8rem 0;
+  }
+
+
+  50% {
+    translate: -0.8rem -0.18rem;
+  }
+}
