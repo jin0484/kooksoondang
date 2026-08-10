@@ -412,7 +412,7 @@ body {
 /* 할머니가 다 걸어와 멈춘 뒤에 그려지기 시작함
    (제목 시작 시각 + 걷는 시간). 획 그리는 방식은 잔 그림과 같음 */
 .intro_bubble.is_draw_running path {
-    animation: intro_cup_draw 1s cubic-bezier(0.22, 1, 0.36, 1)
+    animation: intro_cup_draw 1.3s cubic-bezier(0.22, 1, 0.36, 1)
         calc(var(--intro-pour-delay) + var(--walker-walk)) forwards;
 }
 
@@ -656,6 +656,16 @@ body {
     flex-wrap: wrap;
     justify-content: center;
     gap: 20px;
+}
+
+/* 그림 없이 질문 글과 버튼만 있는 화면(Q2 / Q4)은 버튼이 화면 한가운데 붙어 보여서
+   버튼 묶음만 150px 내려 준다.
+   .screen_pick 은 인물 그림(.picks), .stage 를 가진 화면은 술 그림(Q3)이 있어 제외.
+   margin 대신 transform 을 쓰는 건, 이 화면이 세로 가운데 정렬이라
+   margin 을 주면 묶음 전체가 다시 가운데로 맞춰지면서 질문 글까지 같이 올라가기 때문.
+   transform 은 자리 계산에 끼어들지 않아 질문은 그대로 두고 버튼만 정확히 150px 내려감 */
+.screen_question:not(.screen_pick):not(:has(.stage)) .choices {
+    transform: translateY(150px);
 }
 
 .choice {
@@ -1005,12 +1015,12 @@ body {
 
 /* 컷 화면에만 붙는 "클릭해서 계속" 안내.
    흐름에 두면 위쪽 내용 길이에 따라 자리가 들쭉날쭉해서
-   화면 바닥에서 200px 띄운 자리에 고정함 */
+   화면 바닥에서 100px 띄운 자리에 고정함 */
 .screen_cut::after {
     content: "CLICK TO CONTINUE";
     position: absolute;
     left: 50%;
-    bottom: 200px;
+    bottom: 100px;
     transform: translateX(-50%);
     white-space: nowrap;
     font-size: 12px;
