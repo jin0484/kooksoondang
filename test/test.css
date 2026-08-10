@@ -1084,6 +1084,12 @@ body {
     pointer-events: none;
 }
 
+/* 버튼 묶음의 중앙선과 음료 이미지 그룹의 중심을 맞춤 */
+#q3_yangban .stage,
+#q3_pyeongmin .stage {
+    margin-left: 88px;
+}
+
 /* 탁자 위에 세우는 술.
    --x 는 그림 기준 가로 위치(가운데), --y 는 바닥이 닿을 높이(아래에서부터),
    --w 는 그림 폭 기준 크기. 화면마다 탁자 자리가 달라서 아래에서 따로 잡아 줌 */
@@ -1113,7 +1119,7 @@ body {
 }
 
 #q3_yangban .drink_wine {
-    --x: 50%;
+    --x: 48%;
     --w: 6.5%;
     margin-left: -20px;
 }
@@ -1124,7 +1130,7 @@ body {
 }
 
 #q3_yangban .drink_cocktail {
-    --x: 60%;
+    --x: 56%;
     --w: 3.6%;
     margin-left: -30px;
 }
@@ -1163,6 +1169,11 @@ body {
 
 @media (max-width: 767px) {
     /* 세로로 쌓이는 버튼 아래에서는 두 잔을 화면 중앙에 배치 */
+    #q3_yangban .stage,
+    #q3_pyeongmin .stage {
+        margin-left: 0;
+    }
+
     #q3_yangban .drink_wine,
     #q3_pyeongmin .drink_wine {
         --x: 50%;
