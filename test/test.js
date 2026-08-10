@@ -235,6 +235,12 @@
             window.setTimeout(function () {
                 swap();
 
+                /* 덮개 뒤에서 갈아 끼운 화면은 이미 제자리에 있으므로,
+                   덮개가 걷힌 뒤 다시 페이드인하지 않도록 표시해 둠.
+                   (안 하면 종이 바탕이 비쳐 한 번 번쩍임) */
+                var shown = test.querySelector('.screen.is_on');
+                if (shown) shown.classList.add('is_wiped_in');
+
                 test.classList.remove('is_wipe_cover');
                 test.classList.add('is_wipe_reveal');
                 el.classList.remove('is_cover');
@@ -256,6 +262,12 @@
 
         var on = test.querySelector('.screen.is_on');
         if (on) on.classList.remove('is_on');
+
+        /* 쓸기 표시는 그 전환에만 쓰는 것이라 화면을 갈아 끼울 때마다 지움.
+           (다음 전환이 보통 전환이면 다시 평범하게 겹쳐 넘어가야 함) */
+        [].forEach.call(test.querySelectorAll('.is_wiped_in'), function (screen) {
+            screen.classList.remove('is_wiped_in');
+        });
 
         flipbook.stop();
 
