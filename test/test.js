@@ -211,14 +211,14 @@
         }
 
         function reset() {
-            el.classList.remove('is_cover', 'is_reveal');
+            el.classList.remove('is_cover', 'is_reveal', 'is_back_wipe');
             test.classList.remove('is_wiping', 'is_wipe_cover', 'is_wipe_reveal');
             test.removeAttribute('data-wipe-dir');
             busy = false;
         }
 
         /* dir 은 'ltr'(왼→오) 또는 'rtl'(오→왼). swap 은 다 덮인 순간에 부를 화면 교체 */
-        function run(dir, swap) {
+        function run(dir, swap, isBack) {
             if (!el || reduced) {
                 swap();
                 return;
@@ -232,6 +232,7 @@
             var reveal = ms('--wipe-reveal');
 
             el.setAttribute('data-dir', dir);
+            el.classList.toggle('is_back_wipe', Boolean(isBack));
             test.setAttribute('data-wipe-dir', dir);
             test.classList.add('is_wiping', 'is_wipe_cover');
             el.classList.add('is_cover');
@@ -279,7 +280,6 @@
         current = id;
 
         flipbook.start(target);
-
         /* 애니메이션을 다시 태우려면 클래스가 한 번 빠졌다 붙어야 해서 순서상 여기서 초기화 */
         window.scrollTo(0, 0);
         updateHud(target);
@@ -310,9 +310,14 @@
     }
 
     function back() {
-        var prev = trail.pop();
+        var prev = trail[trail.length - 1];
         if (!prev) return;
-        show(prev);
+
+        /* BACK은 진행 방향을 되감듯 오른쪽에서 왼쪽으로 쓸며 이전 화면을 보여 줌 */
+        wipe.run('rtl', function () {
+            trail.pop();
+            show(prev);
+        }, true);
     }
 
     function restart() {

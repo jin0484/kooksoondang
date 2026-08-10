@@ -111,9 +111,14 @@ body {
     position: absolute;
     inset: 0;
     z-index: 10;
-    background: var(--test_night2, #0E121C);
+    background: var(--kooksoondang_orange, #F29556);
     visibility: hidden;
     pointer-events: none;
+}
+
+/* BACK으로 되돌아갈 때만 국순당 그린 덮개를 사용 */
+.wipe.is_back_wipe {
+    background: var(--kooksoondang_green, #D4E400);
 }
 
 .wipe.is_cover,
@@ -328,23 +333,17 @@ body {
     /* 할머니 크기·서는 자리·걷는 시간.
        말풍선이 같은 값으로 자리를 잡아야 해서 화면에 올려 둠 */
     --walker-size: clamp(260px, 31.2vw, 520px);
-    --walker-walk: 4.6s;
     --walker-walk-duration: 3.6s;
+    --walker-travel: 200px;
 
     /* 왼쪽 글과 오른쪽 할머니가 같이 쓰는 좌우 여백 */
-    --intro-gutter: 180px;
+    --intro-gutter: 240px;
 
-    /*
-      할머니가 서는 자리를 여백에 맞춰 계산한다.
-
-      할머니 그림은 4000x4000 정사각형인데 실제 몸은 가로 21.5~75.5% 자리만
-      차지한다. 그래서 상자를 오른쪽 끝에 맞추면 남는 투명 여백 24.5% 가
-      그대로 오른쪽 여백에 더해져 왼쪽보다 훨씬 넓어 보인다.
-      몸의 오른쪽 끝(상자 기준 75.5%)이 여백 선에 닿도록 그만큼 당겨 준다.
-
-        몸 오른쪽 끝 = 50vw + shift + 0.255 * 폭   ->   100vw - 여백
-    */
+    /* 투명 여백을 보정해 보이는 캐릭터의 오른쪽 끝을 여백선에 맞춤 */
     --walker-shift: calc(50vw - var(--intro-gutter) - var(--walker-size) * 0.255);
+    /* 현재 보이는 오른쪽 자리에서 출발해 왼쪽으로 200px 이동 */
+    --walker-start: calc(-50% + var(--walker-shift));
+    --walker-end: calc(var(--walker-start) - var(--walker-travel));
 
     justify-content: center;
     align-items: flex-start;
@@ -373,10 +372,9 @@ body {
     gap: 1.875rem;
 }
 
-/* 오른쪽 화면 밖에서 걸어 들어와 가운데에서 멈추는 할머니.
-   left:50% 로 세워 두고 transform 으로만 옮기므로, 도착 지점 translateX(-50%) 가 곧 화면 가운데임.
-   시작 지점은 거기서 오른쪽으로 반 화면(50vw) + 자기 폭(100%) 만큼 더 나간 자리라 처음엔 안 보임.
-   한 번만 재생하고(both) 그 자리에 그대로 섬. 걸음 그림도 test.js 가 이때 같이 멈춤 */
+/* 현재 보이는 화면 오른쪽 자리에서 출발해 왼쪽으로 200px 이동하는 할머니.
+   left:50% 와 transform 으로만 위치를 바꿔, 화면 크기가 달라도 이동 거리는 일정함.
+   한 번만 재생하고(both) 도착 자리에 그대로 섬. 걸음 그림도 test.js 가 이때 같이 멈춤 */
 .intro_walker {
     /* 그림 아래쪽 빈 여백만큼 내려서, 상자 밑이 아니라 발끝이 버튼 줄에 닿게 함 */
     --walker-foot: 12%;
@@ -394,18 +392,14 @@ body {
     animation: intro_walk var(--walker-walk-duration) linear var(--intro-pour-delay, 0ms) both;
 }
 
-/* 출발 자리를 화면 오른쪽 끝에 딱 붙여 둔다.
-   전에는 화면 밖으로 자기 폭만큼 더 나가 있어서
-   움직이기 시작해도 한참 뒤에야 화면에 들어왔다
-   (16초 중 5초를 화면 밖에서 걸었음).
-   지금은 첫 걸음부터 바로 보이기 시작해서 왼쪽 글과 같이 나타난다 */
+/* 시작점은 현재 오른쪽 자리, 도착점은 그 위치에서 200px 왼쪽 */
 @keyframes intro_walk {
     from {
-        transform: translateX(50vw) translateY(var(--walker-foot));
+        transform: translateX(var(--walker-start)) translateY(var(--walker-foot));
     }
 
     to {
-        transform: translateX(calc(-50% + var(--walker-shift))) translateY(var(--walker-foot));
+        transform: translateX(var(--walker-end)) translateY(var(--walker-foot));
     }
 }
 
@@ -413,7 +407,7 @@ body {
 @media (prefers-reduced-motion: reduce) {
     .intro_walker {
         animation: none;
-        transform: translateX(calc(-50% + var(--walker-shift))) translateY(var(--walker-foot));
+        transform: translateX(var(--walker-end)) translateY(var(--walker-foot));
     }
 }
 
@@ -421,7 +415,7 @@ body {
 
 /* 할머니 그림은 4000x4000 정사각형이고 그 안에서
    머리가 가로 29~57% / 세로 8.5~31% 자리를 차지한다 (그림 알파값을 재서 구함).
-   그래서 할머니와 같은 기준점(left:50% + --walker-shift)에 세운 뒤
+   그래서 할머니의 도착 지점(--walker-end)에 맞춘 뒤
    할머니 폭(--walker-size)의 비율만큼 왼쪽·위로 밀어 머리 옆에 붙인다.
    창 크기가 바뀌어도 할머니와 같은 비율로 따라감 */
 .intro_bubble {
@@ -434,7 +428,7 @@ body {
     overflow: visible;
     pointer-events: none;
     transform:
-        translateX(calc(-50% + var(--walker-shift) - var(--walker-size) * 0.55));
+        translateX(calc(var(--walker-end) - var(--walker-size) * 0.55));
 }
 
 /* 대기 상태에서는 획이 지워진 채로 있다가 js 가 재생 클래스를 붙이면 그려짐 */
@@ -457,12 +451,12 @@ body {
    (제목 시작 시각 + 걷는 시간). 획 그리는 방식은 잔 그림과 같음 */
 .intro_bubble.is_draw_running path {
     animation: intro_cup_draw 1.3s cubic-bezier(0.22, 1, 0.36, 1)
-        calc(var(--intro-pour-delay) + var(--walker-walk)) forwards;
+        calc(var(--intro-pour-delay) + var(--walker-walk-duration)) forwards;
 }
 
 .intro_bubble.is_draw_running .intro_bubble_text {
     animation: intro_bubble_text_in 280ms ease-out
-        calc(var(--intro-pour-delay) + var(--walker-walk) + 900ms) forwards;
+        calc(var(--intro-pour-delay) + var(--walker-walk-duration) + 900ms) forwards;
 }
 
 @keyframes intro_bubble_text_in {
@@ -1069,6 +1063,8 @@ body {
     height: 100%;
     object-fit: cover;
     object-position: center;
+    transform: scale(0.8);
+    transform-origin: center bottom;
     pointer-events: none;
 }
 
@@ -1422,7 +1418,7 @@ body {
 
     /* 여백만 바꾸면 할머니 서는 자리도 같이 따라옴 */
     .screen_intro {
-        --intro-gutter: var(--gutter-x);
+        --intro-gutter: 240px;
         padding: 8.75rem 0 5.5rem var(--intro-gutter);
     }
 
