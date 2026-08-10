@@ -164,7 +164,7 @@
                 <img class="drink drink_whiskey" src="test_asset/위스키.png" alt="">
                 <img class="drink drink_wine" src="test_asset/와인.png" alt="">
                 <img class="drink drink_wineglass" src="test_asset/와인잔.png" alt="">
-                <img class="drink drink_cocktail" src="test_asset/칵테일딸.png" alt="">
+                <img class="drink drink_cocktail" src="test_asset/칵테일.png" alt="">
             </div>
 
             <p class="question">What type of drink do you prefer?</p>
@@ -184,7 +184,7 @@
                 <img class="drink drink_whiskey" src="test_asset/위스키.png" alt="">
                 <img class="drink drink_wine" src="test_asset/와인.png" alt="">
                 <img class="drink drink_wineglass" src="test_asset/와인잔.png" alt="">
-                <img class="drink drink_cocktail" src="test_asset/칵테일딸.png" alt="">
+                <img class="drink drink_cocktail" src="test_asset/칵테일.png" alt="">
             </div>
 
             <p class="question">What type of drink do you prefer?</p>
@@ -200,10 +200,12 @@
         <section class="screen screen_question screen_dim" id="q4_yangban" data-step="4">
             <p class="question">How do you want to fill your table tonight?</p>
             <div class="choices">
-                <button type="button" class="choice" data-set="food:no" data-next="cut_yangban_nofood">
+                <button type="button" class="choice" data-set="food:no" data-next="result">
+                    <img class="food_preview" src="test_asset/Yangban_1.png" alt="" aria-hidden="true">
                     I want to focus only on drinking
                 </button>
-                <button type="button" class="choice" data-set="food:yes" data-next="cut_yangban_food">
+                <button type="button" class="choice" data-set="food:yes" data-next="result">
+                    <img class="food_preview" src="test_asset/Yangban_1.png" alt="" aria-hidden="true">
                     I am looking for a combination with drinking
                 </button>
             </div>
@@ -212,35 +214,15 @@
         <section class="screen screen_question screen_dim" id="q4_pyeongmin" data-step="4">
             <p class="question">How do you want to fill your table tonight?</p>
             <div class="choices">
-                <button type="button" class="choice" data-set="food:no" data-next="cut_pyeongmin_nofood">
+                <button type="button" class="choice" data-set="food:no" data-next="result">
+                    <img class="food_preview" src="test_asset/Pyeongmin_1.png" alt="" aria-hidden="true">
                     I want to focus only on drinking
                 </button>
-                <button type="button" class="choice" data-set="food:yes" data-next="cut_pyeongmin_food">
+                <button type="button" class="choice" data-set="food:yes" data-next="result">
+                    <img class="food_preview" src="test_asset/Pyeongmin_1.png" alt="" aria-hidden="true">
                     I am looking for a combination with drinking
                 </button>
             </div>
-        </section>
-
-        <!-- ---------- 안주 선택 후 전환 컷 ---------- -->
-        <!-- data-frames 에 적은 그림을 data-frame-ms 간격으로 돌려 끼워 움직이는 것처럼 보이게 함.
-             화면이 켜져 있는 동안만 돌고, 나가면 첫 장으로 되돌아감 (test.js 의 flipbook) -->
-        <section class="screen screen_cut screen_white" id="cut_yangban_nofood" data-next="result">
-            <img class="cut_solo" src="test_asset/Yangban_1.png" alt=""
-                data-frames="test_asset/Yangban_1.png, test_asset/Yangban_2.png" data-frame-ms="450">
-            <p class="cut_caption">양반 안주 미선택 시</p>
-        </section>
-        <section class="screen screen_cut screen_white" id="cut_yangban_food" data-next="result">
-            <img class="cut_solo" src="test_asset/Yangban_1.png" alt=""
-                data-frames="test_asset/Yangban_1.png, test_asset/Yangban_2.png" data-frame-ms="450">
-            <p class="cut_caption">양반 안주 선택 시</p>
-        </section>
-        <section class="screen screen_cut screen_white" id="cut_pyeongmin_nofood" data-next="result">
-            <img class="cut_solo" src="test_asset/Pyeongmin_1.png" alt="">
-            <p class="cut_caption">평민 안주 미선택 시</p>
-        </section>
-        <section class="screen screen_cut screen_white" id="cut_pyeongmin_food" data-next="result">
-            <img class="cut_solo" src="test_asset/Pyeongmin_1.png" alt="">
-            <p class="cut_caption">평민 안주 선택 시</p>
         </section>
 
         <!-- ===================== 결과 ===================== -->

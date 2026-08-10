@@ -1010,6 +1010,60 @@ body {
     }
 }
 
+/* ---------- Q4 안주 선택 hover 캐릭터 ---------- */
+
+/* 캐릭터를 버튼 안에 두면, 그림 위로 포인터가 지나가도 hover 상태가 끊기지 않는다. */
+#q4_yangban .choice,
+#q4_pyeongmin .choice {
+    position: relative;
+}
+
+#q4_yangban .food_preview,
+#q4_pyeongmin .food_preview {
+    position: absolute;
+    /* PNG 하단 투명 여백까지 보정해 받침이 버튼 상단에 맞닿게 함 */
+    bottom: calc(100% - 16px);
+    left: 50%;
+    z-index: 1;
+    width: clamp(220px, 22vw, 420px);
+    height: auto;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, 16px) scale(0.96);
+    transform-origin: center bottom;
+    transition: opacity 260ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#q4_yangban .choice:focus-visible .food_preview,
+#q4_pyeongmin .choice:focus-visible .food_preview {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+}
+
+@media (hover: hover) {
+    #q4_yangban .choice:hover .food_preview,
+    #q4_pyeongmin .choice:hover .food_preview {
+        opacity: 1;
+        transform: translate(-50%, 0) scale(1);
+    }
+}
+
+@media (max-width: 767px) {
+    #q4_yangban .food_preview,
+    #q4_pyeongmin .food_preview {
+        width: min(78vw, 360px);
+    }
+
+    /* 세로로 쌓이는 Whiskey / Wine 버튼의 가운데에 와인잔을 맞춤 */
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #q4_yangban .food_preview,
+    #q4_pyeongmin .food_preview {
+        transition: none;
+    }
+}
+
 /* ---------- 배경 그림 위에 물건 올리기 ---------- */
 
 /* 배경 그림(1920x1080)이 cover 로 채워지는 자리와 똑같은 크기·위치의 빈 상자.
@@ -1054,13 +1108,14 @@ body {
 }
 
 #q3_yangban .drink_whiskey {
-    --x: 46.5%;
+    --x: 40%;
     --w: 5.5%;
 }
 
 #q3_yangban .drink_wine {
-    --x: 53%;
+    --x: 50%;
     --w: 6.5%;
+    margin-left: -20px;
 }
 
 #q3_yangban .drink_wineglass {
@@ -1069,8 +1124,9 @@ body {
 }
 
 #q3_yangban .drink_cocktail {
-    --x: 63.5%;
+    --x: 60%;
     --w: 3.6%;
+    margin-left: -30px;
 }
 
 /* 주막 마당(평민) — 평상 위. 상판이 더 넓고 낮아서 자리와 크기를 따로 잡음 */
@@ -1091,6 +1147,7 @@ body {
 #q3_pyeongmin .drink_wine {
     --x: 56%;
     --w: 7%;
+    margin-left: -20px;
 }
 
 #q3_pyeongmin .drink_wineglass {
@@ -1101,6 +1158,23 @@ body {
 #q3_pyeongmin .drink_cocktail {
     --x: 67.5%;
     --w: 3.9%;
+    margin-left: -30px;
+}
+
+@media (max-width: 767px) {
+    /* 세로로 쌓이는 버튼 아래에서는 두 잔을 화면 중앙에 배치 */
+    #q3_yangban .drink_wine,
+    #q3_pyeongmin .drink_wine {
+        --x: 50%;
+        margin-left: 0;
+    }
+
+    #q3_yangban .drink_cocktail,
+    #q3_pyeongmin .drink_cocktail {
+        --x: 50%;
+        --w: 8%;
+        margin-left: 0;
+    }
 }
 
 /* ===================== 전환 컷 ===================== */
