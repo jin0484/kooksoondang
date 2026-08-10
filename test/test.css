@@ -401,7 +401,7 @@ body {
     border-radius: 6px;
     background: var(--test_label_bg);
     color: var(--test_label_ink);
-    font: var(--PC-Body1_16R, 400 16px/1.4 sans-serif);
+    font: var(--PC-Body_Normal_16SB);
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
 }
@@ -774,7 +774,7 @@ body {
     border: 0;
     border-radius: 999px;
     color: var(--test_ink);
-    font: var(--PC-Body2_14B, 700 12px/1.2 sans-serif);
+    font: var(--PC-Body_Small_14SB);
     font-size: 12px;
     letter-spacing: 1px;
     cursor: pointer;
@@ -801,7 +801,7 @@ body {
     border: 0;
     background: none;
     color: var(--test_dim);
-    font: var(--PC-Body2_14R, 400 12px/1.4 sans-serif);
+    font: var(--PC-Body_Small_14M);
     font-size: 12px;
     text-decoration: underline;
     text-underline-offset: 3px;
@@ -821,13 +821,14 @@ body {
 }
 
 .result_label {
-    font: var(--PC-Body1_16R, 400 16px/1.4 sans-serif);
+    font: var(--PC-Body_Normal_16SB);
     color: var(--test_ink);
 }
 
 .result_title {
     margin-top: 6px;
-    font: var(--PC-Display3_48B, 700 48px/1.2 sans-serif);
+    font: var(--PC-Display3_48B);
+    letter-spacing: var(--PC-Display3_48B-letter-spacing);
     letter-spacing: -1px;
 }
 
@@ -851,7 +852,7 @@ body {
 }
 
 .panel_head {
-    font: var(--PC-Body1_16R, 400 16px/1.4 sans-serif);
+    font: var(--PC-Body_Normal_16SB);
     color: var(--test_ink);
 }
 
@@ -891,7 +892,7 @@ body {
     display: grid;
     gap: 8px;
     margin-top: 12px;
-    font: var(--PC-Body2_14R, 400 13px/1.5 sans-serif);
+    font: var(--PC-Body_Small_14M);
     font-size: 13px;
     color: rgba(244, 239, 233, 0.8);
 }
@@ -907,7 +908,7 @@ body {
     gap: 4px 16px;
     margin-top: auto;
     padding-top: 20px;
-    font: var(--PC-Body2_14R, 400 13px/1.5 sans-serif);
+    font: var(--PC-Body_Small_14M);
     font-size: 13px;
     color: var(--kooksoondang_orange, #F29556);
 }
@@ -946,7 +947,7 @@ body {
 }
 
 .liquor_name {
-    font: var(--PC-Body2_14R, 400 13px/1.4 sans-serif);
+    font: var(--PC-Body_Small_14M);
     font-size: 13px;
     color: var(--test_ink);
 }
@@ -993,7 +994,7 @@ body {
     border-radius: 999px;
     background: rgba(58, 42, 30, 0.8);
     color: var(--test_ink);
-    font: var(--PC-Body2_14B, 700 11px/1.2 sans-serif);
+    font: var(--PC-Body_Small_14SB);
     font-size: 11px;
     letter-spacing: 1px;
     text-decoration: none;
@@ -1011,7 +1012,7 @@ body {
 .progress {
     position: absolute;
     z-index: 5;
-    font: var(--PC-Body2_14R, 400 14px/1.4 sans-serif);
+    font: var(--PC-Body_Small_14M);
     color: var(--test_dim);
 }
 
@@ -1055,11 +1056,13 @@ body {
     }
 
     .intro_title {
-        font: var(--tab-Banner_64B, 700 64px/0.9 sans-serif);
+        font: var(--tab-Banner_64B);
+        letter-spacing: var(--tab-Banner_64B-letter-spacing);
     }
 
     .question {
-        font: var(--PC-Heading2_24R, 400 24px/1.4 sans-serif);
+        font: var(--PC-Heading1_24R);
+        letter-spacing: var(--PC-Heading1_24R-letter-spacing);
     }
 
     .result_card {
