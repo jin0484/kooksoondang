@@ -412,7 +412,7 @@ body {
 /* 할머니가 다 걸어와 멈춘 뒤에 그려지기 시작함
    (제목 시작 시각 + 걷는 시간). 획 그리는 방식은 잔 그림과 같음 */
 .intro_bubble.is_draw_running path {
-    animation: intro_cup_draw 900ms cubic-bezier(0.22, 1, 0.36, 1)
+    animation: intro_cup_draw 1s cubic-bezier(0.22, 1, 0.36, 1)
         calc(var(--intro-pour-delay) + var(--walker-walk)) forwards;
 }
 
