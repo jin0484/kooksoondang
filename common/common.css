@@ -1009,9 +1009,10 @@ html.lenis body {
     align-items: center;
 
     /* 캐릭터와 TOP 그림 사이 간격 */
-    row-gap: 14px;
+    row-gap: 8.4px;
 
-    width: clamp(4rem, 5.3vw, 6.3125rem);
+    /* 원래 clamp(4rem, 5.3vw, 6.3125rem) 의 절반에서 다시 20% 키움 (원본의 60%) */
+    width: clamp(2.4rem, 3.18vw, 3.7875rem);
 
     padding: 0;
     border: 0;
@@ -1066,8 +1067,8 @@ html.lenis body {
     .site_top_button {
         right: clamp(1.5rem, 3.5vw, 2.25rem);
         bottom: clamp(1.5rem, 3.5vw, 2.25rem);
-        row-gap: 0.5rem;
-        width: clamp(3.75rem, 8vw, 5rem);
+        row-gap: 0.3rem;
+        width: clamp(2.25rem, 4.8vw, 3rem);
     }
 }
 
@@ -1075,8 +1076,8 @@ html.lenis body {
     .site_top_button {
         right: 1rem;
         bottom: 1rem;
-        row-gap: 0.4rem;
-        width: clamp(3.25rem, 15vw, 3.75rem);
+        row-gap: 0.24rem;
+        width: clamp(1.95rem, 9vw, 2.25rem);
     }
 }
 

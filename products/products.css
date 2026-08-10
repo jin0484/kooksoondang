@@ -2742,9 +2742,10 @@
   align-items: center;
 
   /* 캐릭터와 TOP 그림 사이 간격 */
-  row-gap: 14px;
+  row-gap: 8.4px;
 
-  width: clamp(4rem, 5.3vw, 6.3125rem);
+  /* common.css 의 TOP 버튼과 같은 값 (원본의 60%) */
+  width: clamp(2.4rem, 3.18vw, 3.7875rem);
 
   /* 빈 자리로 뒤쪽 클릭을 막지 않게 */
   pointer-events: none;
@@ -2764,8 +2765,18 @@
 .products_top_character {
   display: block;
 
-  width: 78%;
+  /*
+    원래는 스택 폭의 78% 였는데, 그러면 TOP 버튼 크기를 줄일 때
+    캐릭터까지 같이 줄어든다.
+    캐릭터는 원본 크기를 지켜야 하므로 스택에서 떼어 내
+    "예전 스택 폭 clamp(4rem, 5.3vw, 6.3125rem) 의 78%" 를 직접 적어 둠.
+  */
+  width: clamp(3.12rem, 4.134vw, 4.923125rem);
   height: auto;
+
+  /* reset.css 의 img { max-width: 100% } 가 스택 폭에 가둬 버림.
+     이제 캐릭터가 스택보다 커야 해서 풀어 준다 */
+  max-width: none;
 
   margin: 0;
 
@@ -2797,8 +2808,13 @@
   .products_top_stack {
     right: clamp(1.5rem, 3.5vw, 2.25rem);
     bottom: clamp(1.5rem, 3.5vw, 2.25rem);
-    row-gap: 0.5rem;
-    width: clamp(3.75rem, 8vw, 5rem);
+    row-gap: 0.3rem;
+    width: clamp(2.25rem, 4.8vw, 3rem);
+  }
+
+  /* 예전 스택 폭 clamp(3.75rem, 8vw, 5rem) 의 78% */
+  .products_top_character {
+    width: clamp(2.925rem, 6.24vw, 3.9rem);
   }
 }
 
@@ -2807,8 +2823,13 @@
   .products_top_stack {
     right: 1rem;
     bottom: 1rem;
-    row-gap: 0.4rem;
-    width: clamp(3.25rem, 15vw, 3.75rem);
+    row-gap: 0.24rem;
+    width: clamp(1.95rem, 9vw, 2.25rem);
+  }
+
+  /* 예전 스택 폭 clamp(3.25rem, 15vw, 3.75rem) 의 78% */
+  .products_top_character {
+    width: clamp(2.535rem, 11.7vw, 2.925rem);
   }
 }
 

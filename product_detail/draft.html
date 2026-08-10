@@ -11,7 +11,14 @@
         KOOKSOONDANG — Rice Makgeolli
     </title>
 
+    <!-- 헤더 / 푸터 모양은 common.css 가 갖고 있어서 같이 불러옴.
+         draft.css 를 마지막에 두어 이 페이지 고유 스타일이 우선하게 함 -->
+    <link rel="stylesheet" href="../common/reset.css">
+    <link rel="stylesheet" href="../common/common.css">
     <link rel="stylesheet" href="./draft.css">
+
+    <!-- 햄버거 메뉴 / Family Site 목록 여닫기를 맡음 -->
+    <script src="../common/common.js" defer></script>
 
 </head>
 
@@ -25,6 +32,61 @@
 
     <div id="loader">
         LOADING
+    </div>
+
+
+    <!-- =========================================
+         HEADER (main 과 같은 것)
+    ========================================== -->
+
+    <header class="site_header" id="site_header">
+        <div class="site_header_inner">
+            <div class="site_header_left">
+                <!-- 태블릿(<=768px) 에서만 보임. 데스크톱에서는 css 가 감춰서 아래 primary_nav 가 그대로 쓰임 -->
+                <button type="button" class="nav_toggle" aria-label="Open menu" aria-expanded="false"
+                    aria-controls="nav_drawer" data-nav-toggle>
+                    <span class="nav_toggle_bars" aria-hidden="true"></span>
+                </button>
+                <a class="site_logo" href="../main/main.html" aria-label="Kooksoondang home">
+                    <svg class="site_logo_mark" width="270" height="33.0299" viewBox="0 0 270 33.0299"
+                        aria-hidden="true" focusable="false">
+                        <use href="../asset/icon/header_logo.svg#en_logo_wordmark"></use>
+                        <use class="site_logo_dot" href="../asset/icon/header_logo.svg#en_logo_dot"></use>
+                    </svg>
+                </a>
+                <nav class="primary_nav" aria-label="Primary navigation">
+                    <ul>
+                        <li><a href="../aboutbrand/aboutbrand.html">ABOUT BRAND</a></li>
+                        <li><a href="../products/products.html">PRODUCTS</a></li>
+                        <li><a href="../pairing/pairing.html">PAIRING</a></li>
+                        <li><span class="is_disabled" aria-disabled="true">EVENT/PROMOTION</span></li>
+                        <li><span class="is_disabled" aria-disabled="true">CONTACT US</span></li>
+                    </ul>
+                </nav>
+            </div>
+            <div class="site_search" data-site-search>
+                <input class="site_search_input" type="search" aria-label="Search" placeholder="Cannot search"
+                    autocomplete="off" tabindex="-1" data-site-search-input>
+                <button class="search_button" type="button" aria-label="Open search" aria-expanded="false"
+                    data-site-search-toggle>
+                    <img src="../asset/icon/search_icon_vector.svg" alt="" width="24" height="24">
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 햄버거로 여는 서랍. 헤더에 backdrop-filter 가 걸려 있어 그 안에서는 fixed 가 헤더 박스에 갇히므로 밖에 둠 -->
+    <div class="nav_drawer" id="nav_drawer" data-nav-drawer>
+        <div class="nav_drawer_scrim" data-nav-close></div>
+        <nav class="nav_drawer_panel" aria-label="Mobile navigation">
+            <ul>
+                <li><a href="../aboutbrand/aboutbrand.html">ABOUT BRAND</a></li>
+                <li><a href="../products/products.html">PRODUCTS</a></li>
+                <li><a href="../pairing/pairing.html">PAIRING</a></li>
+                <li><span class="is_disabled" aria-disabled="true">EVENT/PROMOTION</span></li>
+                <li><span class="is_disabled" aria-disabled="true">CONTACT US</span></li>
+            </ul>
+        </nav>
     </div>
 
 
@@ -505,6 +567,60 @@
 
 </div>
 
+
+
+    <!-- =========================================
+         FOOTER (main 과 같은 것)
+
+         #track 바깥에 둠. draft.js 는 스크롤 위치를 각 section 의
+         offsetTop 으로 계산하므로 뒤에 붙는 푸터는 연출에 영향을 주지 않음
+    ========================================== -->
+
+    <footer class="site_footer" id="site_footer">
+        <img class="site_footer_wave" src="../asset/icon/footer_wave.svg" alt="" aria-hidden="true">
+        <div class="site_footer_inner">
+            <div class="footer_left">
+                <a class="footer_logo" href="#product_hero" aria-label="Kooksoondang home">
+                    <img src="../asset/icon/footer_logo_mark.svg" alt="KOOKSOONDANG">
+                </a>
+                <ul class="footer_links">
+                    <li><button type="button" disabled>Privacy Policy</button></li>
+                    <li><button type="button" disabled>Terms of Use</button></li>
+                    <li><button type="button" disabled>About Us</button></li>
+                    <li><button type="button" disabled>Customer Support</button></li>
+                    <li><button type="button" disabled>Directions</button></li>
+                </ul>
+                <small>COPYRIGHT&copy; 2026 by KOOKSOONDANG BREWERY CO.LTD | ALL RIGHTS RESERVED</small>
+            </div>
+            <div class="footer_right">
+                <!-- 목록이 버튼 위로 열림. 버튼보다 앞에 두면 겹칠 때 목록이 위에 오고, 위치는 css 가 버튼 기준으로 잡음 -->
+                <div class="family_site" data-family-site>
+                    <ul class="family_site_list" id="family_site_list">
+                        <li><button type="button" disabled>Beopgochangsin</button></li>
+                        <li><button type="button" disabled>Bekseju Village</button></li>
+                        <li><button type="button" disabled>Yedam</button></li>
+                        <li><button type="button" disabled>Juhyangro</button></li>
+                        <li><button type="button" disabled>Woorisool Areumteo</button></li>
+                    </ul>
+                    <button type="button" class="family_site_button" aria-haspopup="true" aria-expanded="false"
+                        aria-controls="family_site_list" data-family-site-toggle>
+                        Family Site
+                        <img src="../asset/icon/chevron_down_3.svg" alt="" aria-hidden="true">
+                    </button>
+                </div>
+                <address>
+                    <p>641, Bongeunsa-ro, Gangnam-gu, Seoul, Republic of Korea</p>
+                    <p>Tel : +82 02-513-8572</p>
+                    <p>CEO: Sangmin Bae</p>
+                </address>
+                <ul class="footer_sns">
+                    <li><a href="#" aria-label="Instagram"><img src="../asset/icon/icon_instagram.svg" alt=""></a></li>
+                    <li><a href="#" aria-label="YouTube"><img src="../asset/icon/icon_youtube.svg" alt=""></a></li>
+                    <li><a href="#" aria-label="Facebook"><img src="../asset/icon/icon_facebook.svg" alt=""></a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
 
 
     <!-- =========================================
