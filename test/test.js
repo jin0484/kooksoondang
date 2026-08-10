@@ -56,6 +56,8 @@
         var title = document.querySelector('.intro_title');
         var cup = document.querySelector('.intro_cup');
         var walker = document.querySelector('.intro_walker');
+        /* 할머니가 다 걸어온 뒤 획이 그려지는 말풍선. 지연은 css 가 잡음 */
+        var bubble = document.querySelector('.intro_bubble');
 
         var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         var supportsClip = typeof CSS === 'object'
@@ -92,6 +94,7 @@
             endPour();
 
             if (cup) cup.classList.remove('is_draw_running');
+            if (bubble) bubble.classList.remove('is_draw_running');
 
             syncWalkerLine();
 
@@ -110,6 +113,7 @@
             window.requestAnimationFrame(function () {
                 if (title && supportsClip) title.classList.add('is_pour_running');
                 if (cup) cup.classList.add('is_draw_running');
+                if (bubble) bubble.classList.add('is_draw_running');
             });
 
             /* 애니메이션이 끝내 재생되지 않아도 글자가 투명한 채로 남지 않도록 */

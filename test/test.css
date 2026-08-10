@@ -325,6 +325,12 @@ body {
     --intro-cup-start: calc(var(--intro-pour-delay) + var(--intro-pour-duration) + 100ms);
     --intro-cup-duration: 560ms;
 
+    /* 할머니 크기·서는 자리·걷는 시간.
+       말풍선이 같은 값으로 자리를 잡아야 해서 화면에 올려 둠 */
+    --walker-size: clamp(260px, 31.2vw, 520px);
+    --walker-shift: 500px;
+    --walker-walk: 5s;
+
     justify-content: center;
     align-items: flex-start;
     background: var(--makgeolli_light4, #FAF8F7);
@@ -339,8 +345,6 @@ body {
 .intro_walker {
     /* 그림 아래쪽 빈 여백만큼 내려서, 상자 밑이 아니라 발끝이 버튼 줄에 닿게 함 */
     --walker-foot: 12%;
-    /* 서는 자리를 화면 가운데에서 오른쪽으로 얼마나 더 보낼지 */
-    --walker-shift: 500px;
 
     position: absolute;
     left: 50%;
@@ -348,11 +352,11 @@ body {
     bottom: var(--walker-bottom, 0px);
     z-index: 1;
     /* 기존 clamp(200px, 24vw, 400px) 에서 30% 키움 */
-    width: clamp(260px, 31.2vw, 520px);
+    width: var(--walker-size);
     height: auto;
     pointer-events: none;
     /* 왼쪽 제목이 차오르기 시작하는 시각에 맞춰 같이 걸어 나옴 */
-    animation: intro_walk 5s linear var(--intro-pour-delay, 0ms) both;
+    animation: intro_walk var(--walker-walk) linear var(--intro-pour-delay, 0ms) both;
 }
 
 /* 출발 자리를 화면 오른쪽 끝에 딱 붙여 둔다.
@@ -375,6 +379,48 @@ body {
     .intro_walker {
         animation: none;
         transform: translateX(calc(-50% + var(--walker-shift))) translateY(var(--walker-foot));
+    }
+}
+
+/* ---------- 할머니 머리 왼쪽 말풍선 ---------- */
+
+/* 할머니 그림은 4000x4000 정사각형이고 그 안에서
+   머리가 가로 29~57% / 세로 8.5~31% 자리를 차지한다 (그림 알파값을 재서 구함).
+   그래서 할머니와 같은 기준점(left:50% + --walker-shift)에 세운 뒤
+   할머니 폭(--walker-size)의 비율만큼 왼쪽·위로 밀어 머리 옆에 붙인다.
+   창 크기가 바뀌어도 할머니와 같은 비율로 따라감 */
+.intro_bubble {
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--walker-bottom, 0px) + var(--walker-size) * 0.652);
+    z-index: 2;
+    width: calc(var(--walker-size) * 0.62);
+    height: auto;
+    overflow: visible;
+    pointer-events: none;
+    transform:
+        translateX(calc(-50% + var(--walker-shift) - var(--walker-size) * 0.55));
+}
+
+/* 대기 상태에서는 획이 지워진 채로 있다가 js 가 재생 클래스를 붙이면 그려짐 */
+.intro_bubble path {
+    opacity: 0;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+}
+
+/* 할머니가 다 걸어와 멈춘 뒤에 그려지기 시작함
+   (제목 시작 시각 + 걷는 시간). 획 그리는 방식은 잔 그림과 같음 */
+.intro_bubble.is_draw_running path {
+    animation: intro_cup_draw 900ms cubic-bezier(0.22, 1, 0.36, 1)
+        calc(var(--intro-pour-delay) + var(--walker-walk)) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .intro_bubble path {
+        animation: none;
+        opacity: 1;
+        stroke-dashoffset: 0;
     }
 }
 
