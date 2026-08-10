@@ -1,0 +1,483 @@
+@charset "UTF-8";
+
+/* 인트로 영상 + 19세 인증 화면.
+   이 페이지는 common.css 를 쓰지 않아 변수를 못 읽으므로, 여기서 쓰는 값만 직접 적어 둠
+   (색 이름은 common.css 의 팔레트와 같음) */
+
+@font-face {
+    font-family: 'ROH HOE-CHAN';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-10@1.0/ROEHOE-CHAN.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+:root {
+    /* 다른 페이지의 배경색(--bg_color)과 같은 색.
+       전환 덮개(page_transition.css)가 이 값을 읽으므로 반드시 있어야 함 */
+    --bg_color: #FAF8F7;
+
+    --kooksoondang_orange: #F29556;
+    --kooksoondang_lighter: #FFD7BB;
+    --bekseju_darker_cold: #232323;
+    --bekseju_dark1: #4C3B33;
+    --bekseju_dark3: #8D7E77;
+    --makgeolli_light2: #F6F0EC;
+    --makgeolli_White: #FFFFFF;
+
+    --font-Pretendard: 'Pretendard', sans-serif;
+    --font-ROH_HOE-CHAN: 'ROH HOE-CHAN', serif;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--bg_color);
+    font-family: var(--font-Pretendard);
+    color: var(--bekseju_darker_cold);
+}
+
+button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+
+/* ---------- 인트로 영상 ---------- */
+/* 영상 한 장만 있는 화면. 화면 높이에 꽉 채우고 넘치는 쪽은 잘라 냄 */
+
+.intro {
+    position: relative;
+}
+
+/* 인증 화면으로 넘어가면 영상 쪽은 통째로 빠짐 */
+.intro[hidden] {
+    display: none;
+}
+
+/* 모서리는 사이트 공통 규칙(위 평평 / 아래 둥금)을 따름 */
+.intro_skip {
+    position: absolute;
+    top: clamp(1rem, 2.5vw, 2rem);
+    right: 100px;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    /* 글자 크기는 그대로 두고 여백만 늘려 칩 크기를 10% 키움 (74.6x30 -> 82.1x33) */
+    padding: 0.594rem 1.36rem;
+    border-radius: 0.25rem 0.25rem 1rem 1rem;
+    background: var(--kooksoondang_lighter);
+    /* 두 배경 모두 밝은 톤이라 글자는 어두운 쪽이어야 읽힘 */
+    color: var(--bekseju_darker_cold);
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    transition: background 220ms ease, transform 220ms ease;
+}
+
+.intro_skip:hover {
+    background: var(--kooksoondang_orange);
+    transform: translateY(-0.1rem);
+}
+
+.intro_skip:focus-visible {
+    outline: 2px solid var(--kooksoondang_orange);
+    outline-offset: 3px;
+}
+
+.intro_video {
+    display: block;
+    width: 100%;
+    /* 주소창이 접혔다 펴지는 모바일에서 100vh 가 튀므로 지원하면 100dvh 를 씀 */
+    height: 100vh;
+    height: 100dvh;
+    object-fit: cover;
+    background: var(--bg_color);
+}
+
+/* ---------- 19세 인증 ---------- */
+/* 영상이 끝나면 드러남. 화면을 꽉 채우고, 아래쪽은 완만한 곡선으로 색을 나눔 */
+
+.age_gate {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    padding: clamp(1.5rem, 5vw, 4rem);
+    background: var(--bg_color);
+}
+
+.age_gate[hidden] {
+    display: none;
+}
+
+/* 아래쪽 곡선 면. 화면보다 넓은 타원을 깔아 가운데가 볼록한 완만한 호로 보이게 함 */
+.age_gate_curve {
+    position: absolute;
+    z-index: 0;
+    left: -20%;
+    bottom: 0;
+    width: 140%;
+    height: 46%;
+    background: var(--makgeolli_light2);
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    pointer-events: none;
+}
+
+.age_gate_inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(1.75rem, 3.5vw, 2.75rem);
+    text-align: center;
+    /* 화면 정중앙보다 살짝 위. 아래 로고와 캐릭터가 들어갈 자리를 비워 둠 */
+    margin-bottom: clamp(3rem, 8vh, 6rem);
+}
+
+/* 질문 화면과 거절 화면은 같은 자리를 번갈아 씀 */
+.age_gate_view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(1.75rem, 3.5vw, 2.75rem);
+    animation: age_gate_view_in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.age_gate_view[hidden] {
+    display: none;
+}
+
+@keyframes age_gate_view_in {
+    from {
+        opacity: 0;
+        transform: translateY(0.75rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.age_gate_title {
+    margin: 0;
+    font-weight: 700;
+    font-size: clamp(1.25rem, 2.6vw, 2rem);
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+}
+
+.age_gate_desc {
+    margin: -0.75rem 0 0;
+    color: var(--bekseju_dark3);
+    font-size: clamp(0.875rem, 1.2vw, 1.125rem);
+    line-height: 1.7;
+}
+
+.age_gate_actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(1rem, 3vw, 2.5rem);
+}
+
+/* 모서리는 사이트 공통 규칙(위 평평 / 아래 둥금)을 따름 */
+.age_gate_btn {
+    min-width: clamp(6.25rem, 9vw, 7.5rem);
+    padding: 0.75rem 1.75rem;
+    border-radius: 0.25rem 0.25rem 1.5rem 1.5rem;
+    background: var(--bekseju_dark1);
+    color: var(--makgeolli_White);
+    font-weight: 600;
+    font-size: clamp(0.875rem, 1.1vw, 1rem);
+    letter-spacing: 0.08em;
+    transition: background 220ms ease, transform 220ms ease;
+}
+
+.age_gate_btn:hover {
+    background: var(--kooksoondang_orange);
+    transform: translateY(-0.1rem);
+}
+
+.age_gate_btn:focus-visible {
+    outline: 2px solid var(--kooksoondang_orange);
+    outline-offset: 3px;
+}
+
+/* 거절 화면에서 질문으로 되돌아가는 링크. 버튼보다 조용한 톤 */
+.age_gate_back {
+    padding: 0.25rem 0.5rem;
+    color: var(--bekseju_dark3);
+    font-size: clamp(0.8125rem, 1vw, 0.9375rem);
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 0.25rem;
+    transition: color 200ms ease;
+}
+
+.age_gate_back:hover {
+    color: var(--bekseju_dark1);
+}
+
+.age_gate_logo {
+    position: absolute;
+    z-index: 1;
+    left: 50%;
+    bottom: clamp(1.75rem, 5vh, 3.5rem);
+    transform: translateX(-50%);
+    width: clamp(8rem, 14vw, 12.5rem);
+    height: auto;
+}
+
+/* 오른쪽 아래 캐릭터. 그림 파일이 없으면 index.js 가 통째로 감춤.
+   인증 화면은 영상이 끝난 뒤에야 hidden 이 풀리므로, 그 순간 아래 애니메이션이
+   처음부터 시작되어 화면 오른쪽 밖에서 걸어 들어온다(말풍선도 같이 따라옴) */
+.age_gate_character {
+    --char_walk: 3.5s;
+    /* 걷기 한 컷의 길이. --char_walk 를 이 값으로 나눈 횟수만큼 3컷을 돌림 */
+    --char_step: 0.5s;
+
+    position: absolute;
+    z-index: 1;
+    right: clamp(0.5rem, 3vw, 3rem);
+    bottom: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+    pointer-events: none;
+    animation: age_char_walk_in var(--char_walk) linear both;
+}
+
+.age_gate_character[hidden] {
+    display: none;
+}
+
+/* 걸어 들어오는 이동. 끝나면 제자리에 그대로 멈춤(both) */
+@keyframes age_char_walk_in {
+    0% {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+
+    12% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* 세 컷을 같은 자리에 겹쳐 둠. 걷기가 끝나면 walk1(서 있는 컷)만 남음 */
+.age_gate_char_body {
+    position: relative;
+    width: clamp(8rem, 17vw, 15rem);
+    aspect-ratio: 1;
+}
+
+.age_gate_char_frame {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    opacity: 0;
+    animation-duration: var(--char_step);
+    animation-timing-function: steps(1, end);
+    /* --char_walk / --char_step 회. 이동이 끝나는 순간 걷기도 같이 멈춤 */
+    animation-iteration-count: 7;
+}
+
+.age_gate_char_frame.walk1 {
+    opacity: 1;
+    animation-name: age_char_f1;
+}
+
+.age_gate_char_frame.walk2 {
+    animation-name: age_char_f2;
+}
+
+.age_gate_char_frame.walk3 {
+    animation-name: age_char_f3;
+}
+
+@keyframes age_char_f1 {
+
+    0%,
+    33.33% {
+        opacity: 1;
+    }
+
+    33.34%,
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes age_char_f2 {
+
+    0%,
+    33.33% {
+        opacity: 0;
+    }
+
+    33.34%,
+    66.66% {
+        opacity: 1;
+    }
+
+    66.67%,
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes age_char_f3 {
+
+    0%,
+    66.66% {
+        opacity: 0;
+    }
+
+    66.67%,
+    100% {
+        opacity: 1;
+    }
+}
+
+/* 캐릭터가 건네는 손글씨 한 줄.
+   다 걸어 들어와 멈춘 뒤에 말을 걸도록 --char_walk 만큼 늦게 뜸 */
+.age_gate_bubble {
+    font-family: var(--font-ROH_HOE-CHAN);
+    font-size: clamp(0.875rem, 1.3vw, 1.25rem);
+    color: var(--bekseju_dark1);
+    white-space: nowrap;
+    opacity: 0;
+    animation: age_char_bubble_in 0.5s ease-out var(--char_walk) both;
+}
+
+@keyframes age_char_bubble_in {
+    0% {
+        opacity: 0;
+        transform: translateY(0.5rem);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .intro_skip,
+    .age_gate_btn,
+    .age_gate_back {
+        transition: none;
+    }
+
+    .intro_skip:hover,
+    .age_gate_btn:hover {
+        transform: none;
+    }
+
+    .age_gate_view {
+        animation: none;
+    }
+
+    /* 걷기와 걸어 들어오기를 모두 끄면 walk1 이 제자리에 서 있는 그림만 남음 */
+    .age_gate_character,
+    .age_gate_char_frame {
+        animation: none;
+    }
+
+    /* 말풍선은 등장 연출 없이 처음부터 떠 있음 */
+    .age_gate_bubble {
+        animation: none;
+        opacity: 1;
+    }
+}
+
+/* ---------- 태블릿 (<= 768px) ---------- */
+
+@media (max-width: 48rem) {
+    .intro_skip {
+        right: 2.5rem;
+    }
+
+    .age_gate_curve {
+        height: 40%;
+    }
+
+    /* 캐릭터가 커지는 폭이라 글 묶음을 조금 더 위로 올림 */
+    .age_gate_inner {
+        margin-bottom: clamp(4rem, 12vh, 7rem);
+    }
+
+    .age_gate_char_body {
+        width: 11rem;
+    }
+}
+
+/* ---------- 모바일 (<= 480px) ---------- */
+/* 360px 기준. 캐릭터를 가로로 눕히지 않도록 글 묶음을 위로 올리고 캐릭터는 줄임 */
+
+@media (max-width: 30rem) {
+    .intro_skip {
+        right: 1rem;
+    }
+
+    .age_gate {
+        align-items: flex-start;
+        padding: 0 1rem;
+    }
+
+    .age_gate_curve {
+        height: 34%;
+    }
+
+    .age_gate_inner {
+        margin-top: clamp(6rem, 22vh, 10rem);
+        margin-bottom: 0;
+    }
+
+    .age_gate_actions {
+        gap: 1rem;
+    }
+
+    .age_gate_btn {
+        min-width: 5.625rem;
+        padding: 0.625rem 1.25rem;
+    }
+
+    .age_gate_logo {
+        bottom: 1.5rem;
+        width: 7rem;
+    }
+
+    .age_gate_character {
+        right: 0.25rem;
+    }
+
+    .age_gate_char_body {
+        width: 7.5rem;
+    }
+}

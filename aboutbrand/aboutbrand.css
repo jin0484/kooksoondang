@@ -313,6 +313,62 @@
     margin-left: 0;
 }
 
+/* ---------- 두루마리 펼치기 ----------
+   화면에 들어오면, 좌우 막대가 맞붙어 있던 상태에서 오른쪽 막대가 밀려나며
+   종이가 좌 -> 우로 펼쳐진다.
+
+   종이는 clip-path 로 잘라 내고 막대는 transform 으로 민다. 둘 다 레이아웃을
+   바꾸지 않는 방식이라, 트랙 폭을 실측해 가로 탐색 거리를 잡는 기존 계산이
+   흔들리지 않는다. (종이 폭을 실제로 줄이면 트랙 폭이 같이 줄어 버린다)
+
+   --unroll_shift / --unroll_clip 은 aboutbrand.js 가 실측해서 넣는다.
+   두 값의 이동 거리가 같아서, 잘린 종이 끝이 늘 오른쪽 막대에 붙어 따라온다. */
+
+/* 두 전환은 길이와 이징이 반드시 같아야 종이 끝이 막대에 붙어 따라온다.
+   따로 적으면 한쪽만 고치다 어긋나기 쉬워서 변수로 묶어 둔다.
+
+   이징을 ease-out 계열로 두면 안 된다. 거리가 5600px 이 넘어서,
+   앞이 몰린 곡선(easeOutQuint 는 시간의 앞 30% 에 거리의 83% 를 쓴다)에서는
+   막대가 튕겨 나갔다가 끝에서 기어가는 꼴이 된다.
+   밀려 나가는 느낌은 앞뒤가 고른 ease-in-out 이어야 나온다. */
+.history_scroll_all {
+    --unroll_ms: 1300ms;
+    --unroll_ease: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* 펼쳐진 상태(기본값).
+   전환은 여기에만 적는다. 아래 .is_rolled 규칙은 값만 덮어쓰므로 전환은 그대로
+   남아, 펼칠 때와 닫을 때가 같은 --unroll_ms / --unroll_ease 를 탄다. */
+.history_scroll_all.is_unroll_ready .history_scroll_inner {
+    clip-path: inset(0 0 0 0);
+    transition: clip-path var(--unroll_ms) var(--unroll_ease);
+}
+
+.history_scroll_all.is_unroll_ready .history_stick_right {
+    transform: translateX(0);
+    transition: transform var(--unroll_ms) var(--unroll_ease);
+}
+
+/* 말려 있는 상태. 오른쪽 막대가 왼쪽 막대에 맞붙고 종이는 그 뒤로 숨는다 */
+.history_scroll_all.is_unroll_ready.is_rolled .history_scroll_inner {
+    clip-path: inset(0 var(--unroll_clip, 0px) 0 0);
+}
+
+.history_scroll_all.is_unroll_ready.is_rolled .history_stick_right {
+    transform: translateX(var(--unroll_shift, 0px));
+}
+
+/* 과정을 보여 주지 않고 한순간에 처음 상태로 되돌릴 때 JS 가 잠깐 붙였다 뗀다.
+   - 섹션이 화면에서 완전히 사라졌을 때: 안 보이는 곳에서 천천히 닫힐 이유가 없다
+   - 시작할 때 한 번 말아 둘 때: 화면에 이미 들어와 있는 채로 페이지가 열려도
+     말림 전환 위에 펼침이 얹혀 펼쳐짐이 통째로 생략되는 일이 없다
+
+   위 규칙들과 명시도가 같으므로 반드시 뒤에 와야 이긴다. */
+.history_scroll_all.is_unroll_instant .history_scroll_inner,
+.history_scroll_all.is_unroll_instant .history_stick_right {
+    transition: none;
+}
+
 .history_scroll_inner {
     display: flex;
     flex-direction: column;
@@ -361,6 +417,11 @@
     opacity: var(--year_dim, 1);
     transition: filter 220ms cubic-bezier(0.22, 1, 0.36, 1),
         opacity 220ms cubic-bezier(0.22, 1, 0.36, 1);
+    /* 흐림·투명도가 제자리로 돌아오는 순간(blur 0, opacity 1) 브라우저가
+       합성 레이어를 걷어 낸다. 그때 글자 안티에일리어싱이 회색조 -> 서브픽셀로
+       바뀌면서 굵기와 위치가 살짝 달라져, 스크롤이 멈추는 자리마다 글자가
+       꿀렁이는 것처럼 보인다. 레이어를 계속 붙잡아 두어 그 전환 자체를 없앤다. */
+    will-change: filter, opacity;
 }
 
 .year_con {
@@ -681,18 +742,29 @@
    화면 폭보다 좁아져서 검정 패널이 화면을 다 덮기 전에 가로 탐색이 끝나 버린다.
    그래서 "화면 폭을 설계 단위로 환산한 값" 을 최소 폭으로 준다.
    여기에 왼쪽 띠(30px)까지 더해야 둥근 모서리가 화면 밖으로 완전히 빠져서
-   안쪽 면(#272625)만 남는다. */
+   안쪽 면만 남는다.
+
+   색은 뒤이어 오는 .vision_section / .site_footer 와 같은 --bekseju_darker_cold.
+   여기만 warm(#272625) 이면 가로 탐색이 끝나고 세로로 넘어가는 경계에서
+   #272625 -> #232323 으로 색이 한 번 갈라져 보인다. */
 .history_vision {
     position: relative;
     flex: none;
-    width: 1950px;
-    /* 30px = 왼쪽 띠, 6px = scale·반올림으로 생기는 서브픽셀 틈을 덮는 여유 */
-    min-width: calc(var(--history_vw) / var(--history_scale) + 36px);
-    height: 1080px;
+    /* 시안 폭은 1950 이지만 그 값을 고정으로 쓰면 안 된다.
+       화면보다 넓어지는 순간(태블릿에서 1950 x 0.65 = 1268 > 768) 가운데 정렬한
+       문구가 화면 밖으로 밀려 잘린다. 언제나 "화면 한 폭" 이 되게 계산한다.
+       30px = 왼쪽 띠, 6px = scale·반올림으로 생기는 서브픽셀 틈을 덮는 여유.
+       (1920 화면에서 1956 이 되어 시안 값과 사실상 같다) */
+    width: calc(var(--history_vw) / var(--history_scale) + 36px);
+    /* 높이도 마찬가지. 1080 고정이면 트랙이 축소된 만큼(태블릿에서 702)
+       화면 높이에 못 미쳐 위아래로 흰 배경이 드러난다.
+       화면 높이를 설계 단위로 환산해 언제나 화면을 꽉 채운다.
+       (트랙이 높이에 맞는 화면에서는 이 값이 정확히 1080 이 된다) */
+    height: calc(100svh / var(--history_scale, 1));
     margin-left: -30px;
     border-radius: 20px 0 0 20px;
     /* 안쪽 면과 같은 색이어야 왼쪽 띠에서 색이 갈라져 보이지 않는다 */
-    background: var(--bekseju_darker_warm);
+    background: var(--bekseju_darker_cold);
     overflow: hidden;
 }
 
@@ -702,12 +774,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--bekseju_darker_warm);
+    background: var(--bekseju_darker_cold);
     overflow: hidden;
 }
 
-/* 시안의 노이즈 이펙트 근사치 */
-.history_vision_inner::after,
+/* 시안의 노이즈 이펙트 근사치.
+   패널 쪽은 .history_vision_inner 이 아니라 .history_vision 에 건다.
+   inner 는 left:30px 부터라, inner 에 걸면 왼쪽 띠 30px 만 노이즈 없이 매끈해져서
+   가로 탐색이 vision 으로 넘어가는 경계에 결이 다른 세로줄이 남는다. */
+.history_vision::after,
 .vision_section::after,
 .respected_section::after {
     content: "";
@@ -758,11 +833,37 @@
     color: var(--makgeolli_White);
 }
 
+/* 70 years 만 초록으로 강조 */
+.history_vision_point {
+    font-style: normal;
+    color: var(--kooksoondang_green);
+}
+
 .history_vision_o {
     display: inline-flex;
     width: 60px;
     height: 60px;
     margin-inline: 6px;
+}
+
+/* VISION 도 intro 타이틀과 같은 방식으로 글자가 하나씩 밀려 들어온다.
+   글자는 .reveal_char 로 쪼개지고, 가운데 O 는 이미지라 통째로 한 칸이 된다.
+   (.reveal_char 의 opacity:0 은 그대로 받고, display 만 원래 값을 지킨다)
+   쪼개는 일은 JS 가 하므로 JS 가 없거나 모션 최소화 설정이면 처음부터 그냥 보인다. */
+.history_vision_o.reveal_char {
+    display: inline-flex;
+}
+
+/* 아래 문구도 같은 방식으로 글자가 하나씩 나온다.
+   VISION 이 다 나온 뒤에 이어서 시작하고, 패널이 화면 밖으로 나가면
+   되돌아갔다가 다시 들어올 때 또 재생된다. (시점은 JS 가 잡는다)
+
+   글자를 한 자씩 inline-block 으로 쪼개면 칸마다 반올림이 붙어 줄 폭이 몇 px 넓어진다.
+   그만큼이 tit 폭(609px)을 넘겨 두 줄이 되고, inline-block 사이에는 낱말 한가운데에도
+   줄바꿈 자리가 생겨서 cultur / e 처럼 끊긴다. 원래대로 한 줄로 고정한다.
+   (intro 타이틀의 .intro_title_line 과 같은 처리) */
+.history_vision_lead {
+    white-space: nowrap;
 }
 
 .history_vision_o img {
@@ -776,8 +877,26 @@
    원 4개는 전용 에셋이 없어 CSS(배경 + 0.5px 보더 + border-radius)로 구현.
    ========================================================================= */
 
+/* ScrollTrigger 는 pin 을 걸 때 섹션을 .pin-spacer 로 감싸고, 고정된 거리만큼
+   그 상자에 여백을 준다. 이 상자에는 배경이 없어서(투명) 섹션이 덮지 못하는
+   부분마다 body 의 흰색이 그대로 드러난다.
+   - 고정이 풀린 뒤 섹션 아래에 흰 여백
+   - 어두운 두 섹션이 이어지는 자리에 흰 선
+   둘 다 같은 원인이라, 감싸는 상자에 같은 색을 깔아 막는다.
+   (흰 섹션인 intro / brand history 는 흰 바탕이라 티가 나지 않아 그대로 둔다) */
+.pin-spacer:has(> .vision_section) {
+    background: var(--bekseju_darker_cold);
+}
+
+/* 스크롤이 고정(pin)되는 구간이라 반드시 화면을 꽉 채워야 한다.
+   내용 높이에만 맡기면 태블릿(768 x 1024)에서 794px 밖에 안 돼,
+   고정된 동안 위아래로 흰 배경이 드러난다. */
 .vision_section {
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100svh;
     padding-block: clamp(6rem, 23.3vh, 15.75rem) clamp(6rem, 25.5vh, 17.25rem);
     background: var(--bekseju_darker_cold);
     overflow: hidden;
@@ -854,7 +973,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: clamp(40rem, 62.7vw, 75.1875rem);
+    /* 여기도 pin 이 걸리는 구간이라 화면보다 작아지면 안 된다.
+       시안 비율(62.7vw)은 화면이 넓을 때만 화면보다 커서,
+       태블릿에서는 640px(= 하한)에 머물러 아래로 흰 배경이 드러난다. */
+    min-height: max(100svh, clamp(40rem, 62.7vw, 75.1875rem));
     padding-block: clamp(4rem, 8vw, 8rem);
     padding-inline: var(--about_gutter);
     overflow: hidden;
@@ -907,6 +1029,10 @@
     display: block;
     width: clamp(1.75rem, 2.6vw, 3.10625rem);
     aspect-ratio: 49.7079 / 30.5114;
+    /* 상자만 놓고 보면 컵과 정확히 가운데가 맞지만, 큰 물방울이 오른쪽에 있어
+       눈에 보이는 무게중심은 오른쪽으로 치우친다.
+       기하 중심 대신 눈에 보이는 중심을 컵 가운데에 맞춘 값. */
+    transform: translateX(-6px);
 }
 
 .respected_drop {
@@ -952,6 +1078,48 @@
 .respected_cup {
     width: clamp(4.25rem, 6.18vw, 7.41125rem);
     height: auto;
+    /* 바닥을 딛고 흔들리도록 */
+    transform-origin: 50% 100%;
+}
+
+/* 컵이 좌우로 흔들리고 그 바람에 물방울이 튀어나온다.
+   흔들림은 점점 잦아든다. */
+.respected_cup.is_shaking {
+    animation: respected_cup_shake 900ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes respected_cup_shake {
+    0% {
+        transform: rotate(0) translateX(0);
+    }
+
+    12% {
+        transform: rotate(-6deg) translateX(-3%);
+    }
+
+    28% {
+        transform: rotate(5deg) translateX(3%);
+    }
+
+    44% {
+        transform: rotate(-3.5deg) translateX(-2%);
+    }
+
+    60% {
+        transform: rotate(2.2deg) translateX(1.5%);
+    }
+
+    76% {
+        transform: rotate(-1.2deg) translateX(-0.8%);
+    }
+
+    88% {
+        transform: rotate(0.5deg) translateX(0.3%);
+    }
+
+    100% {
+        transform: rotate(0) translateX(0);
+    }
 }
 
 .respected_title {
@@ -1093,7 +1261,9 @@
     color: #AEA49F;
 }
 
-.family_site_button {
+/* 이 페이지는 푸터가 어두워서 버튼 색을 따로 씀. 위로 열리는 목록도 같은 색이어야 한 덩이로 보임 */
+.family_site_button,
+.family_site_list {
     background: #413E3B;
 }
 
@@ -1136,10 +1306,541 @@
    반응형
    ========================================================================= */
 
-@media (max-width: 767px) {
-    /* 4개가 한 줄에 들어가지 않아 2 x 2 로 접고, 겹침은 그대로 유지 */
+/* 태블릿(768 ~ 1279).
+   시안 비율(4.479vw) 을 그대로 두면 768px 에서 34px 밖에 안 돼 허전하다.
+   화면이 좁을수록 글자는 상대적으로 커야 하므로 비율을 키운다.
+   상한 3.25rem 은 1280px 에서 넘어가는 기본값(약 57px)보다 낮게 잡아,
+   화면이 넓어질수록 글자가 커지는 순서가 뒤집히지 않게 한다. */
+@media (min-width: 768px) and (max-width: 1279px) {
+    .intro_title {
+        font-size: clamp(2.5rem, 6.8vw, 3.25rem);
+    }
+
+    /* VISION 패널 글자 30% 키우기.
+       이 안쪽은 트랙과 함께 축소되는 설계 단위라, 768px 에서 scale 이 0.65 까지
+       내려가면 20px 짜리 본문이 화면에서 13px 이 된다. 설계 값을 미리 키워 둔다. */
+    .history_vision_since,
+    .history_vision_lead {
+        font-size: 26px;
+    }
+
+    .history_vision_word {
+        font-size: 112px;
+        letter-spacing: -2.24px;
+    }
+
+    .history_vision_o {
+        width: 78px;
+        height: 78px;
+        margin-inline: 8px;
+    }
+
+    /* 원 4개는 좌우 여백만 남기고 폭을 채운다.
+       시안 비율(16.45vw)은 화면이 좁아도 폭의 62% 만 써서 양옆이 허전하다.
+
+       4개 총폭 = 지름 * (4 - 3 * 0.08824) = 지름 * 3.73528  (겹침 8.824%)
+       거꾸로 풀면 "남는 폭을 다 쓰는 지름" 이 나온다. 4rem 은 좌우 여백 몫.
+
+       상한 13.5rem(216px)은 1280px 에서 넘어가는 기본값(약 210px)과 거의 같아서,
+       구간을 벗어날 때 크기가 튀지 않는다. */
     .vision_circles {
-        --vision_circle_size: min(42vw, 11rem);
+        --vision_circle_size: min(13.5rem, calc((100vw - 4rem) / 3.73528));
+    }
+
+    /* 아래 두 값도 1280px 기본값(각각 20px, 24px)과 이어지도록 잡았다 */
+    .vision_circle_name {
+        font-size: 1.1875rem;
+    }
+
+    .vision_statement {
+        font-size: 1.625rem;
+    }
+
+    /* year_2 는 이미지(576)가 넓어서 덩어리 폭이 1400 이나 된다.
+       네 덩어리 중 혼자만 화면을 넘어(910 > 753) 연도와 문구가 잘린 채 지나간다.
+       300 으로 줄이면 1124 가 되어 화면 안에 들어온다.
+       (340 은 757 로 3px 모자라 여전히 넘친다 — 실측으로 잡은 값)
+       세로는 align-self: stretch 라 그대로, 사진은 object-fit: cover 로 잘린다. */
+    .img_box_2 {
+        width: 300px;
+    }
+
+    /* 연혁 목록 글자 키우기.
+       트랙이 0.65 로 줄어들어 15px 짜리가 화면에서 9.8px 밖에 안 된다.
+
+       year_1 / year_3 는 con 안쪽 높이(604)를 고정 gap(242 / 245)이 이미 꽉
+       채우고 있어서, 글자를 키우면 곧바로 넘친다. gap 을 space-between 으로
+       바꿔 남는 자리를 자동으로 나눠 갖게 한 뒤에 키운다.
+       (year_2 / year_4 는 원래 space-between 이라 그대로 둔다) */
+    .year_1 .year_con,
+    .year_3 .year_con {
+        /* year_1 / year_3 은 바깥이 align-items: flex-end 라 con 이 늘어나지 않고
+           내용 높이만큼만 잡힌다. 고정 gap 일 때는 그 높이가 우연히 블록을 거의
+           채워서 티가 안 났지만, space-between 으로 바꾸면 con 이 확 줄어들면서
+           바닥 정렬 때문에 글자가 통째로 아래로 내려간다.
+           늘려 놓아야 space-between 이 블록 전체를 기준으로 나눈다.
+           (year_2 는 이미 height: 100% 라 그대로 둔다) */
+        align-self: stretch;
+        gap: 0;
+        justify-content: space-between;
+    }
+
+    /* year_txt(20px, 기본값 그대로)보다 작아야 위계가 산다.
+       나머지는 시안의 비율(li_year 16 / li_txt 15 / 오른쪽 목록 14)을
+       그대로 키운 값이다. */
+    .li_txt {
+        font-size: 18px;
+    }
+
+    .li_year {
+        font-size: 19px;
+    }
+
+    .year_list_right .li_txt,
+    .year_list_right .li_year {
+        font-size: 17px;
+    }
+
+    /* respected 도 원 4개와 같은 좌우 여백(20px)으로 맞춘다 */
+    .respected_section {
+        padding-inline: 1.25rem;
+    }
+
+    /* 태그는 폭이 고정(clamp 하한 128px)이라 좌우가 크게 비어 보인다.
+       남는 폭을 셋이 나눠 쓰되, 시안 최대치(240px)는 넘기지 않는다. */
+    .respected_tags {
+        width: 100%;
+    }
+
+    .respected_tag {
+        flex: 1 1 0;
+        width: auto;
+        max-width: 15rem;
+    }
+}
+
+@media (max-width: 767px) {
+    /* ---------- intro ----------
+       360px 에서 기본값(clamp 하한 24px)이면 줄 폭이 282px 라 좌우로 39px 씩 남아
+       허전하다. 좌우 14px 만 남기고 채우면 28px 정도가 된다.
+       7.8vw = 360px 에서 28.1px -> 줄 폭 330px, 좌우 15px.
+       상한 2.75rem(44px)은 768px 에서 넘어가는 값(52px)보다 낮게 잡아
+       화면이 넓어질수록 커지는 순서를 지킨다. */
+    .intro_title {
+        font-size: clamp(1.75rem, 7.75vw, 2.75rem);
+    }
+
+    /* 글자를 키운 만큼 섹션 여백도 줄여야 줄이 padding 밖으로 넘치지 않는다
+       (.intro_title_line 은 nowrap 이라 줄바꿈으로 도망갈 수 없다).
+       세로는 기본값(100svh) 그대로 화면을 꽉 채운다. */
+    .intro_section {
+        padding-inline: 1rem;
+    }
+
+    /* ---------- respected 태그 ----------
+       기본값은 태그 폭이 고정(clamp 하한 128px)이라
+       128 x 3 + gap 20 = 404px > 쓸 수 있는 폭 312px 가 되어 두 줄로 접힌다.
+       여백·간격·글자를 함께 줄여 한 줄에 넣는다. */
+    .respected_section {
+        padding-inline: 1rem;
+    }
+
+    /* 기본 15px 은 모바일에서 너무 작다 */
+    .respected_lead {
+        font-size: 1rem;
+    }
+
+    .respected_tags {
+        width: 100%;
+        /* 접히지 않게 못 박는다 */
+        flex-wrap: nowrap;
+        gap: 0.375rem;
+    }
+
+    .respected_tag {
+        /* 남는 폭을 셋이 똑같이 나눠 갖는다 (각 106px).
+           min-width: 0 이 없으면 내용 폭 아래로 줄어들지 않아 다시 넘친다. */
+        flex: 1 1 0;
+        width: auto;
+        min-width: 0;
+        /* 767px 쪽에서는 나눠 갖는 폭이 240px 를 넘어가므로 시안 최대치로 막는다 */
+        max-width: 15rem;
+        /* 가장 긴 Competitiveness 가 13px 에서 95px.
+           106px 안에 좌우 6px 씩 남기고 한 줄로 들어간다. */
+        font-size: 0.8125rem;
+    }
+
+    /* =====================================================================
+       brand history - 가로 탐색을 접고 세로로 흐르게 한다
+
+       데스크톱은 1920 x 1080 시안 캔버스를 통째로 축소해 좌우로 미는 구조다.
+       모바일은 그 캔버스를 버리고(JS 가 scale 과 stage 폭을 걷어 낸다)
+       보통의 세로 문서 흐름으로 되돌린다.
+       ===================================================================== */
+
+    .history_viewport {
+        display: block;
+        height: auto;
+        overflow: visible;
+    }
+
+    .history_stage,
+    .history_track {
+        position: static;
+        display: block;
+        width: auto;
+        height: auto;
+        transform: none;
+    }
+
+    .history_year {
+        display: block;
+        width: auto;
+        height: auto;
+        /* 아래쪽은 vision 으로 넘어가기 전에 숨 돌릴 자리를 넉넉히 둔다 */
+        padding: 1.5rem 1rem 4rem;
+    }
+
+    /* ---------- 족자봉 눕히기 ----------
+       세로 막대(161 x 852)를 90도 돌려 위아래 가로 막대로 쓴다.
+
+       회전은 레이아웃 상자를 바꾸지 않아서, 상자를 그대로 두고 돌리면
+       세로로 긴 자리를 차지한 채 그림만 눕는다. 그래서 막대는 흐름에서 빼고
+       (position: absolute) 위아래에 직접 붙인다.
+
+       돌린 뒤의 길이는 "컨테이너 폭" 이어야 하는데, 절대 위치에서 height 로는
+       폭을 가리킬 수 없다. 컨테이너 쿼리 단위 100cqw 가 정확히 그 값이다. */
+    .history_scroll_all {
+        container-type: inline-size;
+        position: relative;
+        display: block;
+        /* 봉이 차지할 자리. 세로 padding 의 % 는 "컨테이너 폭" 기준이다.
+           (컨테이너 자신은 자기 cqw 를 못 쓰기 때문에 % 로 우회한다)
+
+           봉 두께는 폭의 19.3%(165/856) 인데, 그만큼 다 비우면 봉과 종이가
+           떨어져 따로 논다. PC 는 margin-right: -40px 로 봉(161)의 약 25% 가
+           종이를 물고 있으므로, 그 비율만큼 덜 비워서 겹치게 한다.
+           다만 25% 를 다 물리면 봉 아래로 노란 띠가 거의 남지 않아 봉과 흰
+           상자가 붙어 버린다. 띠가 보일 만큼만 물린다 (두께의 13%). */
+        padding-block: 16.8%;
+        padding-left: 0;
+    }
+
+    .history_stick {
+        /* SVG 원래 비율(165 x 856)을 그대로 지킨다. 두께를 임의로 눌러 놓으면
+           양 끝 마구리가 뭉개져 빈약해 보인다.
+
+           길이는 컨테이너 폭에 딱 맞춘다. .history_year 의 좌우 padding 이
+           16px 이므로 봉의 좌우 여백도 그대로 16px 이 되고, 화면 밖으로
+           잘려 나가지 않는다. 종이가 봉보다 좁아지는 쪽으로 맞춘다. */
+        --len: 100cqw;
+        --thick: calc(var(--len) * 165 / 856);
+        position: absolute;
+        left: 50%;
+        /* 돌리기 전 상자: 두께(가로) x 길이(세로) */
+        width: var(--thick);
+        height: var(--len);
+        margin: 0;
+    }
+
+    .history_stick_left {
+        top: calc(var(--thick) / 2);
+        transform: translate(-50%, -50%) rotate(90deg);
+    }
+
+    .history_stick_right {
+        top: auto;
+        bottom: calc(var(--thick) / 2);
+        transform: translate(-50%, 50%) rotate(90deg);
+    }
+
+    /* ---------- 두루마리 펼치기 (세로) ----------
+       데스크톱은 오른쪽 봉이 가로로 밀리지만, 여기서는 아래 봉이 세로로 내려온다.
+       바깥 규칙의 transform 은 rotate 를 통째로 덮어써서 봉을 눕힌 걸 되돌려
+       버리므로, 회전을 유지한 채 이동만 얹은 규칙을 따로 쓴다.
+
+       세로는 움직이는 거리가 종이 높이(3000px 안팎)라 가로보다 훨씬 길다.
+       같은 1300ms 로 두면 화면에 걸치는 앞부분이 순식간에 지나가므로 늘려 잡는다. */
+    .history_scroll_all {
+        --unroll_ms: 2400ms;
+    }
+
+    .history_scroll_all.is_unroll_ready .history_stick_right {
+        transform: translate(-50%, 50%) rotate(90deg);
+        transition: transform var(--unroll_ms) var(--unroll_ease);
+    }
+
+    .history_scroll_all.is_unroll_ready.is_rolled .history_stick_right {
+        transform: translate(-50%, calc(50% + var(--unroll_shift, 0px))) rotate(90deg);
+    }
+
+    /* 종이는 아래쪽에서 잘라 낸다 (가로일 때는 오른쪽이었다) */
+    .history_scroll_all.is_unroll_ready .history_scroll_inner {
+        clip-path: inset(0 0 0 0);
+        transition: clip-path var(--unroll_ms) var(--unroll_ease);
+    }
+
+    .history_scroll_all.is_unroll_ready.is_rolled .history_scroll_inner {
+        clip-path: inset(0 0 var(--unroll_clip, 0px) 0);
+    }
+
+    /* ---------- 종이 ---------- */
+    /* 종이는 봉보다 좁아야 봉이 좌우로 나온다.
+       시안 비율 그대로: 종이 772 / 봉 852 = 90.6% */
+    .history_scroll_inner {
+        width: 90.6%;
+        margin-inline: auto;
+        margin-right: auto;
+        /* 노란 띠. 네 방향 모두 컨테이너 폭 기준이라 폭을 따라 같은 비율로 자란다.
+           좌우를 10% 로 두면 양옆만 20% 를 먹어 안쪽이 답답해진다. */
+        padding: 5%;
+        border-width: var(--paper_line);
+    }
+
+    .history_scroll_con {
+        align-items: stretch;
+        border-width: var(--paper_line);
+    }
+
+    /* 외곽선도 두루마리 폭을 따라 굵어진다.
+       태블릿 직전(767px)에 시안 값 4px 에 닿는다. */
+    .history_scroll_inner,
+    .history_scroll_con {
+        --paper_line: clamp(2px, 0.55cqw, 4px);
+    }
+
+    /* 네 시기를 위에서 아래로 쌓는다.
+       간격이 좁으면 네 시기가 한 덩어리로 읽혀서 넉넉히 벌린다 */
+    .history_year_con {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 7.5rem;
+        height: auto;
+        /* 좌우 여백은 노란 띠(10%)가 이미 충분히 잡아 준다.
+           여기서 또 16px 씩 먹으면 안쪽 콘텐츠 폭이 192px 밖에 안 남는다. */
+        padding: 1.25rem 0.5rem;
+    }
+
+    /* ---------- 시기 하나하나 ----------
+       시안의 고정 폭(917 / 804 / 806 / 968)은 모바일 폭을 한참 넘는다.
+       전부 폭에 맡기고 사진 -> 글 순서로 세로로 쌓는다. */
+    .year_block,
+    .year_con,
+    .year_head,
+    .year_list,
+    .year_li {
+        width: auto;
+        max-width: none;
+    }
+
+    /* 시안의 고정 폭·간격은 .year_1 .year_con 처럼 명시도가 한 단계 높아서
+       위의 한 줄짜리 선택자로는 지워지지 않는다. 같은 모양으로 되짚어 준다. */
+    .year_1 .year_con,
+    .year_2 .year_con,
+    .year_3 .year_con,
+    .year_4 .year_con,
+    .year_1 .year_head,
+    .year_2 .year_head,
+    .year_3 .year_head,
+    .year_4 .year_head {
+        width: auto;
+        height: auto;
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    /* 목록 항목의 시안 폭(--li_w, 최대 514px)도 지운다 */
+    .year_li {
+        width: auto;
+        align-self: stretch;
+    }
+
+    .year_block {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    /* ---------- 순서 통일 ----------
+       사진 -> 연도 -> 간단 설명 -> 세부 설명.
+
+       시안은 시기마다 배치가 달라서 DOM 순서가 제각각이다.
+       (year_2 는 사진이 뒤, year_2 / year_4 는 연도가 설명 뒤,
+        year_4 는 세부 설명이 연도보다 앞)
+       HTML 은 그대로 두고 order 로만 바로잡는다. */
+    .year_block > .img_box {
+        order: 0;
+    }
+
+    .year_block > .year_con {
+        order: 1;
+    }
+
+    .year_con > .year_head {
+        order: 0;
+    }
+
+    .year_con > .year_list {
+        order: 1;
+    }
+
+    .year_head > .year_tit {
+        order: 0;
+    }
+
+    .year_head > .year_txt {
+        order: 1;
+    }
+
+    .year_con {
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    /* 오른쪽 정렬로 흘리던 것들도 전부 왼쪽으로 모은다.
+       align-items 는 stretch 여야 한다. flex-start 로 두면 목록 항목이
+       내용 폭(max-content)만큼 벌어져서, 긴 문장 하나가 블록을 660px 까지
+       늘려 버린다. 늘려 놓고 글자만 왼쪽으로 붙인다. */
+    .year_head,
+    .year_list,
+    .year_list_right {
+        align-items: stretch;
+        align-self: stretch;
+        text-align: left;
+    }
+
+    /* nowrap 이라 넘쳐도 줄바꿈으로 도망갈 수 없다.
+       "2000~2026" 이 가장 넓어서 폰트 1px 당 5.57px 를 차지한다.
+
+       11.5vw 처럼 화면 폭을 그대로 따라가면 너무 빨리 커진다
+       (360px 41px -> 636px 73px). 상한으로 누르면 이번엔 487px 부터
+       크기가 아예 안 변해서, 넓어져도 그대로인 채로 남는다.
+
+       그래서 "고정값 + 완만한 기울기" 로 잡는다.
+       360px 40.6px / 636px 47.3px / 767px 50.4px 로, 화면을 따라가되
+       천천히 자란다. */
+    .year_tit,
+    .year_tit_end,
+    .year_tit_center {
+        align-self: flex-start;
+        font-size: clamp(2.5rem, calc(2rem + 2.4vw), 3.25rem);
+        letter-spacing: -0.02em;
+    }
+
+    /* 한 줄로 못 박혀 있어서 모바일에서는 화면 밖으로 나간다 */
+    .year_txt_row {
+        flex-wrap: wrap;
+        white-space: normal;
+    }
+
+    /* 기본 1.7 은 모바일에서 줄이 뚝뚝 떨어져 보인다 */
+    .year_txt,
+    .year_txt_row,
+    .year_txt_col {
+        font-size: 1rem;
+        line-height: 1.2;
+    }
+
+    /* 기본 1.7 은 모바일에서 줄 사이가 뜬다 */
+    .li_txt,
+    .year_list_right .li_txt {
+        font-size: 0.9375rem;
+        line-height: 1.4;
+    }
+
+    .li_year,
+    .year_list_right .li_year {
+        font-size: 1rem;
+    }
+
+    /* 사진은 폭을 채우고, 네 시기 모두 같은 크기(4:3)로 통일한다.
+       시안은 시기마다 크기가 제각각(200x200 / 576 / 280x280 / 602x285)이지만
+       세로로 쌓이면 크기가 들쭉날쭉해 읽는 리듬이 끊긴다.
+       비율이 바뀌는 만큼은 object-fit: cover 가 잘라 맞춘다. */
+    .img_box,
+    .img_box_1,
+    .img_box_2,
+    .img_box_3,
+    .img_box_4 {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 4 / 3;
+        align-self: stretch;
+    }
+
+    /* year_4 는 글이 사진 위에 겹쳐 있었다. 세로로 쌓이면 겹칠 이유가 없다 */
+    .year_4 {
+        position: static;
+    }
+
+    .year_con_overlay {
+        position: static;
+        width: auto;
+        height: auto;
+    }
+
+    /* ---------- 마지막 VISION 패널 ---------- */
+    .history_vision {
+        width: auto;
+        min-width: 0;
+        height: auto;
+        min-height: 0;
+        margin-left: 0;
+        /* 어두운 면이 둥글게 올라오는 아치.
+
+           가로 반지름을 좌우 모두 50% 로 두면 두 모서리의 호가 한가운데에서
+           정확히 만나, 폭 전체를 가로지르는 완만한 아치 하나가 된다.
+           세로 반지름이 아치의 높이다.
+           (.history_vision 의 overflow: hidden 이 안쪽 내용과 노이즈까지
+            이 모양으로 잘라 준다) */
+        --arch: clamp(1.25rem, 6vw, 2.5rem);
+        border-radius: 50% 50% 0 0 / var(--arch) var(--arch) 0 0;
+        background: var(--bekseju_darker_cold);
+    }
+
+    .history_vision_inner {
+        position: static;
+        inset: auto;
+        /* 화면을 꽉 채우면 문구가 한가운데 놓이고 아래로 반 화면이 비어,
+           키워드 4개가 한참 뒤에 나온다. 내용 높이에 맡기고 여백만 준다.
+           위는 아치를 피할 만큼, 아래는 바로 키워드로 이어지게 짧게. */
+        min-height: 0;
+        padding: 8.5rem 1rem 1.5rem;
+        /* 안쪽 상자가 자기 배경을 칠하면 바깥의 아치가 가려진다 */
+        background: transparent;
+    }
+
+
+    .history_vision_tit {
+        width: auto;
+        max-width: 100%;
+    }
+
+    .history_vision_word {
+        font-size: clamp(2.5rem, 15vw, 4rem);
+        letter-spacing: -0.02em;
+    }
+
+    .history_vision_o {
+        width: 0.7em;
+        height: 0.7em;
+        margin-inline: 0.06em;
+    }
+
+    /* 한 줄 고정이라 모바일에서 넘친다 */
+    .history_vision_lead {
+        white-space: normal;
+    }
+
+    /* 원 4개는 "한 줄에 4개" 아니면 "2개씩 두 줄", 둘 중 하나만 쓴다.
+       3 + 1 로 갈라지면 마지막 하나가 외따로 떨어져 보기 나쁘다.
+
+       크기는 총폭 식을 거꾸로 푼 값이다 (겹침 8.824%).
+       총폭 = 지름 x (n - (n-1) x 0.08824)
+         n=2 -> 1.91176,  n=4 -> 3.73528
+       여기서는 2개씩 두 줄이므로 1.91176 로 나눈다. */
+    .vision_circles {
+        --vision_circle_size: min(11rem, calc((100vw - 2 * var(--about_gutter)) / 1.91176));
         flex-wrap: wrap;
         justify-content: center;
     }
@@ -1150,6 +1851,59 @@
 
     .vision_circle:nth-child(n + 3) {
         margin-top: calc(var(--vision_circle_size) * -0.08824);
+    }
+
+    /* 기본 clamp 하한이 14px 이라 원 크기에 비해 작다 */
+    .vision_circle_name {
+        font-size: 1rem;
+    }
+
+    /* 좌우 여백을 줄여 아래 문구가 한 줄로 들어갈 폭을 벌어 준다.
+       (원 크기 계산도 이 값을 쓰므로 원도 함께 조금 커진다)
+
+       위 여백도 줄인다. VISION 문구 바로 밑에 키워드 4개가 이어져야 하는데
+       기본값(23.3vh)이면 그 사이가 한참 빈다.
+       화면을 꽉 채울 이유도 없어 min-height 도 푼다. */
+    .vision_section {
+        --about_gutter: 1rem;
+        min-height: 0;
+        padding-block: 1.5rem clamp(4rem, 12vh, 8rem);
+    }
+
+    /* 두 줄로 접히면 아래 여백이 들쭉날쭉해 보여서 한 줄로 못 박는다.
+       글자 폭이 폰트 1px 당 19.54px 라, 쓸 수 있는 폭을 20 으로 나누면
+       어느 화면에서나 한 줄에 들어간다 (나머지 0.46 은 안전 여유).
+
+       상한은 768px 부터 쓰는 값(1.625rem)과 같게 둔다. 폭을 다 채우게 두면
+       738px 에서 35px 까지 커졌다가 768px 에서 26px 로 떨어져,
+       화면이 넓어질수록 글자가 커지는 순서가 뒤집힌다. */
+    .vision_statement {
+        font-size: min(1.625rem, calc((100vw - 2 * var(--about_gutter)) / 20));
+        white-space: nowrap;
+    }
+}
+
+
+/* 원 4개를 한 줄에 세울 만한 폭부터는 크기를 줄여 한 줄로 붙인다.
+   560px 미만에서 억지로 한 줄로 세우면 지름이 130px 아래로 내려가
+   "Food Beverages" 두 줄이 원 밖으로 삐져나온다. 그 아래는 2 x 2 로 둔다. */
+@media (min-width: 560px) and (max-width: 767px) {
+    .vision_circles {
+        --vision_circle_size: min(11rem, calc((100vw - 2 * var(--about_gutter)) / 3.73528));
+        flex-wrap: nowrap;
+    }
+
+    /* 두 줄용으로 껐던 겹침과 줄 간격을 되돌린다 */
+    .vision_circle:nth-child(2n) {
+        margin-right: calc(var(--vision_circle_size) * -0.08824);
+    }
+
+    .vision_circle:nth-child(n + 3) {
+        margin-top: 0;
+    }
+
+    .vision_circle:last-child {
+        margin-right: 0;
     }
 }
 
@@ -1163,6 +1917,12 @@
         animation: none;
     }
 
+    /* 두루마리는 펼쳐지는 과정 없이 펼쳐진 결과만 보여 준다 */
+    .history_scroll_all.is_unroll_ready .history_scroll_inner,
+    .history_scroll_all.is_unroll_ready .history_stick_right {
+        transition: none;
+    }
+
     /* 차오르고 튀어오르는 과정 없이 결과만 보여 준다 */
     .respected_tag::before {
         transition: none;
@@ -1170,5 +1930,9 @@
 
     .respected_icon.is_splash_ready .respected_drop.is_splashed {
         transition: none;
+    }
+
+    .respected_cup.is_shaking {
+        animation: none;
     }
 }

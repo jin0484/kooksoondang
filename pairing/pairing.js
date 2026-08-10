@@ -62,33 +62,33 @@
 
     const foodData = {
         korean: [
-            { title: 'Pajeon', description: 'Korean Scallion Pancake', tag: 'Savory', image: 'Pajeon.jpg' },
-            { title: 'Bossam', description: 'Boiled Pork Wraps', tag: 'Rich & Savory', image: 'Bossam.png' },
-            { title: 'Bulgogi', description: 'Korean Barbecue Beef', tag: 'Sweet & Savory', image: 'Bulgogi.png' },
-            { title: 'Dakgalbi', description: 'Spicy Stir-fried Chicken', tag: 'Spicy', image: 'Dakgalbi.jpg' },
-            { title: 'Dotori-muk Muchim', description: 'Acorn Jelly Salad', tag: 'Fresh', image: 'Dotori-muk Muchim.png' },
-            { title: 'Dubu Kimchi', description: 'Tofu with Stir-fried Kimchi', tag: 'Spicy', image: 'DubuKimchi.jpg' },
-            { title: 'Jeyuk Bokkeum', description: 'Spicy Stir-fried Pork', tag: 'Rich & Spicy', image: 'Jeyuk Bokkeum.png' },
-            { title: 'Kimchi Jjigae', description: 'Kimchi Stew', tag: 'Rich & Savory', image: 'Kimchi Jjigae.png' }
+            { title: 'Pajeon', description: '(Korean Scallion Pancake)', tag: 'Savory · Nutty', image: 'figma/korean_pajeon.png', imagePosition: '50% 50%' },
+            { title: 'Bossam', description: '(Boiled Pork Wraps)', tag: 'Rich · Savory', image: 'figma/korean_bossam.png', imagePosition: '50% 50%' },
+            { title: 'Bulgogi', description: '(Korean Barbecue Beef)', tag: 'Sweet · Savory', image: 'figma/korean_bulgogi.png', imagePosition: '50% 50%' },
+            { title: 'Dakgalbi', description: '(Spicy Stir-Fried Chicken)', tag: 'Spicy · Sweet', image: 'figma/korean_dakgalbi.png', imagePosition: '50% 50%' },
+            { title: 'Kimchi Jjigae', description: '(Kimchi Stew)', tag: 'Spicy · Rich', image: 'figma/korean_kimchi_jjigae.png', imagePosition: '50% 50%' },
+            { title: 'Dotori-muk Muchim', description: '(Acorn Jelly Salad)', tag: 'Nutty · Refreshing', image: 'figma/korean_dotori_muk_muchim.png', imagePosition: '50% 50%' },
+            { title: 'Jeyuk Bokkeum', description: '(Spicy Stir-Fried Pork)', tag: 'Spicy · Savory', image: 'figma/korean_jeyuk_bokkeum.png', imagePosition: '50% 50%' },
+            { title: 'Dubu Kimchi', description: '(Tofu with Stir-Fried Kimchi)', tag: 'Spicy · Tangy', image: 'figma/korean_dubu_kimchi.png', imagePosition: '50% 50%' }
         ],
         global: [
-            { title: 'Thai Green Curry', description: 'Creamy Coconut Curry', tag: 'Fresh & Spicy', image: 'Thai Green Curry.png' },
-            { title: 'Strawberry Cheesecake', description: 'Creamy Berry Dessert', tag: 'Sweet', image: 'Strawberry Cheesecake.png' },
-            { title: 'Spicy Beef Tacos', description: 'Mexican Beef Tacos', tag: 'Spicy', image: 'Spicy Beef Tacos.png' },
-            { title: 'Margherita Pizza', description: 'Classic Tomato & Cheese Pizza', tag: 'Savory', image: 'Margherita Pizza.png' },
-            { title: 'Japanese Gyoza', description: 'Pan-fried Dumplings', tag: 'Savory', image: 'Japanese Gyoza.png' },
-            { title: 'Jamón with Melon', description: 'Spanish Ham and Melon', tag: 'Sweet & Savory', image: 'Jamón with Melon.png' },
-            { title: 'Fish and Chips', description: 'Crispy Fried Fish', tag: 'Rich', image: 'Fish and Chips.jpg' },
-            { title: 'Buffalo Wings', description: 'Hot Chicken Wings', tag: 'Spicy', image: 'Buffalo Wings.png' }
+            { title: 'Margherita Pizza', description: '(Italian)', tag: 'Savory · Tangy', image: 'Margherita Pizza.png', imagePosition: '50% 50%' },
+            { title: 'Buffalo Wings', description: '(American)', tag: 'Spicy · Savory', image: 'figma/world_buffalo_wings.png', imagePosition: '50% 45%' },
+            { title: 'Fish and Chips', description: '(British)', tag: 'Crispy · Savory', image: 'figma/world_fish_and_chips.png', imagePosition: '50% 50%' },
+            { title: 'Spicy Beef Tacos', description: '(Mexican)', tag: 'Spicy · Fresh', image: 'figma/world_spicy_beef_tacos.png', imagePosition: '50% 50%' },
+            { title: 'Thai Green Curry', description: '(Thai)', tag: 'Spicy · Creamy', image: 'Thai Green Curry.png', imagePosition: '50% 50%' },
+            { title: 'Japanese Gyoza', description: '(Japanese)', tag: 'Savory · Nutty', image: 'figma/world_japanese_gyoza.png', imagePosition: '50% 50%' },
+            { title: 'Strawberry Cheesecake', description: '(Western Dessert)', tag: 'Sweet · Creamy', image: 'figma/world_strawberry_cheesecake.png', imagePosition: '50% 22%' },
+            { title: 'Jamón with Melon', description: '(Spanish)', tag: 'Sweet · Salty', image: 'figma/world_jamon_with_melon.png', imagePosition: '50% 50%' }
         ]
     };
 
     foodData.popular = [
-        foodData.korean[0],
-        foodData.korean[1],
-        foodData.korean[2],
-        foodData.korean[3],
-        foodData.korean[4]
+        { title: 'Pajeon', description: '(Korean Scallion Pancake)', tag: 'Savory · Nutty', image: 'figma/popular_pajeon.png', imagePosition: '50% 50%' },
+        { title: 'Bossam', description: '(Boiled Pork Wraps)', tag: 'Rich · Savory', image: 'figma/popular_bossam.png', imagePosition: '50% 50%' },
+        { title: 'Dakgalbi', description: '(Spicy Stir-Fried Chicken)', tag: 'Spicy · Fresh', image: 'figma/popular_dakgalbi.png', imagePosition: '50% 50%' },
+        { title: 'Margherita Pizza', description: '(Italian)', tag: 'Savory · Tangy', image: 'Margherita Pizza.png', imagePosition: '50% 50%' },
+        { title: 'Jamón with Melon', description: '(Spanish)', tag: 'Sweet · Salty', image: 'figma/popular_jamon_with_melon.png', imagePosition: '50% 50%' }
     ];
 
     const recipeIconSet = {
@@ -298,6 +298,8 @@
         foodCategory: 'korean',
         recipeIndex: 0
     };
+    let recipeTransitionTimer = null;
+    let recipeTransitionId = 0;
 
     const assetUrl = (path) => encodeURI(`./pairing_asset/${path}`);
     const escapeHtml = (value) => String(value)
@@ -332,6 +334,10 @@
     function getQuestionPanelMarkup(question, questionIndex) {
         const isOpen = questionIndex === state.activeQuestionIndex;
         const selectedAnswer = state.answers[question.id];
+        const isFirstQuestion = questionIndex === 0;
+        const isLastQuestion = questionIndex === questions.length - 1;
+        const canShowResult = questions.every((item) => Boolean(state.answers[item.id]));
+        const canContinue = isLastQuestion ? canShowResult : Boolean(selectedAnswer);
         const panelId = getQuestionPanelId(question);
         const contentId = getQuestionContentId(question);
         const headingId = `pairing_question_heading_${question.id}`;
@@ -359,6 +365,10 @@
                     <div class="pairing_question_options" role="radiogroup" aria-label="${escapeHtml(question.prompt)}">
                         ${optionMarkup}
                     </div>
+                    <div class="pairing_question_navigation" aria-label="Question navigation">
+                        <button class="pairing_question_nav_button pairing_question_previous" type="button" data-question-previous="${questionIndex}"${isFirstQuestion ? ' disabled aria-disabled="true"' : ''}>Previous</button>
+                        <button class="pairing_question_nav_button pairing_question_next" type="button" data-question-next="${questionIndex}"${canContinue ? '' : ' disabled aria-disabled="true"'}>${isLastQuestion ? 'View Result' : 'Next'}</button>
+                    </div>
                 </div>
             </section>`;
     }
@@ -378,6 +388,12 @@
             const selectedAnswer = state.answers[question.id];
             const tab = panel.querySelector('[data-question-open]');
             const content = panel.querySelector('.pairing_question_content');
+            const previousButton = panel.querySelector('[data-question-previous]');
+            const nextButton = panel.querySelector('[data-question-next]');
+            const isFirstQuestion = questionIndex === 0;
+            const isLastQuestion = questionIndex === questions.length - 1;
+            const canShowResult = questions.every((item) => Boolean(state.answers[item.id]));
+            const canContinue = isLastQuestion ? canShowResult : Boolean(selectedAnswer);
 
             panel.classList.toggle('is_open', isOpen);
             panel.classList.toggle('is_collapsed', !isOpen);
@@ -402,6 +418,17 @@
                 option.classList.toggle('is_selected', isSelected);
                 option.setAttribute('aria-checked', String(isSelected));
             });
+
+            if (previousButton) {
+                previousButton.disabled = isFirstQuestion;
+                previousButton.setAttribute('aria-disabled', String(isFirstQuestion));
+            }
+
+            if (nextButton) {
+                nextButton.disabled = !canContinue;
+                nextButton.setAttribute('aria-disabled', String(!canContinue));
+                nextButton.textContent = isLastQuestion ? 'View Result' : 'Next';
+            }
         });
     }
 
@@ -409,9 +436,17 @@
         const activeQuestion = questions[state.activeQuestionIndex];
         if (!activeQuestion) return;
 
-        const focusOption = () => questionnaire
-            .querySelector(`#${getQuestionPanelId(activeQuestion)} [data-question-answer]`)
-            ?.focus();
+        const focusOption = () => {
+            const option = questionnaire
+                .querySelector(`#${getQuestionPanelId(activeQuestion)} [data-question-answer].is_selected, #${getQuestionPanelId(activeQuestion)} [data-question-answer]`);
+            if (!option) return;
+
+            try {
+                option.focus({ preventScroll: true });
+            } catch {
+                option.focus();
+            }
+        };
 
         if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
             window.requestAnimationFrame(focusOption);
@@ -429,21 +464,43 @@
     function handleQuestionnaireClick(event) {
         const answerButton = event.target.closest('[data-question-answer]');
         const questionTab = event.target.closest('[data-question-open]');
+        const previousButton = event.target.closest('[data-question-previous]');
+        const nextButton = event.target.closest('[data-question-next]');
 
         if (answerButton) {
             const questionId = answerButton.dataset.questionAnswer;
             const answerValue = answerButton.dataset.answerValue;
-            const answeredQuestionIndex = questions.findIndex((question) => question.id === questionId);
             state.answers[questionId] = answerValue;
-
-            const nextUnansweredIndex = questions.findIndex((question) => !state.answers[question.id]);
-            const nextQuestionIndex = nextUnansweredIndex === -1 ? answeredQuestionIndex : nextUnansweredIndex;
-            const shouldMoveFocus = nextQuestionIndex !== state.activeQuestionIndex;
-            state.activeQuestionIndex = nextQuestionIndex;
-
             renderQuestionnaire();
             updateResultButton();
-            if (shouldMoveFocus) focusActiveQuestionOption();
+            return;
+        }
+
+        if (previousButton) {
+            const currentQuestionIndex = Number(previousButton.dataset.questionPrevious);
+            if (!Number.isInteger(currentQuestionIndex) || currentQuestionIndex <= 0) return;
+
+            state.activeQuestionIndex = currentQuestionIndex - 1;
+            renderQuestionnaire();
+            focusActiveQuestionOption();
+            return;
+        }
+
+        if (nextButton) {
+            const currentQuestionIndex = Number(nextButton.dataset.questionNext);
+            const currentQuestion = questions[currentQuestionIndex];
+            if (!currentQuestion || nextButton.disabled) return;
+
+            if (currentQuestionIndex === questions.length - 1) {
+                resultButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                resultButton.focus({ preventScroll: true });
+                return;
+            }
+
+            if (!state.answers[currentQuestion.id]) return;
+            state.activeQuestionIndex = currentQuestionIndex + 1;
+            renderQuestionnaire();
+            focusActiveQuestionOption();
             return;
         }
 
@@ -460,13 +517,19 @@
 
     function renderFoodCards() {
         const foods = foodData[state.foodCategory] || foodData.korean;
-        foodTrack.innerHTML = foods.map((food) => `
+        foodTrack.innerHTML = foods.map((food) => {
+            const imageStyles = food.imagePosition
+                ? `--pairing-food-image-position: ${escapeHtml(food.imagePosition)};`
+                : '';
+
+            return `
             <article class="pairing_food_card">
-                <img class="pairing_food_card_image" src="${assetUrl(`img/food/${food.image}`)}" alt="${escapeHtml(food.title)}" loading="lazy">
+                <img class="pairing_food_card_image" src="${assetUrl(`img/food/${food.image}`)}" alt="${escapeHtml(food.title)}" loading="lazy"${imageStyles ? ` style="${imageStyles}"` : ''}>
                 <h3>${escapeHtml(food.title)}</h3>
                 <p>${escapeHtml(food.description)}</p>
                 <span class="pairing_food_tag">${escapeHtml(food.tag)}</span>
-            </article>`).join('');
+            </article>`;
+        }).join('');
     }
 
     function setFoodCategory(category) {
@@ -479,58 +542,116 @@
             tab.setAttribute('aria-selected', String(isActive));
         });
         renderFoodCards();
-        foodTrack.scrollLeft = 0;
+        foodTrack.scrollTo({ left: 0, behavior: 'auto' });
+    }
+
+    function getFoodCardScrollStart(card) {
+        const trackRect = foodTrack.getBoundingClientRect();
+        const cardRect = card.getBoundingClientRect();
+        return foodTrack.scrollLeft + cardRect.left - trackRect.left;
     }
 
     function scrollFoodCards(direction) {
-        const card = foodTrack.querySelector('.pairing_food_card');
-        const distance = card ? card.getBoundingClientRect().width + 20 : 300;
-        foodTrack.scrollBy({ left: distance * direction, behavior: 'smooth' });
+        const cards = [...foodTrack.querySelectorAll('.pairing_food_card')];
+        if (!cards.length) return;
+
+        const starts = cards.map(getFoodCardScrollStart);
+        const currentIndex = starts.reduce((nearestIndex, start, index) => (
+            Math.abs(start - foodTrack.scrollLeft) < Math.abs(starts[nearestIndex] - foodTrack.scrollLeft)
+                ? index
+                : nearestIndex
+        ), 0);
+        const nextIndex = Math.max(0, Math.min(cards.length - 1, currentIndex + direction));
+
+        foodTrack.scrollTo({ left: starts[nextIndex], behavior: 'smooth' });
     }
 
     function createMouseDragScroller(element) {
+        let isPointerDown = false;
         let isDragging = false;
+        let pointerId = null;
         let startX = 0;
         let startScrollLeft = 0;
+        let pendingScrollLeft = null;
+        let animationFrameId = 0;
+
+        const applyPendingScroll = () => {
+            if (pendingScrollLeft !== null) {
+                element.scrollLeft = pendingScrollLeft;
+                pendingScrollLeft = null;
+            }
+            animationFrameId = 0;
+        };
+
+        const flushPendingScroll = () => {
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = 0;
+            }
+            applyPendingScroll();
+        };
 
         element.addEventListener('pointerdown', (event) => {
             if (event.pointerType !== 'mouse' || event.button !== 0) return;
-            isDragging = true;
+
+            isPointerDown = true;
+            pointerId = event.pointerId;
             startX = event.clientX;
             startScrollLeft = element.scrollLeft;
-            element.classList.add('is_dragging');
             element.setPointerCapture(event.pointerId);
         });
 
         element.addEventListener('pointermove', (event) => {
-            if (!isDragging) return;
-            element.scrollLeft = startScrollLeft - (event.clientX - startX);
+            if (!isPointerDown || event.pointerId !== pointerId) return;
+
+            const distance = event.clientX - startX;
+            if (!isDragging && Math.abs(distance) < 4) return;
+
+            if (!isDragging) {
+                isDragging = true;
+                element.classList.add('is_dragging');
+            }
+
+            event.preventDefault();
+            pendingScrollLeft = startScrollLeft - distance;
+            if (!animationFrameId) animationFrameId = requestAnimationFrame(applyPendingScroll);
         });
 
         const finishDragging = (event) => {
-            if (!isDragging) return;
+            if (!isPointerDown || event.pointerId !== pointerId) return;
+
+            flushPendingScroll();
+            isPointerDown = false;
             isDragging = false;
             element.classList.remove('is_dragging');
-            if (element.hasPointerCapture(event.pointerId)) element.releasePointerCapture(event.pointerId);
+            if (element.hasPointerCapture(pointerId)) element.releasePointerCapture(pointerId);
+            pointerId = null;
         };
 
         element.addEventListener('pointerup', finishDragging);
         element.addEventListener('pointercancel', finishDragging);
+        element.addEventListener('lostpointercapture', finishDragging);
     }
 
     function renderRecipePickers() {
-        recipePickerList.innerHTML = recipes.map((recipe, index) => {
-            const isActive = index === state.recipeIndex;
-            return `
-                <button class="pairing_recipe_picker${isActive ? ' is_active' : ''}" type="button" data-recipe-index="${index}" aria-pressed="${isActive}" aria-label="Show ${escapeHtml(recipe.title)} recipe">
+        const pickerButtons = recipePickerList.querySelectorAll('[data-recipe-index]');
+
+        if (pickerButtons.length !== recipes.length) {
+            recipePickerList.innerHTML = recipes.map((recipe, index) => `
+                <button class="pairing_recipe_picker" type="button" data-recipe-index="${index}" aria-pressed="false" aria-label="Show ${escapeHtml(recipe.title)} recipe">
                     <img src="${assetUrl(`img/drink/${recipe.image}`)}" alt="" aria-hidden="true">
                     <span class="pairing_sr_only">${escapeHtml(recipe.title)}</span>
-                </button>`;
-        }).join('');
+                </button>`).join('');
+        }
+
+        recipePickerList.querySelectorAll('[data-recipe-index]').forEach((picker) => {
+            const isActive = Number(picker.dataset.recipeIndex) === state.recipeIndex;
+            picker.classList.toggle('is_active', isActive);
+            picker.setAttribute('aria-pressed', String(isActive));
+        });
     }
 
-    function renderRecipe() {
-        const recipe = recipes[state.recipeIndex];
+    function getRecipeRenderData(recipe) {
         const ingredientMarkup = recipe.ingredients.map((ingredient) => `<li>${escapeHtml(ingredient)}</li>`).join('');
         const stepMarkup = recipe.steps.map((step) => `<li>${escapeHtml(step)}</li>`).join('');
         const iconSet = recipe.icons || recipeIconSet;
@@ -541,16 +662,29 @@
                 : [recipe.tip];
         const tipMarkup = tipLines.map((line) => `<span>${escapeHtml(line)}</span>`).join('');
 
-        recipeViewport.innerHTML = `
+        return {
+            ingredientMarkup,
+            stepMarkup,
+            iconSet,
+            tipMarkup,
+            metaMarkup: `
+                <span class="pairing_recipe_meta_item is_feature"><img src="${assetUrl(iconSet.bookmark)}" alt="" aria-hidden="true"><span>${escapeHtml(recipe.feature)}</span></span>
+                <span class="pairing_recipe_meta_item"><img src="${assetUrl(iconSet.level)}" alt="" aria-hidden="true"><span>${escapeHtml(recipe.difficulty)}</span></span>
+                <span class="pairing_recipe_meta_item"><img src="${assetUrl(iconSet.clock)}" alt="" aria-hidden="true"><span>${escapeHtml(recipe.time)}</span></span>`
+        };
+    }
+
+    function getRecipeMarkup(recipe) {
+        const { ingredientMarkup, stepMarkup, iconSet, tipMarkup, metaMarkup } = getRecipeRenderData(recipe);
+
+        return `
             <article class="pairing_recipe_card pairing_recipe_card--${escapeHtml(recipe.id)}" aria-labelledby="pairing_recipe_title">
                 <div class="pairing_recipe_content">
                     <div class="pairing_recipe_inner">
                         <div class="pairing_recipe_intro">
                             <h3 class="pairing_recipe_title" id="pairing_recipe_title">${escapeHtml(recipe.title)}</h3>
                             <div class="pairing_recipe_meta" aria-label="Recipe details">
-                                <span class="pairing_recipe_meta_item is_feature"><img src="${assetUrl(iconSet.bookmark)}" alt="" aria-hidden="true"><span>${escapeHtml(recipe.feature)}</span></span>
-                                <span class="pairing_recipe_meta_item"><img src="${assetUrl(iconSet.level)}" alt="" aria-hidden="true"><span>${escapeHtml(recipe.difficulty)}</span></span>
-                                <span class="pairing_recipe_meta_item"><img src="${assetUrl(iconSet.clock)}" alt="" aria-hidden="true"><span>${escapeHtml(recipe.time)}</span></span>
+                                ${metaMarkup}
                             </div>
                         </div>
                         <div class="pairing_recipe_details">
@@ -578,13 +712,100 @@
             </article>`;
     }
 
+    function updateRecipeCard(recipeCard, recipe) {
+        const { ingredientMarkup, stepMarkup, iconSet, tipMarkup, metaMarkup } = getRecipeRenderData(recipe);
+        const recipeClass = `pairing_recipe_card--${recipe.id}`;
+        const currentRecipeClass = Array.from(recipeCard.classList)
+            .find((className) => className.startsWith('pairing_recipe_card--'));
+
+        if (currentRecipeClass && currentRecipeClass !== recipeClass) {
+            recipeCard.classList.replace(currentRecipeClass, recipeClass);
+        } else if (!currentRecipeClass) {
+            recipeCard.classList.add(recipeClass);
+        }
+
+        const title = recipeCard.querySelector('.pairing_recipe_title');
+        const meta = recipeCard.querySelector('.pairing_recipe_meta');
+        const ingredients = recipeCard.querySelector('.pairing_recipe_ingredient_list');
+        const divider = recipeCard.querySelector('.pairing_recipe_divider');
+        const steps = recipeCard.querySelector('.pairing_recipe_step_list');
+        const tipCopy = recipeCard.querySelector('.pairing_recipe_tip_copy');
+        const recipeImage = recipeCard.querySelector('.pairing_recipe_image');
+
+        if (title) title.textContent = recipe.title;
+        if (meta) meta.innerHTML = metaMarkup;
+        if (ingredients) ingredients.innerHTML = ingredientMarkup;
+        if (divider) divider.setAttribute('src', assetUrl(iconSet.divider));
+        if (steps) steps.innerHTML = stepMarkup;
+        if (tipCopy) tipCopy.innerHTML = tipMarkup;
+        if (recipeImage) {
+            recipeImage.setAttribute('src', assetUrl(`img/drink/${recipe.image}`));
+            recipeImage.setAttribute('alt', recipe.title);
+        }
+    }
+
+    function renderRecipe({ reveal = false, transitionId = null } = {}) {
+        const recipe = recipes[state.recipeIndex];
+        const recipeCard = recipeViewport.querySelector('.pairing_recipe_card');
+
+        if (!recipeCard) {
+            recipeViewport.innerHTML = getRecipeMarkup(recipe);
+            return;
+        }
+
+        updateRecipeCard(recipeCard, recipe);
+
+        if (!reveal) return;
+
+        const finishTransition = () => {
+            if (transitionId === recipeTransitionId) {
+                recipeCard.classList.remove('is_changing');
+            }
+        };
+
+        if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+            window.requestAnimationFrame(finishTransition);
+        } else {
+            setTimeout(finishTransition, 0);
+        }
+    }
+
+    function prefersReducedMotion() {
+        return typeof window !== 'undefined'
+            && typeof window.matchMedia === 'function'
+            && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+
+    function scheduleRecipeRender() {
+        const recipeCard = recipeViewport.querySelector('.pairing_recipe_card');
+
+        if (!recipeCard || prefersReducedMotion()) {
+            if (recipeTransitionTimer !== null) window.clearTimeout(recipeTransitionTimer);
+            recipeTransitionTimer = null;
+            renderRecipe();
+            return;
+        }
+
+        const transitionId = ++recipeTransitionId;
+        recipeCard.classList.add('is_changing');
+
+        if (recipeTransitionTimer !== null) window.clearTimeout(recipeTransitionTimer);
+        recipeTransitionTimer = window.setTimeout(() => {
+            recipeTransitionTimer = null;
+            renderRecipe({ reveal: true, transitionId });
+        }, 110);
+    }
+
     function setRecipe(index) {
-        state.recipeIndex = (index + recipes.length) % recipes.length;
+        const nextRecipeIndex = (index + recipes.length) % recipes.length;
+        if (nextRecipeIndex === state.recipeIndex) return;
+
+        state.recipeIndex = nextRecipeIndex;
         renderRecipePickers();
-        renderRecipe();
+        scheduleRecipeRender();
 
         const selectedPicker = recipePickerList.querySelector('.is_active');
-        selectedPicker?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        selectedPicker?.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'center' });
     }
 
     function addSwipeNavigation(element, callback) {

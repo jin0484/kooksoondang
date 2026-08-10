@@ -36,6 +36,45 @@
     });
 })();
 
+/* 태블릿 헤더의 햄버거 서랍. 여닫는 모습은 css 가 맡고 여기서는 상태 클래스와 aria 만 바꿈 */
+(() => {
+    const toggle = document.querySelector('[data-nav-toggle]');
+    const drawer = document.querySelector('[data-nav-drawer]');
+
+    if (!toggle || !drawer) return;
+
+    const isOpen = () => drawer.classList.contains('is_nav_open');
+
+    function setOpen(open) {
+        drawer.classList.toggle('is_nav_open', open);
+        toggle.setAttribute('aria-expanded', String(open));
+        toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+        // 서랍이 열려 있는 동안에는 뒤 페이지가 따라 움직이지 않게 스크롤을 잠금
+        document.body.style.overflow = open ? 'hidden' : '';
+        window.siteLenis?.[open ? 'stop' : 'start']?.();
+    }
+
+    toggle.addEventListener('click', () => setOpen(!isOpen()));
+
+    // 스크림을 누르거나 메뉴 항목을 고르면 닫힘
+    drawer.addEventListener('click', (event) => {
+        if (!(event.target instanceof Element)) return;
+        if (event.target.closest('[data-nav-close]') || event.target.closest('a')) setOpen(false);
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape' || !isOpen()) return;
+
+        setOpen(false);
+        toggle.focus();
+    });
+
+    // 데스크톱 폭으로 돌아가면 서랍은 의미가 없으므로 정리해 둠
+    window.matchMedia('(min-width: 48.0625rem)').addEventListener?.('change', (event) => {
+        if (event.matches && isOpen()) setOpen(false);
+    });
+})();
+
 (() => {
     const search = document.querySelector('[data-site-search]');
     const toggle = search?.querySelector('[data-site-search-toggle]');

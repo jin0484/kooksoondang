@@ -109,6 +109,481 @@
 })();
 
 
+/* ---------------------------------------------------------------------------
+   brand_history 끝 VISION 등장
+
+   intro 타이틀과 같은 방식(.reveal_char + intro_text_reveal)으로
+   글자를 하나씩 왼쪽에서 밀어 넣는다.
+   다만 VISI(O)N 의 O 는 글자가 아니라 이미지라, 텍스트만 쪼개고
+   이미지는 통째로 한 칸으로 다룬다.
+   글자가 다 나온 뒤에 아래 문구가 이어서 올라온다.
+
+   가로 탐색이 끝나 검정 패널이 화면을 채우면 재생한다.
+   화면 밖으로 나가면 처음 상태로 되돌려서, 다시 들어올 때마다 또 재생된다.
+--------------------------------------------------------------------------- */
+
+(() => {
+    const word = document.querySelector('.history_vision_word');
+    const panel = document.querySelector('.history_vision_tit');
+
+    if (!word || !panel) return;
+
+    // 모션 최소화 설정이면 쪼개지 않고 그대로 둔다 (글자는 처음부터 보임)
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    // 되감기를 할지 말지가 갈리는 지점 (아래 관찰자 주석 참고)
+    const desktopQuery = window.matchMedia('(min-width: 768px)');
+
+    const lead = document.querySelector('.history_vision_lead');
+
+    // VISION 은 여섯 칸뿐이라 또박또박, 문구는 예순 자가 넘어 촘촘하게
+    const WORD_STEP_MS = 70;
+    const LEAD_STEP_MS = 18;
+    // intro_text_reveal 의 길이. 마지막 글자가 다 나타나는 시점을 잡는 데 쓴다
+    const REVEAL_MS = 500;
+    // VISION 이 자리를 잡고 나서 문구가 시작하기까지의 사이
+    const LEAD_GAP_MS = 120;
+
+    // 쪼갤 글자를 담은 텍스트 노드를 문서 순서대로 모은다.
+    // 글자가 없는 요소(O 이미지)는 더 들어가지 않고 통째로 한 칸이 되고,
+    // 글자를 품은 요소(em 70 years)는 안으로 들어간다. 그래야 초록색이 유지된다.
+    function collect(root, out) {
+        [...root.childNodes].forEach((node) => {
+            if (node.nodeType === Node.TEXT_NODE) {
+                out.push(node);
+                return;
+            }
+
+            if (node.nodeType !== Node.ELEMENT_NODE) return;
+
+            if (node.textContent.trim()) collect(node, out);
+            else node.classList.add('reveal_char');
+        });
+    }
+
+    // 글자를 한 자씩 span 으로 쪼갠다
+    function split(root) {
+        const texts = [];
+
+        collect(root, texts);
+
+        texts.forEach((node, index) => {
+            // 마크업의 줄바꿈·들여쓰기는 화면에서 접히는 공백이라 하나로 줄인다.
+            // 없애는 건 맨 앞뒤에서만. 낱말 사이 빈칸은 남겨야 한다.
+            let text = node.textContent.replace(/\s+/g, ' ');
+
+            if (index === 0) text = text.replace(/^ /, '');
+            if (index === texts.length - 1) text = text.replace(/ $/, '');
+
+            if (!text) {
+                node.remove();
+                return;
+            }
+
+            const fragment = document.createDocumentFragment();
+
+            for (const character of text) {
+                // 빈칸은 span 으로 감싸지 않고 그냥 둔다.
+                // inline-block 끼리 붙어 있으면 줄바꿈 자리가 생기지 않아서,
+                // 빈칸까지 span 으로 만들면 긴 문구가 한 줄로 굳어 버린다.
+                if (character === ' ') {
+                    fragment.appendChild(document.createTextNode(' '));
+                    continue;
+                }
+
+                const span = document.createElement('span');
+
+                span.className = 'reveal_char';
+                span.textContent = character;
+                fragment.appendChild(span);
+            }
+
+            node.replaceWith(fragment);
+        });
+    }
+
+    // 화면을 드나들 때마다 다시 재생하므로, 되돌아간 뒤에 예약만 남은 타이머가
+    // 뒤늦게 터지지 않도록 매번 걷어 낸다.
+    let timers = [];
+    let isShown = false;
+
+    function clearTimers() {
+        timers.forEach(window.clearTimeout);
+        timers = [];
+    }
+
+    const charsOf = (root) => [...root.querySelectorAll('.reveal_char')];
+
+    // 한 덩어리의 글자를 stepMs 간격으로, delayMs 만큼 기다렸다가 등장시킨다
+    function reveal(items, stepMs, delayMs) {
+        items.forEach((item, index) => {
+            timers.push(window.setTimeout(() => {
+                item.classList.add('is_revealed');
+            }, delayMs + index * stepMs));
+        });
+    }
+
+    // VISION -> 문구 순서로 실제로 등장시킨다
+    function run() {
+        // 기다리는 사이에 화면 밖으로 나갔으면 없던 일로 한다
+        if (!isShown) return;
+
+        const items = charsOf(word);
+
+        reveal(items, WORD_STEP_MS, 0);
+
+        if (!lead) return;
+
+        // VISION 의 마지막 글자가 다 나타난 뒤에 문구가 이어서 시작한다
+        const leadStart = (items.length - 1) * WORD_STEP_MS + REVEAL_MS + LEAD_GAP_MS;
+
+        reveal(charsOf(lead), LEAD_STEP_MS, leadStart);
+    }
+
+    function play() {
+        if (isShown) return;
+
+        isShown = true;
+        clearTimers();
+
+        // 백그라운드 탭에서는 setTimeout 이 1초 단위로 묶여서 순서가 무너진다.
+        // 탭이 실제로 보일 때 시작한다. (intro 타이틀과 같은 처리)
+        if (document.hidden) {
+            document.addEventListener('visibilitychange', run, { once: true });
+            return;
+        }
+
+        run();
+    }
+
+    // 처음 상태로 되돌린다. 화면 밖에서 일어나므로 되감기는 모습은 보이지 않는다.
+    function reset() {
+        if (!isShown) return;
+
+        isShown = false;
+        clearTimers();
+
+        // VISION 과 문구를 한꺼번에 되돌린다 (둘 다 panel 안에 있다)
+        charsOf(panel).forEach((item) => item.classList.remove('is_revealed'));
+    }
+
+    split(word);
+
+    if (lead) split(lead);
+
+    if (!('IntersectionObserver' in window)) {
+        play();
+        return;
+    }
+
+    // 패널이 화면을 거의 채웠을 때 = 가로 탐색이 끝나갈 때.
+    // 관찰 대상이 transform 으로 밀려 들어와도 IntersectionObserver 는
+    // 실제로 그려진 자리를 보므로 그대로 쓸 수 있다.
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                play();
+                return;
+            }
+
+            /* 모바일에서는 되돌리지 않는다.
+
+               가로일 때는 이 덩어리가 화면 밖으로 통째로 밀려 나갔다가 다시
+               들어오므로 되감아도 보이지 않는다. 반면 세로로 흐를 때는 스크롤을
+               내리면 위로 천천히 빠져나가는데, 교차 비율이 0.6 아래로 떨어지는
+               순간 아직 화면에 남아 있는 글자까지 함께 지워져 버린다. */
+            if (!desktopQuery.matches) return;
+
+            reset();
+        });
+    }, { threshold: 0.6 });
+
+    observer.observe(panel);
+})();
+
+
+/* ---------------------------------------------------------------------------
+   brand_history 두루마리 펼치기
+
+   화면에 들어오면 좌우 막대가 맞붙어 있던 상태에서 오른쪽 막대가 밀려나며
+   종이가 좌 -> 우로 펼쳐진다. 움직이는 모습은 CSS 가 그리고 여기서는
+   "얼마나 말려 있는지" 를 실측해 넣고 시점만 잡는다.
+
+   재는 값은 전부 offsetLeft / offsetWidth (레이아웃 단위) 다.
+   트랙에 scale() 이 걸려 있어서 getBoundingClientRect 로 재면 화면 단위가 나오는데,
+   transform / clip-path 는 스케일 안쪽에서 적용되므로 설계 단위로 넣어야 맞는다.
+--------------------------------------------------------------------------- */
+
+(() => {
+    const all = document.querySelector('.history_scroll_all');
+    const section = document.querySelector('.history_section');
+    const leftStick = all?.querySelector('.history_stick_left');
+    const paper = all?.querySelector('.history_scroll_inner');
+    const rightStick = all?.querySelector('.history_stick_right');
+
+    if (!all || !section || !leftStick || !paper || !rightStick) return;
+
+    // 모션 최소화 설정이면 말지 않는다 (처음부터 펼쳐진 채로 보인다)
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    // 768px 미만은 두루마리가 세로로 눕는다. 좌 -> 우로 펼치는 연출이 성립하지
+    // 않을 뿐 아니라, 막대에 걸리는 translateX 가 눕히는 rotate 를 덮어써서
+    // 막대가 화면 밖으로 날아간다. 그 구간에서는 아예 손대지 않는다.
+    const desktopQuery = window.matchMedia('(min-width: 768px)');
+
+    // 펼쳐졌을 때 오른쪽 막대가 종이 오른쪽 끝을 물고 있는 만큼(margin-right: -40px).
+    // 말렸을 때도 같은 만큼 물려 있어야 종이 끝이 막대 밖으로 삐져나오지 않는다.
+    const GRIP = 40;
+
+    let isRolled = false;
+    let closedAt = null;    // 다 말린 자리
+    let awayAt = null;      // 화면 오른쪽 끝을 막 벗어난 자리
+
+    // 막대가 실제로 오가는 거리는 5600px 이 넘는데 화면 폭은 그 일부뿐이다.
+    // 그 거리를 다 애니메이션하면 시간의 대부분을 화면 밖에서 보내게 되어,
+    // 한참 아무 일도 없다가 끝에서 순식간에 스치고 지나가는 것처럼 보인다.
+    // 그래서 "화면에 보이는 구간" 만 움직이고, 그 바깥은 순간이동으로 건너뛴다.
+    //
+    // 웹폰트가 바뀌면 종이 폭도 달라지므로 상태를 바꾸기 직전에 다시 잰다.
+    /* 모바일은 두루마리가 눕는다. 위 봉은 그대로 두고 아래 봉이 세로로 내려오며
+       종이가 위에서 아래로 펼쳐진다.
+
+       봉은 rotate 로 눕힌 것이라 offsetTop / offsetHeight 는 세워져 있던 때의
+       값을 그대로 들고 있다. 그래서 여기서는 실제로 그려진 자리(rect)로 잰다. */
+    function measureVertical() {
+        const allBox = all.getBoundingClientRect();
+        const topBox = leftStick.getBoundingClientRect();
+        const bottomBox = rightStick.getBoundingClientRect();
+        const paperBox = paper.getBoundingClientRect();
+
+        if (!paperBox.height || !topBox.height) return false;
+
+        // .history_scroll_all 안에서의 세로 좌표
+        const topEnd = topBox.bottom - allBox.top;
+        const bottomStart = bottomBox.top - allBox.top;
+        const paperStart = paperBox.top - allBox.top;
+        // 위 봉이 종이를 물고 있는 만큼. 아래 봉도 같은 만큼 물린다.
+        const grip = Math.max(0, topEnd - paperStart);
+
+        // 아래 봉을 y 에 세우는 값 한 쌍
+        const at = (y) => ({
+            shift: Math.min(0, y - bottomStart),
+            clip: Math.max(0, paperBox.height - (y + grip - paperStart))
+        });
+
+        closedAt = at(topEnd);
+        // 화면 한 판만큼만 움직인다 (그 밖은 어차피 보이지 않는다)
+        awayAt = at(topEnd + document.documentElement.clientHeight);
+
+        return true;
+    }
+
+    function measure() {
+        if (!desktopQuery.matches) return measureVertical();
+
+        const paperWidth = paper.offsetWidth;
+
+        if (!paperWidth) return false;
+
+        // 트랙에 걸린 scale 을 실측한다 (--history_scale 은 아직 안 정해졌을 수 있다)
+        const scale = rightStick.getBoundingClientRect().width / rightStick.offsetWidth || 1;
+        const span = document.documentElement.clientWidth / scale;
+        // 말렸을 때 오른쪽 막대가 설 자리 = 왼쪽 막대의 오른쪽 끝
+        const closed = leftStick.offsetLeft + leftStick.offsetWidth;
+
+        // 막대를 x 에 세우는 값 한 쌍.
+        // 종이는 끝이 막대에 GRIP 만큼 물리도록 같이 잘라 낸다.
+        const at = (x) => ({
+            shift: Math.min(0, x - rightStick.offsetLeft),
+            clip: Math.max(0, paperWidth - (x + GRIP - paper.offsetLeft))
+        });
+
+        closedAt = at(closed);
+        awayAt = at(closed + span);
+
+        return true;
+    }
+
+    function apply(vars) {
+        all.style.setProperty('--unroll_shift', vars.shift + 'px');
+        all.style.setProperty('--unroll_clip', vars.clip + 'px');
+    }
+
+    // 지금까지 바꾼 값을 전환 없이 확정한다.
+    // 클래스를 붙인 채로 한 번 계산시켜야(offsetWidth) 전환이 생략된다.
+    function commit() {
+        all.classList.add('is_unroll_instant');
+        void all.offsetWidth;
+        all.classList.remove('is_unroll_instant');
+    }
+
+    // 전환이 끝난 뒤 화면 밖에서 자연 상태로 되돌리는 예약.
+    // 그 사이에 상태가 바뀌면 token 이 어긋나 취소된다.
+    let settleToken = 0;
+
+    function settleOpen() {
+        const token = ++settleToken;
+        const durationMs = parseFloat(getComputedStyle(all).getPropertyValue('--unroll_ms')) || 1300;
+
+        const finish = () => {
+            if (token !== settleToken || isRolled) return;
+
+            // 여기서 남은 거리를 순간이동으로 건너뛴다. 화면 밖이라 보이지 않는다.
+            all.classList.remove('is_rolled');
+            all.style.removeProperty('--unroll_shift');
+            all.style.removeProperty('--unroll_clip');
+            commit();
+        };
+
+        rightStick.addEventListener('transitionend', finish, { once: true });
+        // 전환이 잘리거나 탭이 숨겨져 transitionend 가 오지 않는 경우 대비
+        window.setTimeout(finish, durationMs + 200);
+    }
+
+    // 과정 없이 곧장 다 말린 상태로. 진행 중인 전환도 끊는다.
+    function rollInstant() {
+        if (!measure()) return;
+
+        settleToken++;
+        isRolled = true;
+        apply(closedAt);
+        all.classList.add('is_rolled');
+        commit();
+    }
+
+    // 화면에 보이는 구간만 지나며 닫힌다
+    function rollAnimated() {
+        if (isRolled || !measure()) return;
+
+        settleToken++;
+        isRolled = true;
+
+        // 펼쳐지는 도중이었다면 지금 자리에서 방향만 되돌린다 (순간이동 금지)
+        if (all.classList.contains('is_rolled')) {
+            apply(closedAt);
+            return;
+        }
+
+        // 다 펼쳐진 상태였다면 화면 밖 오른쪽으로 먼저 옮겨 놓고(보이지 않는다)
+        apply(awayAt);
+        all.classList.add('is_rolled');
+        commit();
+        // 거기서부터 닫힌 자리까지 — 이 구간이 전부 화면 안이다
+        apply(closedAt);
+    }
+
+    // 닫힌 자리에서 화면 밖까지만 펼친다. 나머지는 settleOpen 이 건너뛴다.
+    function unroll() {
+        if (!isRolled || !measure()) return;
+
+        isRolled = false;
+
+        // 세로(모바일)는 중간에 끊지 않고 끝까지 함께 움직인다.
+        // 화면 밖 구간을 순간이동으로 건너뛰면 봉만 먼저 내려가 사라지고
+        // 종이는 마지막에 한꺼번에 드러나서, 봉이 앞서 간 것처럼 보인다.
+        // 클래스를 떼면 봉의 transform 과 종이의 clip-path 가 같은 규칙
+        // (--unroll_ms / --unroll_ease)을 타고 나란히 풀린다.
+        if (!desktopQuery.matches) {
+            all.classList.remove('is_rolled');
+            all.style.removeProperty('--unroll_shift');
+            all.style.removeProperty('--unroll_clip');
+            return;
+        }
+
+        apply(awayAt);
+        settleOpen();
+    }
+
+    // 펼쳐진 모습이 CSS 의 기본값이라, 시작할 때 한 번 말아 둔다 (과정 없이).
+    // 가로/세로 어느 쪽이든 하는 일은 같고, 재는 축만 measure() 가 갈라 준다.
+    function syncMode() {
+        all.classList.add('is_unroll_ready');
+        // 축이 바뀌었으면 값을 다시 재서 말아 둔다
+        settleToken++;
+        isRolled = false;
+        rollInstant();
+    }
+
+    desktopQuery.addEventListener('change', syncMode);
+    syncMode();
+
+    // 말려 있는 동안 종이 폭이 달라지면 잘라 낼 폭도 달라진다
+    document.fonts?.ready.then(() => {
+        if (isRolled) rollInstant();
+    });
+
+    // 창 크기가 바뀌면 종이 폭이 달라진다.
+    // 태블릿 구간은 img_box_2 를 좁히기 때문에 종이가 5695 -> 5419 로 줄어드는데,
+    // 다시 재지 않으면 데스크톱에서 잰 값(-5614)이 그대로 남아 막대가 엉뚱한
+    // 자리에 서고 종이도 잘못된 폭으로 잘린다.
+    let resizeTimer = 0;
+
+    window.addEventListener('resize', () => {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(() => {
+            if (!measure()) return;
+
+            // 말려 있는 상태라면 새 값으로 다시 확정한다.
+            // 펼쳐진 상태면 다음에 말릴 때 measure() 가 다시 도니 둘 필요가 없다.
+            if (isRolled) {
+                apply(closedAt);
+                commit();
+            }
+        }, 200);
+    });
+
+    if (!('IntersectionObserver' in window)) {
+        unroll();
+        return;
+    }
+
+    // 관찰 대상은 두루마리가 아니라 섹션이다.
+    // 두루마리는 트랙 왼쪽 끝에 있어 가로로 넘기는 도중에 화면 밖으로 나가는데,
+    // 그때마다 다시 말리면 되돌아올 때 엉뚱하게 또 펼쳐진다.
+    //
+    // 섹션 높이는 100svh(= 화면 높이 이하) 라 0.8 은 "화면에 80% 들어왔을 때" 가 된다.
+    const OPEN_AT = 0.8;
+    // 임계값을 지나는 순간 보고되는 비율이 미세하게 모자랄 수 있어 여유를 둔다
+    const EPSILON = 0.01;
+
+    // ---- 가로(데스크톱): 섹션이 80% 넘게 보이면 펼친다 ----
+    const sectionObserver = new IntersectionObserver((entries) => {
+        if (!desktopQuery.matches) return;
+
+        entries.forEach((entry) => {
+            // 80% 넘게 보이면 펼친다
+            if (entry.intersectionRatio >= OPEN_AT - EPSILON) unroll();
+            // 조금이라도 보이는 동안은 펼칠 때와 같은 속도로 닫힌다
+            else if (entry.isIntersecting) rollAnimated();
+            // 아예 안 보이면 과정 없이 곧장 처음 상태로
+            else rollInstant();
+        });
+    }, { threshold: [0, OPEN_AT] });
+
+    sectionObserver.observe(section);
+
+    /* ---- 세로(모바일): 두루마리 윗머리를 본다 ----
+       모바일은 섹션이 화면보다 몇 배씩 길어서 교차 비율이 0.8 에 닿지 않는다.
+       그래서 섹션 대신 "위 봉" 이 올라왔는지로 판단한다.
+
+       다만 화면 아래 끝에 걸치자마자 펼치면, 눈이 닿기도 전에 화면 밖에서
+       끝나 버려 펼쳐지는 걸 못 본다. rootMargin 으로 아래쪽 기준선을 35%
+       끌어올려, 윗머리가 화면의 65% 지점까지 올라온 뒤에 시작하게 한다.
+
+       한 번 펼친 뒤에는 다시 말지 않는다 — 계속 내리면 윗머리가 화면 위로
+       사라지는데, 그때 되말리면 읽고 있던 콘텐츠가 눈앞에서 접혀 버린다. */
+    const stickObserver = new IntersectionObserver((entries) => {
+        if (desktopQuery.matches) return;
+
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) unroll();
+        });
+    }, { rootMargin: '0px 0px -35% 0px' });
+
+    stickObserver.observe(leftStick);
+})();
+
+
 (() => {
     const section = document.querySelector('.history_section');
     const viewport = section?.querySelector('[data-history-viewport]');
@@ -135,10 +610,58 @@
     const screenWidth = () => document.documentElement.clientWidth;
     const screenHeight = () => document.documentElement.clientHeight;
 
+    // 연혁 한 덩어리가 화면 폭 안에 들어와야 하는 비율.
+    // 1 이면 딱 맞고, 조금 줄여서 좌우에 숨 쉴 자리를 남긴다.
+    const WIDTH_FIT = 0.95;
+
+    // 폭에 맞추더라도 이 아래로는 줄이지 않는다.
+    // 가장 넓은 덩어리(year_2, 1400)에 그대로 맞추면 768px 에서 0.52 까지 떨어지는데,
+    // 그러면 본문(설계 15px)이 화면에서 8px 이 되어 읽을 수 없다.
+    // 이 선을 넘는 덩어리는 어차피 좌우로 넘겨 가며 보는 구간이라
+    // 화면보다 조금 넓어도 된다.
+    const READABLE_SCALE = 0.65;
+
+    // 가장 넓은 연혁 덩어리 (설계 단위)
+    function widestBlock() {
+        let widest = 0;
+
+        section.querySelectorAll('.history_year_con > .year_block').forEach((block) => {
+            widest = Math.max(widest, block.offsetWidth);
+        });
+
+        return widest;
+    }
+
     // 화면 높이에 트랙을 맞춘다. 시안 높이 1080 을 1 로 본다.
     // vision 패널이 화면 폭만큼 늘어날 수 있어서 트랙 폭은 실측해 stage 에 전달한다.
     function applyScale() {
-        const raw = screenHeight() / DESIGN_HEIGHT;
+        // 768px 미만은 가로 탐색을 접고 보통의 세로 흐름으로 보여 준다.
+        // 시안 캔버스를 축소해 쓰는 방식(scale + stage 폭)을 통째로 걷어 내야
+        // CSS 가 세로 배치를 잡을 수 있다.
+        if (!desktopQuery.matches) {
+            section.style.setProperty('--history_scale', '1');
+            section.style.setProperty('--history_vw', screenWidth() + 'px');
+            stage.style.removeProperty('width');
+            return;
+        }
+
+        const byHeight = screenHeight() / DESIGN_HEIGHT;
+        const widest = widestBlock();
+
+        // 높이에만 맞추면 태블릿(768 x 1024 처럼 세로로 긴 화면)에서
+        // 연혁 한 덩어리가 화면보다 넓어져 연도 제목이 잘린 채로 지나간다.
+        // 그래서 pin 으로 도는 768px 이상에서는 폭도 함께 본다.
+        //
+        // 높이는 절대 넘지 않는다(넘으면 위아래가 잘린다). 그 안에서
+        // 폭에 맞추되 읽을 수 있는 선 아래로는 내려가지 않는다.
+        //
+        // 768px 미만은 손으로 좌우로 넘기는 구간이라 폭을 맞추지 않는다.
+        // 거기서 폭까지 맞추면 scale 이 하한(0.3)까지 떨어져 글자를 읽을 수 없다.
+        const byWidth = widest > 0 ? screenWidth() * WIDTH_FIT / widest : byHeight;
+        const raw = desktopQuery.matches && widest > 0
+            ? Math.min(byHeight, Math.max(byWidth, READABLE_SCALE))
+            : byHeight;
+
         const scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, raw));
 
         section.style.setProperty('--history_scale', String(scale));
@@ -224,6 +747,9 @@
     // 화면 폭 대비. FOCUS_HOLD 까지는 완전히 선명하고, FOCUS_REACH 에서 가장 흐리다.
     const FOCUS_HOLD = 0.42;
     const FOCUS_REACH = 1.05;
+    // 세로(모바일)용. 블록이 화면 가운데를 지나 이만큼(화면 높이 대비) 더 가면
+    // 가장 흐려진다. 값이 작을수록 지나가자마자 빨리 흐려진다.
+    const FOCUS_REACH_Y = 0.45;
 
     // 블록별 "지금 사진이 얼마나 가까이 있는가"(0~1) 를 받아 선명도로 옮긴다.
     // 1 이면 완전히 선명(투명도 100%), 0 이면 가장 흐리고 옅다(투명도 50%).
@@ -249,6 +775,30 @@
     function updateFocus() {
         // 가로 탐색 중에는 사진 위치가 기준이므로 여기서 덮어쓰지 않는다
         if (isPinned && photoSlots.length > 1) return;
+
+        // 세로로 흐르는 모바일은 위아래 거리로 잰다.
+        //
+        // 중심끼리 재는 가로 방식을 그대로 쓰면 안 된다. 모바일에서는 블록 하나가
+        // 화면보다 커서, 화면을 꽉 채우고 있는 블록도 중심이 멀다는 이유로 흐려진다.
+        // 그래서 "화면 한가운데 선이 블록 밖으로 얼마나 나갔는가" 로 잰다.
+        // 선이 블록 안에 있으면 0 = 또렷, 블록이 지나갈수록 멀어져 흐려진다.
+        if (!desktopQuery.matches) {
+            const height = screenHeight();
+            const centerLine = height / 2;
+
+            applyFocus(yearBlockPairs.map(([block]) => {
+                const rect = block.getBoundingClientRect();
+
+                if (!rect.height) return 1;
+
+                const gap = Math.max(rect.top - centerLine, centerLine - rect.bottom, 0);
+                const ratio = gap / (height * FOCUS_REACH_Y);
+
+                return 1 - smooth(Math.min(1, Math.max(0, ratio)));
+            }));
+
+            return;
+        }
 
         const width = screenWidth();
         const centerLine = width / 2;
@@ -539,13 +1089,23 @@
     // 폴백(네이티브 가로 스크롤)일 때도 가운데 블록만 선명하게 유지한다
     let focusFrame = 0;
 
-    viewport.addEventListener('scroll', () => {
+    function scheduleFocus() {
         if (focusFrame) return;
 
         focusFrame = window.requestAnimationFrame(() => {
             focusFrame = 0;
             updateFocus();
         });
+    }
+
+    viewport.addEventListener('scroll', scheduleFocus, { passive: true });
+
+    // 모바일은 .history_viewport 가 스크롤되지 않는다(overflow: visible).
+    // 페이지가 스크롤되므로 창에서 받아야 흐림이 따라온다.
+    window.addEventListener('scroll', () => {
+        if (desktopQuery.matches) return;
+
+        scheduleFocus();
     }, { passive: true });
 
     function refreshScrollTrigger() {
@@ -606,6 +1166,10 @@
    흩어지는 동안 원 안의 글자가 왼쪽부터 차례로 나타난다.
    원이 다 펼쳐진 뒤에 아래 화살표, 마지막으로 문구가 이어서 나타난다.
 
+   네 단계가 이어지는 동안 섹션을 화면 가운데에 붙잡아 둔다.
+   붙잡지 않으면 스크롤을 길게 쓰는 만큼 섹션이 위로 밀려 올라가서,
+   마지막 문구가 화면 밖으로 빠져나가기 전에 서둘러 끝내야 한다.
+
    흩어진 뒤의 모습이 CSS 의 기본 배치라, GSAP 이 없거나 모션 최소화 설정이면
    아무것도 하지 않고 처음부터 흩어진 상태로 보인다.
 --------------------------------------------------------------------------- */
@@ -624,6 +1188,8 @@
     if (!circles.length) return;
 
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    // pin 을 걸지 말지가 갈리는 지점 (아래 build 주석 참고)
+    const desktopQuery = window.matchMedia('(min-width: 768px)');
 
     const canUseGsap = () => typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined';
     const shouldAnimate = () => canUseGsap() && !reducedMotionQuery.matches;
@@ -637,6 +1203,9 @@
 
     // 원이 다 흩어지는 시점
     const SPREAD_SPAN = 0.5;
+    // 원이 떠오르는 구간. 모여 있는 원이 미리 떠 있으면 스크롤로 들어올 때
+    // 덩그러니 놓여 있어 어색하다. 흩어지기 시작할 때 함께 나타나게 한다.
+    const APPEAR_SPAN = 0.25;
     // 원 안 글자. 흩어지는 도중부터 왼쪽 원부터 차례로
     const NAME_START = 0.3;
     const NAME_SPAN = 0.25;
@@ -651,8 +1220,18 @@
     // 화살표·문구는 아래에서 살짝 올라오며 나타난다
     const RISE_PX = 16;
 
+    // 네 단계에 쓸 스크롤 길이 (화면 높이의 배수).
+    // 붙잡아 두는 구간이라 이 값이 클수록 그 자리에서 천천히 재생된다.
+    const SCROLL_SPAN = 1.8;
+
     let slots = [];
     let tween = null;
+
+    const screenHeight = () => document.documentElement.clientHeight;
+
+    // 붙잡아 둘 자리. 섹션이 화면 가운데에 오게 한다.
+    // 섹션이 화면보다 크면(모바일) 위에 맞춰서 아래가 잘리지 않게 한다.
+    const pinOffset = () => Math.max(0, Math.round((screenHeight() - section.offsetHeight) / 2));
 
     // 모였을 때 각 원이 이동해야 할 거리. transform 의 영향을 받지 않는
     // offsetLeft / offsetTop 으로 재서 다시 계산해도 값이 밀리지 않게 한다.
@@ -686,6 +1265,7 @@
         const progress = scrollProxy.progress;
         const spread = phase(progress, 0, SPREAD_SPAN);
         const gathered = 1 - spread;
+        const appear = phase(progress, 0, APPEAR_SPAN);
 
         circles.forEach((circle, index) => {
             const slot = slots[index];
@@ -695,7 +1275,8 @@
             gsap.set(circle, {
                 x: slot.x * gathered,
                 y: slot.y * gathered,
-                scale: GATHER_SCALE + (1 - GATHER_SCALE) * spread
+                scale: GATHER_SCALE + (1 - GATHER_SCALE) * spread,
+                opacity: appear
             });
         });
 
@@ -725,17 +1306,33 @@
 
         measure();
 
+        /* 모바일에서는 붙잡지 않는다.
+
+           모바일은 이 섹션이 내용 높이만큼만(400px 안팎) 되는데, pin 을 걸면
+           ScrollTrigger 가 붙잡는 거리(1.8 화면)만큼 pin-spacer 를 늘려 놓는다.
+           짧은 섹션이 그 안에 떠 있는 꼴이라 위아래가 텅 비어 보인다.
+           대신 섹션이 화면을 지나가는 동안 그대로 스크럽한다. */
+        const isDesktop = desktopQuery.matches;
+
         tween = gsap.to(scrollProxy, {
             progress: 1,
             ease: 'none',
             onUpdate: render,
             scrollTrigger: {
                 trigger: section,
-                // 모여 있는 원이 화면 아래에 들어온 뒤부터 흩어지기 시작한다
-                start: 'top 70%',
-                // 원 -> 글자 -> 화살표 -> 문구 네 단계가 이어지도록.
-                // 마지막 문구까지 화면 안에서 끝나는 길이로 잡았다
-                end: () => '+=' + Math.round(document.documentElement.clientHeight * 0.75),
+                // 섹션이 화면 가운데에 자리 잡으면 붙잡고, 그때부터 원이 흩어진다
+                // 모바일은 섹션 위가 화면 한가운데를 지날 때부터 시작한다.
+                // 그 위로 VISION 문구가 이미 다 드러나 있어서, 문구를 읽고 난
+                // 다음에 원이 퍼지는 순서가 된다.
+                // (85% 로 두면 원이 화면에 들어오기도 전에 퍼지기 시작한다)
+                start: isDesktop ? () => 'top ' + pinOffset() + 'px' : 'top 60%',
+                // 원 -> 글자 -> 화살표 -> 문구 네 단계가 이 길이 안에서 이어진다
+                end: isDesktop
+                    ? () => '+=' + Math.round(screenHeight() * SCROLL_SPAN)
+                    : 'bottom 70%',
+                pin: isDesktop,
+                // 빠르게 굴려 들어와도 붙잡히는 순간이 튀지 않게 미리 준비시킨다
+                anticipatePin: isDesktop ? 1 : 0,
                 scrub: 1,
                 invalidateOnRefresh: true,
                 // 창 크기가 바뀌면 흩어질 거리도 달라진다.
@@ -754,11 +1351,12 @@
     function destroy() {
         if (!tween) return;
 
-        tween.scrollTrigger?.kill();
+        // pin 을 걸었으므로 되돌려서 끝낸다 (pin-spacer 가 남지 않게)
+        tween.scrollTrigger?.kill(true);
         tween.kill();
         tween = null;
 
-        gsap.set(circles, { clearProps: 'transform' });
+        gsap.set(circles, { clearProps: 'transform,opacity' });
         [...names, arrow, statement].forEach((target) => {
             if (target) gsap.set(target, { clearProps: 'opacity,transform' });
         });
@@ -771,6 +1369,13 @@
 
     reducedMotionQuery.addEventListener('change', syncMode);
 
+    // pin 여부는 만들 때 한 번 정해지고 나중에 바꿀 수 없다.
+    // 구간을 넘나들면 부수고 새로 만든다.
+    desktopQuery.addEventListener('change', () => {
+        destroy();
+        syncMode();
+    });
+
     window.addEventListener('load', syncMode);
 
     // 창 크기 변화는 ScrollTrigger 가 스스로 refresh 하면서
@@ -780,14 +1385,114 @@
 
 
 /* ---------------------------------------------------------------------------
-   respected company - 강조 단어 칠하기 + 태그 물결 채우기
+   VISION 문구 붙들기
 
-   1) respected / competitiveness 가 화면 세로 가운데에 닿으면
-      흰 글씨가 왼쪽부터 초록으로 칠해진다.
-   2) Future Value / Principle / Competitiveness 태그는 화면에 들어오면
-      아래에서 물결이 차오르며 초록으로 바뀐다.
+   가로 탐색이 끝나 pin 이 풀리면 brand_history 섹션이 통째로 위로 밀려 올라가고
+   VISION 문구도 같이 사라진다. 아래에서 vision 섹션이 올라오는 동안 문구가
+   조금 더 남아 있도록, 섹션이 올라가는 만큼 문구를 패널 안에서 아래로 흘려보낸다.
 
-   둘 다 모습은 CSS 가 그리고 여기서는 "닿았는가" 만 판단한다. 한 번만 재생한다.
+   완전히 고정하려면 한 화면 분량을 내려가야 하는데, 문구 아래로 남은 자리는
+   패널(1080) 안에서 0.4 화면 남짓이다. 그 밖으로 나가면 .history_vision 의
+   overflow: hidden 에 잘리므로, 남은 자리 안에서만 늦게 따라간다.
+
+   이 IIFE 는 vision 섹션에 pin 을 거는 위쪽 IIFE 다음에 와야 한다.
+   ScrollTrigger 가 pin-spacer 를 만든 뒤에 start/end 를 재야 자리가 맞는다.
+--------------------------------------------------------------------------- */
+
+(() => {
+    const section = document.querySelector('.history_section');
+    const tit = document.querySelector('.history_vision_tit');
+    const next = document.querySelector('.vision_section');
+
+    if (!section || !tit || !next) return;
+    if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    // 이 연출은 가로 탐색(pin)이 있는 구간에서만 뜻이 있다
+    const desktopQuery = window.matchMedia('(min-width: 768px)');
+
+    // 섹션이 올라가는 거리 중 문구가 따라 내려갈 비율. 1 이면 제자리에 붙어 있는 셈.
+    const LAG = 0.5;
+    // 문구와 패널 아래 끝 사이에 남겨 둘 여유 (설계 단위)
+    const BREATH = 24;
+
+    // 옅어지는 구간. 처음에는 또렷하게 남아 있다가 서서히 사라진다.
+    // 끝(1)보다 조금 일찍 다 사라지게 해서, 잘려 나가며 툭 끊기는 일이 없게 한다.
+    const FADE_FROM = 0.2;
+    const FADE_TO = 0.9;
+
+    // 시작과 끝이 완만한 곡선 (이 파일의 다른 곳과 같은 방식)
+    const smooth = (ratio) => ratio * ratio * (3 - 2 * ratio);
+
+    function fade(progress) {
+        const ratio = (progress - FADE_FROM) / (FADE_TO - FADE_FROM);
+
+        return 1 - smooth(Math.min(1, Math.max(0, ratio)));
+    }
+
+    // 문구가 패널 안에서 내려갈 수 있는 최대 거리
+    function room() {
+        const holder = tit.offsetParent;
+
+        if (!holder) return 0;
+
+        return Math.max(0, holder.offsetHeight - (tit.offsetTop + tit.offsetHeight) - BREATH);
+    }
+
+    // 실제로 내려갈 거리. 화면 픽셀을 설계 단위로 바꾼 뒤 남은 자리에 맞춰 자른다
+    // (문구는 scale 이 걸린 트랙 안에 있어서 transform 도 설계 단위로 들어간다)
+    function travel() {
+        const scale = parseFloat(getComputedStyle(section).getPropertyValue('--history_scale')) || 1;
+        const want = document.documentElement.clientHeight * LAG / scale;
+
+        return Math.min(want, room());
+    }
+
+    function render(self) {
+        /* 모바일에서는 붙들지 않는다.
+
+           이 연출은 가로 탐색이 끝나고 pin 이 풀리면서 섹션이 통째로 밀려
+           올라갈 때, 문구를 조금 더 붙잡아 두려고 넣은 것이다.
+           세로로 흐르는 모바일에는 그 pin 자체가 없고 패널도 짧아서,
+           그대로 두면 읽는 도중에 글자가 흐려지며 사라져 버린다. */
+        if (!desktopQuery.matches) {
+            gsap.set(tit, { y: 0, opacity: 1 });
+            return;
+        }
+
+        gsap.set(tit, {
+            y: self.progress * travel(),
+            opacity: fade(self.progress)
+        });
+    }
+
+    // vision 섹션이 아래에서 올라와 화면을 채울 때까지가 딱 그 구간이다
+    ScrollTrigger.create({
+        trigger: next,
+        start: 'top bottom',
+        end: 'top top',
+        scrub: true,
+        invalidateOnRefresh: true,
+        onUpdate: render,
+        onRefresh: render
+    });
+})();
+
+
+/* ---------------------------------------------------------------------------
+   respected company - 등장 순서
+
+   섹션이 화면을 꽉 채우면 잠깐 붙잡아 두고(pin) 아래 순서로 한 번만 보여 준다.
+
+   1) 컵이 흔들리고
+   2) 그 바람에 물방울이 하나씩 튀어오르고
+   3) respected / competitiveness 가 흰색에서 초록으로 칠해지고
+   4) 마지막 물방울로부터 1초 뒤, 아래 태그가 차례로 물결처럼 차오른다.
+
+   태그의 차오름만 스크롤 방향을 따라간다. 위로 되돌아 나가면 다시 빠지고,
+   내려오면 또 차오른다. (칠하기는 한 번만)
+
+   움직이는 모습은 전부 CSS 가 그리고, 여기서는 시점만 잡는다.
 --------------------------------------------------------------------------- */
 
 (() => {
@@ -810,47 +1515,27 @@
         return;
     }
 
-    // 여러 개가 함께 걸리므로 왼쪽부터 조금씩 늦게 재생한다
-    function revealInOrder(items, stepMs, doneClass, observerOptions) {
-        if (!items.length) return;
+    const icon = section.querySelector('.respected_icon');
+    const cup = section.querySelector('.respected_cup');
+    const drops = icon ? [...icon.querySelectorAll('.respected_drop')] : [];
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                if (!entry.isIntersecting) return;
+    /* ---- 재생 순서(ms) ----
+       컵이 흔들리고 -> 물방울이 하나씩 튀고 -> 강조 단어가 칠해지고
+       -> 마지막 물방울로부터 1초 뒤 아래 태그가 차례로 차오른다. */
+    const DROP_LEAD_MS = 120;   // 컵이 흔들리기 시작하고 첫 물방울이 뜨기까지
+    const DROP_STEP_MS = 220;   // 물방울끼리
+    const PAINT_DELAY_MS = 700;
+    const PAINT_STEP_MS = 180;  // 강조 단어끼리
+    const TAG_GAP_MS = 1000;    // 마지막 물방울 뒤
+    const TAG_STEP_MS = 160;    // 태그끼리
+    // 빠질 때는 기다리지 않고 바로, 차오를 때보다 촘촘하게 (되돌아 나가는 길이 짧다)
+    const TAG_DRAIN_STEP_MS = 90;
 
-                observer.unobserve(entry.target);
-
-                const order = Math.max(0, items.indexOf(entry.target));
-
-                window.setTimeout(() => {
-                    entry.target.classList.add(doneClass);
-                }, order * stepMs);
-            });
-        }, observerOptions);
-
-        items.forEach((item) => observer.observe(item));
-    }
+    const lastDropMs = DROP_LEAD_MS + Math.max(0, drops.length - 1) * DROP_STEP_MS;
 
     section.classList.add('is_paint_ready');
 
-    // 강조 단어: 화면 가운데 10% 띠에 들어왔을 때.
-    // (정확히 -50% 로 잡으면 관찰 상자 높이가 0 이라 글자가 선에 닿기만 하고
-    //  겹치는 넓이가 없어 걸리지 않는 경우가 있다)
-    revealInOrder(points, 180, 'is_painted', { rootMargin: '-45% 0px -45% 0px' });
-
-    // RESPECTED COMPANY 글자가 화면 가운데에 오면
-    // 물방울이 하나씩 튀어오르고, 잠시 뒤 아래 태그가 차례로 차오른다.
-    // 지켜보는 대상(글자)과 움직이는 대상이 달라 따로 처리한다.
-    const title = section.querySelector('.respected_title');
-    const icon = section.querySelector('.respected_icon');
-    const drops = icon ? [...icon.querySelectorAll('.respected_drop')] : [];
-
-    // 물방울끼리의 간격
-    const DROP_STEP_MS = 220;
-    // 물방울이 다 튄 뒤 태그가 차오르기까지 기다리는 시간
-    const TAG_DELAY_MS = 1000;
-    // 태그끼리의 간격
-    const TAG_STEP_MS = 160;
+    if (icon) icon.classList.add('is_splash_ready');
 
     function addLater(items, stepMs, doneClass, delayMs) {
         items.forEach((item, index) => {
@@ -858,25 +1543,130 @@
         });
     }
 
-    if (title && icon && drops.length) {
-        icon.classList.add('is_splash_ready');
+    /* ---- 태그 차오름 / 빠짐 ----
+       스크롤 방향을 따라 몇 번이든 다시 재생되므로, 반대 방향으로 바뀌었을 때
+       예약만 되어 있던 타이머가 뒤늦게 터지지 않도록 매번 걷어 낸다. */
+    let tagTimers = [];
+    let isTagFilled = false;
 
-        const splashObserver = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                if (!entry.isIntersecting) return;
-
-                splashObserver.disconnect();
-
-                addLater(drops, DROP_STEP_MS, 'is_splashed', 0);
-                // 마지막 물방울이 튄 뒤부터 세어야 "1초 뒤" 가 된다
-                addLater(tags, TAG_STEP_MS, 'is_filled',
-                    (drops.length - 1) * DROP_STEP_MS + TAG_DELAY_MS);
-            });
-        }, { rootMargin: '-45% 0px -45% 0px' });
-
-        splashObserver.observe(title);
-    } else {
-        // 물방울을 못 찾으면 태그만이라도 제 스스로 차오르게 둔다
-        revealInOrder(tags, TAG_STEP_MS, 'is_filled', { rootMargin: '0px 0px -20% 0px' });
+    function clearTagTimers() {
+        tagTimers.forEach(window.clearTimeout);
+        tagTimers = [];
     }
+
+    function fillTags() {
+        if (isTagFilled) return;
+
+        isTagFilled = true;
+        clearTagTimers();
+
+        // 물방울이 다 튄 뒤 왼쪽부터 차례로
+        tags.forEach((tag, index) => {
+            tagTimers.push(window.setTimeout(() => {
+                tag.classList.add('is_filled');
+            }, lastDropMs + TAG_GAP_MS + index * TAG_STEP_MS));
+        });
+    }
+
+    function drainTags() {
+        if (!isTagFilled) return;
+
+        isTagFilled = false;
+        clearTagTimers();
+
+        // 나중에 찬 오른쪽 태그부터 빠진다 (차오름의 역순)
+        [...tags].reverse().forEach((tag, index) => {
+            tagTimers.push(window.setTimeout(() => {
+                tag.classList.remove('is_filled');
+            }, index * TAG_DRAIN_STEP_MS));
+        });
+    }
+
+    // 컵이 한 번 흔들리고 그 바람에 물방울이 튄다. 여러 번 다시 부를 수 있다.
+    let splashTimers = [];
+
+    function splash() {
+        splashTimers.forEach(window.clearTimeout);
+        splashTimers = [];
+
+        // 클래스를 뗐다 붙여야 애니메이션과 전환이 처음부터 다시 재생된다.
+        // 사이에 크기를 한 번 읽어, 브라우저가 두 상태를 따로 인식하게 만든다.
+        cup?.classList.remove('is_shaking');
+        drops.forEach((drop) => drop.classList.remove('is_splashed'));
+        void section.offsetWidth;
+
+        cup?.classList.add('is_shaking');
+
+        drops.forEach((drop, index) => {
+            splashTimers.push(window.setTimeout(() => {
+                drop.classList.add('is_splashed');
+            }, DROP_LEAD_MS + index * DROP_STEP_MS));
+        });
+    }
+
+    let hasPlayed = false;
+
+    // 스크롤이 걸려 멈추는 순간 컵이 흔들린다. "여기서 멈췄다" 는 신호라
+    // 되돌아 올라와 다시 걸릴 때도 매번 흔들린다.
+    // 태그도 그때마다 다시 차오른다. 칠하기만 한 번이다.
+    function playSequence() {
+        splash();
+        fillTags();
+
+        if (hasPlayed) return;
+
+        hasPlayed = true;
+
+        addLater(points, PAINT_STEP_MS, 'is_painted', PAINT_DELAY_MS);
+    }
+
+    // 컵에 마우스를 올릴 때마다 한 번씩 흔들린다.
+    // mouseenter 는 들어올 때 한 번만 나므로, 계속 올려 두어도 다시 흔들리지 않고
+    // 뗐다가 다시 올리면 그때 또 흔들린다.
+    if (cup) cup.addEventListener('mouseenter', splash);
+
+    const canUseGsap = typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined';
+
+    if (canUseGsap) {
+        // pin 은 걸지 않는다.
+        //
+        // pin 을 걸면 ScrollTrigger 가 섹션을 pin-spacer 로 감싸고 붙잡는 거리만큼
+        // 여백을 넣는데, 그 여백이 그대로 "섹션 끝 ~ 푸터 사이의 빈 구간" 이 된다.
+        // (실측: 768px. 붙잡는 거리를 줄여도 그만큼 빈 구간이 남을 뿐이다.)
+        //
+        // 이 섹션의 등장 순서는 스크롤에 묶인 게 아니라 시간(setTimeout)으로 도는
+        // 연출이라 붙잡아 둘 이유도 없다. 섹션 자체가 화면을 꽉 채우는 높이여서
+        // 그냥 지나가도 한 화면 분량의 스크롤 동안 머문다.
+        ScrollTrigger.create({
+            trigger: section,
+            // 섹션 위가 화면 한가운데를 지날 때 = 화면의 절반이 이 섹션일 때.
+            // 예전에는 섹션이 화면 위로 더 올라간 뒤에야(top -N) 시작해서
+            // 컵이 한참 뒤에 흔들렸다.
+            start: 'top 50%',
+            end: () => '+=' + Math.round(document.documentElement.clientHeight * 0.4),
+            invalidateOnRefresh: true,
+            onEnter: playSequence,
+            onEnterBack: playSequence,
+            // 위로 되돌아 나가면 태그가 다시 빠진다. 내려오면 onEnter 로 또 찬다.
+            // (아래로 지나간 경우는 이미 다 본 자리라 채운 채로 둔다)
+            onLeaveBack: drainTags,
+            // 이미 지나온 자리에서 페이지가 열린 경우
+            onRefresh: (self) => {
+                if (self.progress > 0) playSequence();
+            }
+        });
+
+        return;
+    }
+
+    // GSAP 이 없으면 붙잡아 두지는 못해도 순서는 그대로 보여 준다.
+    // 관찰을 끊지 않아서, 화면 가운데를 드나들 때마다 태그가 차고 빠진다.
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) playSequence();
+            else drainTags();
+        });
+    }, { rootMargin: '-25% 0px -25% 0px' });
+
+    observer.observe(section);
 })();

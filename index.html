@@ -6,89 +6,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>kooksoondang</title>
     <link rel="stylesheet" href="common/reset.css">
-    <style>
-        /* 인트로 영상 한 장만 있는 화면. 화면 높이에 꽉 채우고 넘치는 쪽은 잘라 냄 */
-        .intro {
-            position: relative;
-        }
-
-        /* 영상 위에 얹히는 버튼이라 배경이 밝든 어둡든 읽히도록 어두운 반투명 칩으로 둠.
-           모서리는 사이트 공통 규칙(위 평평 / 아래 둥금)을 따름 */
-        .intro_skip {
-            position: absolute;
-            top: clamp(1rem, 2.5vw, 2rem);
-            right: clamp(1rem, 2.5vw, 2rem);
-            z-index: 1;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.375rem;
-            padding: 0.5rem 1.125rem;
-            border-radius: 0.25rem 0.25rem 1rem 1rem;
-            background: rgba(35, 35, 35, 0.45);
-            color: #FAF8F7;
-            font-size: 0.875rem;
-            font-weight: 500;
-            letter-spacing: 0.02em;
-            backdrop-filter: blur(6px);
-            transition: background 220ms ease, transform 220ms ease;
-        }
-
-        .intro_skip:hover {
-            background: rgba(35, 35, 35, 0.7);
-            transform: translateY(-0.1rem);
-        }
-
-        .intro_skip:focus-visible {
-            outline: 2px solid #F29556;
-            outline-offset: 3px;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .intro_skip {
-                transition: none;
-            }
-
-            .intro_skip:hover {
-                transform: none;
-            }
-        }
-
-        .intro_video {
-            display: block;
-            width: 100%;
-            /* 주소창이 접혔다 펴지는 모바일에서 100vh 가 튀므로 지원하면 100dvh 를 씀 */
-            height: 100vh;
-            height: 100dvh;
-            object-fit: cover;
-            background: var(--bg_color, #FAF8F7);
-        }
-    </style>
+    <!-- 페이지 전환 덮개. 첫 프레임부터 덮여 있어야 하므로 다른 스타일보다 먼저 읽어 둠 -->
+    <link rel="stylesheet" href="common/page_transition.css">
+    <link rel="stylesheet" href="index.css">
+    <script src="common/page_transition.js" defer></script>
+    <script src="index.js" defer></script>
 </head>
 
 <body>
     <div class="intro">
         <!-- muted 가 있어야 브라우저가 자동 재생을 허용하고, playsinline 이 있어야 ios 에서 전체 화면으로 튀지 않음.
-             끝나면 메인으로 넘어가야 하므로 loop 는 두지 않음 -->
+             끝나면 인증 화면으로 넘어가야 하므로 loop 는 두지 않음 -->
         <video class="intro_video" src="asset/video/kooksoondang_intro.mp4" autoplay muted playsinline
             preload="auto"></video>
-        <a class="intro_skip" href="main/main.html">Skip &rsaquo;</a>
+        <!-- 영상만 건너뜀. 인증은 건너뛸 수 없으므로 링크가 아니라 버튼임 -->
+        <button type="button" class="intro_skip">Skip &rsaquo;</button>
     </div>
 
-    <script>
-        (() => {
-            const video = document.querySelector('.intro_video');
-            const target = document.querySelector('.intro_skip')?.getAttribute('href');
+    <!--
+        19세 인증. 영상이 끝나면 index.js 가 hidden 을 떼어 드러냄.
+        data-pass = YES 를 눌렀을 때 갈 곳
+    -->
+    <section class="age_gate" id="age_gate" data-pass="test/test.html" hidden>
+        <div class="age_gate_curve" aria-hidden="true"></div>
 
-            if (!video || !target) return;
+        <div class="age_gate_inner">
+            <!-- 질문 화면 -->
+            <div class="age_gate_view" data-view="ask">
+                <h1 class="age_gate_title">Are you of legal drinking age?</h1>
+                <div class="age_gate_actions">
+                    <button type="button" class="age_gate_btn" data-answer="yes">YES</button>
+                    <button type="button" class="age_gate_btn" data-answer="no">NO</button>
+                </div>
+            </div>
 
-            // replace 라 뒤로 가기를 눌러도 인트로가 다시 뜨지 않음
-            const goToMain = () => window.location.replace(target);
+            <!-- NO 를 눌렀을 때 -->
+            <div class="age_gate_view" data-view="deny" hidden>
+                <h1 class="age_gate_title">Please come back later</h1>
+                <p class="age_gate_desc">
+                    You must be 19 or older to enter.<br>
+                    See you next time!
+                </p>
+                <button type="button" class="age_gate_back" data-answer="back">Choose again</button>
+            </div>
+        </div>
 
-            video.addEventListener('ended', goToMain);
-            // 자동 재생이 막히거나 파일을 못 읽으면 마지막 화면에 갇히므로 그때도 넘겨 줌
-            video.addEventListener('error', goToMain);
-        })();
-    </script>
+        <img class="age_gate_logo" src="asset/logo/logo.svg" alt="kooksoondang">
+
+        <!-- 오른쪽 아래에서 걸어 들어오는 할머니. test 페이지 인트로와 같은 그림·같은 방식이라
+             파일도 그쪽 것을 그대로 씀(복사해 두면 한쪽만 고치는 일이 생김).
+             walk1~3 을 겹쳐 두고 opacity 만 갈아 끼워서 걷는 동작을 만듦.
+             그림을 못 읽으면 index.js 가 이 묶음을 통째로 감춤 -->
+        <figure class="age_gate_character">
+            <figcaption class="age_gate_bubble">Wanna come inside?</figcaption>
+            <div class="age_gate_char_body">
+                <img class="age_gate_char_frame walk1" src="test/test_asset/walk1.png" alt="" loading="lazy">
+                <img class="age_gate_char_frame walk2" src="test/test_asset/walk2.png" alt="" loading="lazy">
+                <img class="age_gate_char_frame walk3" src="test/test_asset/walk3.png" alt="" loading="lazy">
+            </div>
+        </figure>
+    </section>
 </body>
 
 </html>

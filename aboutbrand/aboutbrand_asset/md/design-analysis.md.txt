@@ -1,0 +1,77 @@
+# [kooksoondang_aboutbrand] 디자인 분석표
+
+## aboutbrand 폴더 안에서만 진행하기 (다른 파일 절대 건드리지 말 것!)
+## 코딩 진행할 때 class='site_header site_footer'도 절대 건드리지 말 것!
+## html 코딩을 할 때에는 무조건 <main> 안에서만 진행할 것
+
+## 확인한 자료
+
+- 디자인 원본: [@https://www.figma.com/design/S94LbBpR5zKjXwGXlquLqq/K-FOOD-%ED%91%B8%EB%93%9C%EB%93%9D-_last?node-id=3502-8550&m=dev]
+- 확인한 화면: [brand_history]
+- 실제 에셋 위치: [aboutbrand_asset/asset]
+
+## 화면 목록
+
+| 화면 | 목적 | 주요 행동 | 필요한 상태 |
+|---|---|---|---|
+| [brand_history] | [스크롤하여 페이지 탐색] | [클릭·입력·이동] | [기본·로딩·빈 상태·오류] |
+
+## 공통 영역
+
+- 헤더: [국순당 로고, ABOUT BRAND, PRODUCTS, PAIRING, EVENT/PROMOTION, CONTACT US, 검색 아이콘]
+- 푸터: [로고, Privacy Policy, Terms of Use, About Us, Customer Support, Directions, family site, 주소, 전화번호, SNS, CEO, copyright]
+- 공통 버튼: [기본, hover, focus, disabled]
+- 공통 카드: [10px로 라운드 처리된 이미지들, 넓은 여백을 사용해 콘텐츠 간 구분]
+
+## 디자인 토큰
+
+- 배경색: [makgeolli_White, bekseju_darker_cold]
+- 본문색: [bekseju_darker_cold, bekseju_dark1, makgeolli_White, makgeolli_light1]
+- 강조색: [kooksoondang_orange, kooksoondang_green]
+- 제목 폰트: [Albert Sans, Pretendard, ROH HOE-CHAN]
+- 본문 폰트: [Albert Sans, Pretendard, ROH HOE-CHAN]
+- 기본 간격: [12px]
+- 라운드: [8px]
+- 그림자: [없음]
+
+## 반응형
+
+- 360px: [최소 폭 : 360px, 열 개수 : 4개]
+- 768px: [최소 폭: 768px, 열 개수: 12개]
+- 1280px: [최대 폭 : 3840px, 열 개수 : 12개]
+
+## 인터랙션
+
+- 메뉴: [열기·닫기·현재 위치]
+- 버튼: [hover·pressed·disabled]
+- 스크롤: [스크롤 바]
+- 애니메이션: [가로스크롤 인터랙션, 스크롤에 따라 이미지가 커지고 작아지는 마이크로 인터랙션, GSAP ScrollTrigger]
+
+## 에셋
+
+- 로고: [aboutbrand_asset/asset/logo]
+- 이미지: [aboutbrand_asset/asset/img]
+- 아이콘: [aboutbrand_asset/asset/icon]
+- 폰트: [WebFont]
+
+## 확인된 사실
+
+- 프로젝트는 해외 사용자를 대상으로 한 국순당 브랜드 리디자인 웹사이트
+- 메인 컬러는 화이트를 기반으로 오랜지 계열 포인트 컬러를 사용
+- ABOUT THE KOOKSOONDANG BRAND 중심의 브랜드 소개 화면
+- 국순당의 연혁을 좌→우로 탐색하는 가로형 콘텐츠(가로 스크롤)
+- VISION 영역으로 연결(가로스크롤에서 세로스크롤로 변화)
+- VISION / VALUE 중심의 브랜드 철학 및 가치 소개
+- 푸터 및 SNS, Family Site, 회사 정보 배치
+- 세로 스크롤 → 가로 스크롤 → 세로 스크롤 구조
+
+## 아직 확인하지 못한 내용
+
+- 실제 CSS의 폰트, 컬러, 간격, border-radius 값
+- 가로/세로 스크롤 전환의 실제 구현 방식
+- 스크롤 애니메이션 및 transition 적용 여부
+- 원형 그래픽 및 버튼의 실제 인터랙션 여부
+- 반응형(모바일/태블릿)에서의 스크롤 구조
+- 이미지 오버레이 및 그래픽 효과의 실제 구현 방식
+- 메뉴, SNS, Family Site 등의 실제 링크 및 기능
+- 디자인 요소가 저장소에서 어떤 컴포넌트/파일로 구현되어 있는지

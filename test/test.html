@@ -1,11 +1,684 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test</title>
+    <title>What's in my glass? | kooksoondang</title>
+    <link rel="stylesheet" href="../common/reset.css">
+    <link rel="stylesheet" href="../common/common.css">
+    <!-- common.css 의 --font-Pretendard 는 선언만 되어 있고 로드되는 곳이 없어서 이 페이지에서 받아 씀 -->
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+    <link rel="stylesheet" href="test.css">
 </head>
+
 <body>
-    
+    <!--
+        스토리형 테스트.
+        화면 하나가 피그마 프레임 하나에 대응하고, 선택지를 누르면 그 선택지 전용 화면으로 넘어감.
+        - data-next  : 눌렀을 때 이동할 화면 id ("q4", "result" 는 test.js 가 상태 보고 계산)
+        - data-set   : 이동하면서 기록할 답 (key:value)
+        배경 일러스트는 아직 안 넣었고 구조/분기만 잡아 둔 상태.
+    -->
+    <main class="test" id="test">
+
+        <!-- ===================== 인트로 ===================== -->
+        <section class="screen screen_intro" id="intro">
+            <div class="intro_text">
+                <!-- 메인 히어로와 같은 인트로 연출:
+                     제목이 물결로 차오르고 -> 잔이 획순대로 그려지고 -> 설명 문구가 한 글자씩 들어옴.
+                     구조(제목 줄 분리 + 잔 svg)는 main.html 의 .hero_title_wrap 과 동일 -->
+                <div class="intro_title_wrap">
+                    <h1 class="intro_title">
+                        <span class="line line_regular">WHAT&rsquo;S IN</span>
+                        <span class="line line_hand">MY</span>
+                        <span class="line line_bold">GLASS?</span>
+                    </h1>
+                    <svg class="intro_cup" viewBox="0 0 91.2508 56.7487" fill="none" aria-hidden="true"
+                        focusable="false">
+                        <path pathLength="1"
+                            d="M10.1064 5.89869C11.068 5.89869 12.3327 5.70637 14.1233 5.41497C15.1361 5.25015 16.3947 5.3159 25.9336 4.64277C35.4724 3.96965 53.2622 2.6234 62.8593 1.97795C73.3127 1.27493 74.8867 1.52775 76.0508 1.62391C76.8791 1.69233 77.8006 2.11054 79.109 2.78366C83.3123 4.94614 81.108 10.4503 81.8831 13.2696C82.7886 16.5631 83.2468 19.1922 83.7305 21.8643C84.1861 24.3808 83.7335 26.2935 83.4916 26.9229C82.7153 28.9432 80.3387 31.0462 78.1561 33.475C76.383 35.4482 74.4175 37.1655 71.8926 38.7725C70.6305 39.5758 68.0156 40.1814 64.9107 41.1022C62.8801 41.7045 59.5738 43.2848 54.9654 44.8379C52.0512 45.8201 47.2478 45.8199 41.2785 45.7719C36.5133 45.7335 33.8202 44.7534 29.6096 42.8244C26.9404 41.6016 22.4383 38.6866 19.8201 37.1072C16.6785 35.2121 14.2064 32.7275 10.8101 29.0909C7.24764 25.2762 5.46157 21.5641 3.99002 18.5817C3.29628 17.1757 2.72827 15.812 2.04641 14.1131C1.94733 13.2885 1.75501 12.6037 1.51169 11.8781C1.4607 11.441 1.55686 10.8641 2.23873 9.97823"
+                            stroke="#F29556" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                        <path pathLength="1"
+                            d="M31.0861 41.4486C31.3775 48.1216 31.5698 54.3633 32.1016 54.898C33.2332 56.0359 36.9839 54.0836 41.0766 53.5911C42.049 53.4741 43.1091 53.3026 46.0099 53.1555C48.9108 53.0083 53.6226 52.9122 56.5308 52.7665C60.4104 52.5721 63.2183 52.2303 66.2751 52.1341C68.1037 52.0766 71.1763 51.6475 74.9645 51.5033C76.2596 51.4539 76.2525 51.0705 76.1082 50.6334C75.4472 48.6304 74.6032 47.3815 73.9242 45.6316C73.3567 44.1691 72.5634 42.9114 71.7883 41.5025C70.7159 40.1898 70.5236 38.8319 69.8447 37.423C69.6494 37.0806 69.4571 36.7921 68.6762 35.9121"
+                            stroke="#F29556" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                        <path pathLength="1"
+                            d="M66.4767 14.0954C66.731 14.0954 66.9853 14.0954 68.8457 14.0699C70.706 14.0445 74.1647 13.9936 76.9383 13.8149C79.7119 13.6361 81.6956 13.3309 83.0735 13.1737C84.4514 13.0165 85.1635 13.0165 85.454 13.0928C85.7446 13.169 85.592 13.3216 85.2336 13.502C84.8753 13.6823 84.3158 13.8858 82.6542 14.372C80.9927 14.8583 78.2461 15.6213 75.8902 16.4212C73.5343 17.2211 71.6524 18.035 70.5049 18.5559C68.9852 19.2458 68.3802 19.7443 68.122 20.1805C67.9293 20.5061 68.7871 20.5689 69.12 20.5943C69.5102 20.6241 72.104 20.723 76.0312 20.7739C78.1835 20.8017 79.4175 21.0313 80.6983 21.133C82.1097 21.2451 83.9844 21.6986 85.9858 21.8266C88.2045 22.1102 89.2865 22.2119 89.5431 22.2897C89.6472 22.2658 89.698 22.1133 89.7504 21.956"
+                            stroke="#F29556" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                        <path pathLength="1"
+                            d="M70.6368 29.2002C71.5524 29.4545 72.4679 29.7088 74.8215 29.8907C77.1751 30.0726 80.9389 30.1743 82.8525 30.1504C84.766 30.1265 84.7151 29.9739 84.6627 29.8167"
+                            stroke="#F29556" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <p class="intro_desc">
+                    Step into a mysterious Joseon tavern with Kooksoondang's quiz!<br>
+                    Choose your path to reveal if you're a poetic scholar or a lively wanderer.
+                </p>
+                <button type="button" class="btn_start" data-next="q1">TEST START</button>
+            </div>
+        </section>
+
+        <!-- ===================== Q1. 신분 ===================== -->
+        <section class="screen screen_question screen_dim screen_pick" id="q1" data-step="1">
+            <p class="question">Choose the station you desire to hold.</p>
+
+            <!-- 그림과 답 상자를 한 덩어리로 묶어 둠. 그림을 눌러도 그 답이 골라짐 -->
+            <div class="picks">
+                <button type="button" class="pick" data-set="rank:yangban" data-next="q2_yangban">
+                    <img class="pick_img" src="test_asset/Yangban1.png" alt="">
+                    <span class="choice">Yangban (Aristocrats)</span>
+                </button>
+                <button type="button" class="pick" data-set="rank:pyeongmin" data-next="q2_pyeongmin">
+                    <img class="pick_img" src="test_asset/Pyeongmin1.png" alt="">
+                    <span class="choice">Pyeongmin (Commoners)</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- ===================== Q2. 동행 ===================== -->
+        <section class="screen screen_question screen_dim" id="q2_yangban" data-step="2">
+            <p class="question">
+                Welcome, traveler.<br>Thanks for coming all this way.<br><br>
+                Drinking alone today, or with companions?
+            </p>
+            <div class="choices">
+                <button type="button" class="choice" data-set="mate:alone" data-next="cut_yangban_alone">
+                    I want to enjoy alone.
+                </button>
+                <button type="button" class="choice" data-set="mate:together" data-next="cut_yangban_together">
+                    I want to enjoy with my friends
+                </button>
+            </div>
+        </section>
+
+        <section class="screen screen_question screen_dim" id="q2_pyeongmin" data-step="2">
+            <p class="question">
+                Welcome, traveler.<br>Thanks for coming all this way.<br><br>
+                Drinking alone today, or with companions?
+            </p>
+            <div class="choices">
+                <button type="button" class="choice" data-set="mate:alone" data-next="cut_pyeongmin_alone">
+                    I want to enjoy alone.
+                </button>
+                <button type="button" class="choice" data-set="mate:together" data-next="cut_pyeongmin_together">
+                    I want to enjoy with my friends
+                </button>
+            </div>
+        </section>
+
+        <!-- ---------- 동행 선택 후 전환 컷 ---------- -->
+        <!-- 인물 그림은 배경과 같은 1920x1080 판이라 그대로 겹쳐 두면 제자리에 앉음 -->
+        <section class="screen screen_cut screen_dim" id="cut_yangban_alone" data-next="q3_yangban">
+            <img class="cut_actor" src="test_asset/Yangban_solo.png" alt="">
+            <p class="cut_caption">양반 - 혼자 선택 시</p>
+        </section>
+        <section class="screen screen_cut screen_dim" id="cut_yangban_together" data-next="q3_yangban">
+            <img class="cut_actor" src="test_asset/Yangban_with.png" alt="">
+            <p class="cut_caption">양반 - 함께 선택 시</p>
+        </section>
+        <section class="screen screen_cut screen_dim" id="cut_pyeongmin_alone" data-next="q3_pyeongmin">
+            <img class="cut_actor" src="test_asset/Pyeongmin_solo.png" alt="">
+            <p class="cut_caption">평민 - 혼자 선택 시</p>
+        </section>
+        <section class="screen screen_cut screen_dim" id="cut_pyeongmin_together" data-next="q3_pyeongmin">
+            <img class="cut_actor" src="test_asset/Pyeongmin_with.png" alt="">
+            <p class="cut_caption">평민 - 함께 선택 시</p>
+        </section>
+
+        <!-- ===================== Q3. 술 종류 ===================== -->
+        <section class="screen screen_question screen_dim" id="q3_yangban" data-step="3">
+            <!-- 배경 그림 위 탁자에 올려 두는 술. 자리 잡는 법은 test.css 의 .stage / .drink 참고 -->
+            <div class="stage" aria-hidden="true">
+                <img class="drink drink_beer" src="test_asset/맥주.png" alt="">
+                <img class="drink drink_whiskey" src="test_asset/위스키.png" alt="">
+                <img class="drink drink_wine" src="test_asset/와인.png" alt="">
+                <img class="drink drink_wineglass" src="test_asset/와인잔.png" alt="">
+                <img class="drink drink_cocktail" src="test_asset/칵테일딸.png" alt="">
+            </div>
+
+            <p class="question">What type of drink do you prefer?</p>
+            <div class="choices">
+                <button type="button" class="choice" data-set="drink:beer" data-next="cut_beer">Beer</button>
+                <button type="button" class="choice" data-set="drink:wine" data-next="cut_wine">Whiskey / Wine</button>
+                <button type="button" class="choice" data-set="drink:cocktail" data-next="cut_cocktail">Cocktail</button>
+            </div>
+        </section>
+
+        <section class="screen screen_question screen_dim" id="q3_pyeongmin" data-step="3">
+            <div class="stage" aria-hidden="true">
+                <img class="drink drink_beer" src="test_asset/맥주.png" alt="">
+                <img class="drink drink_whiskey" src="test_asset/위스키.png" alt="">
+                <img class="drink drink_wine" src="test_asset/와인.png" alt="">
+                <img class="drink drink_wineglass" src="test_asset/와인잔.png" alt="">
+                <img class="drink drink_cocktail" src="test_asset/칵테일딸.png" alt="">
+            </div>
+
+            <p class="question">What type of drink do you prefer?</p>
+            <div class="choices">
+                <button type="button" class="choice" data-set="drink:beer" data-next="cut_beer">Beer</button>
+                <button type="button" class="choice" data-set="drink:wine" data-next="cut_wine">Whiskey / Wine</button>
+                <button type="button" class="choice" data-set="drink:cocktail" data-next="cut_cocktail">Cocktail</button>
+            </div>
+        </section>
+
+        <!-- ---------- 술 선택 후 전환 컷 (신분 공용, 다음 화면은 test.js 가 신분 보고 결정) ---------- -->
+        <section class="screen screen_cut" id="cut_beer" data-next="q4">
+            <p class="cut_caption">맥주 선택 시</p>
+        </section>
+        <section class="screen screen_cut" id="cut_wine" data-next="q4">
+            <p class="cut_caption">위스키 / 와인 선택 시</p>
+        </section>
+        <section class="screen screen_cut" id="cut_cocktail" data-next="q4">
+            <p class="cut_caption">칵테일 선택 시</p>
+        </section>
+
+        <!-- ===================== Q4. 안주 ===================== -->
+        <section class="screen screen_question screen_dim" id="q4_yangban" data-step="4">
+            <p class="question">How do you want to fill your table tonight?</p>
+            <div class="choices">
+                <button type="button" class="choice" data-set="food:no" data-next="cut_yangban_nofood">
+                    I want to focus only on drinking
+                </button>
+                <button type="button" class="choice" data-set="food:yes" data-next="cut_yangban_food">
+                    I am looking for a combination with drinking
+                </button>
+            </div>
+        </section>
+
+        <section class="screen screen_question screen_dim" id="q4_pyeongmin" data-step="4">
+            <p class="question">How do you want to fill your table tonight?</p>
+            <div class="choices">
+                <button type="button" class="choice" data-set="food:no" data-next="cut_pyeongmin_nofood">
+                    I want to focus only on drinking
+                </button>
+                <button type="button" class="choice" data-set="food:yes" data-next="cut_pyeongmin_food">
+                    I am looking for a combination with drinking
+                </button>
+            </div>
+        </section>
+
+        <!-- ---------- 안주 선택 후 전환 컷 ---------- -->
+        <section class="screen screen_cut screen_white" id="cut_yangban_nofood" data-next="result">
+            <img class="cut_solo" src="test_asset/Yangban_.png" alt="">
+            <p class="cut_caption">양반 안주 미선택 시</p>
+        </section>
+        <section class="screen screen_cut screen_white" id="cut_yangban_food" data-next="result">
+            <img class="cut_solo" src="test_asset/Yangban_.png" alt="">
+            <p class="cut_caption">양반 안주 선택 시</p>
+        </section>
+        <section class="screen screen_cut screen_white" id="cut_pyeongmin_nofood" data-next="result">
+            <img class="cut_solo" src="test_asset/Pyeongmin_.png" alt="">
+            <p class="cut_caption">평민 안주 미선택 시</p>
+        </section>
+        <section class="screen screen_cut screen_white" id="cut_pyeongmin_food" data-next="result">
+            <img class="cut_solo" src="test_asset/Pyeongmin_.png" alt="">
+            <p class="cut_caption">평민 안주 선택 시</p>
+        </section>
+
+        <!-- ===================== 결과 ===================== -->
+        <section class="screen screen_result screen_dim" id="result_a">
+            <!--
+                결과 카드 공통 구조
+                왼쪽 : 유형 일러스트(a~f, 결과 알파벳 순서) + 내려받기 / 공유 / 다시 하기
+                오른쪽: 유형 이름 + 상세 판(잘 맞는 유형 · 음주 스타일 · 어울리는 술)
+                술 막대는 style="--v:00%" 로 길이를 줌
+            -->
+            <div class="result_card">
+                <div class="result_side">
+                    <img class="result_char" src="test_asset/a.png" alt="A. Dignified Seonbi">
+                    <div class="result_actions">
+                        <button type="button" class="btn_save">SAVE IMAGE</button>
+                        <button type="button" class="btn_share">SHARE SNS</button>
+                    </div>
+                    <button type="button" class="btn_restart" data-next="intro">TRY AGAIN</button>
+                </div>
+
+                <div class="result_main">
+                    <p class="result_label">Your type is :</p>
+                    <h2 class="result_title">DIGNIFIED SEONBI</h2>
+
+                    <div class="result_panel">
+                        <div class="panel_col">
+                            <h3 class="panel_head">Types with good chemistry</h3>
+                            <ul class="chemistry">
+                                <li><img src="test_asset/c.png" alt="C. Gourmet Seonbi"></li>
+                                <li><img src="test_asset/e.png" alt="E. Feasting Wanderer"></li>
+                            </ul>
+
+                            <h3 class="panel_head">Drinking style of this type</h3>
+                            <ul class="result_desc">
+                                <li>Prefer calm vibes over noisy places.</li>
+                                <li>Carefully choose the perfect food for the drink.</li>
+                                <li>Scholar style who keeps calm no matter how drunk.</li>
+                            </ul>
+                            <p class="result_tags">
+                                <span>#MoodHunter</span><span>#PairingMaster</span><span>#ProSoloDrinker</span>
+                            </p>
+                        </div>
+
+                        <div class="panel_col">
+                            <h3 class="panel_head">Custom liquor for me</h3>
+                            <ul class="liquor">
+                                <li class="liquor_item">
+                                    <img class="liquor_bottle" src="../products/products_asset/img/rice_makgeolli.png"
+                                        alt="">
+                                    <div class="liquor_body">
+                                        <p class="liquor_name">Rice Makgeolli</p>
+                                        <dl class="liquor_stat">
+                                            <dt>Sweetness</dt>
+                                            <dd><i style="--v:40%"></i></dd>
+                                            <dt>Fizz</dt>
+                                            <dd><i style="--v:30%"></i></dd>
+                                            <dt>Body</dt>
+                                            <dd><i style="--v:75%"></i></dd>
+                                        </dl>
+                                    </div>
+                                </li>
+                                <li class="liquor_item">
+                                    <img class="liquor_bottle" src="../products/products_asset/img/1000_makgeolli.png"
+                                        alt="">
+                                    <div class="liquor_body">
+                                        <p class="liquor_name">100 Billion Prebiotics</p>
+                                        <dl class="liquor_stat">
+                                            <dt>Sweetness</dt>
+                                            <dd><i style="--v:35%"></i></dd>
+                                            <dt>Fizz</dt>
+                                            <dd><i style="--v:45%"></i></dd>
+                                            <dt>Body</dt>
+                                            <dd><i style="--v:70%"></i></dd>
+                                        </dl>
+                                    </div>
+                                </li>
+                            </ul>
+                            <a class="btn_more" href="../products/products.html">VIEW MORE</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="screen screen_result screen_dim" id="result_b">
+            <div class="result_card">
+                <div class="result_side">
+                    <img class="result_char" src="test_asset/b.png" alt="B. Poetic Seonbi">
+                    <div class="result_actions">
+                        <button type="button" class="btn_save">SAVE IMAGE</button>
+                        <button type="button" class="btn_share">SHARE SNS</button>
+                    </div>
+                    <button type="button" class="btn_restart" data-next="intro">TRY AGAIN</button>
+                </div>
+
+                <div class="result_main">
+                    <p class="result_label">Your type is :</p>
+                    <h2 class="result_title">POETIC SEONBI</h2>
+
+                    <div class="result_panel">
+                        <div class="panel_col">
+                            <h3 class="panel_head">Types with good chemistry</h3>
+                            <ul class="chemistry">
+                                <li><img src="test_asset/d.png" alt="D. Charming Traveler"></li>
+                                <li><img src="test_asset/a.png" alt="A. Dignified Seonbi"></li>
+                            </ul>
+
+                            <h3 class="panel_head">Drinking style of this type</h3>
+                            <ul class="result_desc">
+                                <li>Enjoy the mood of the table more than the drink itself.</li>
+                                <li>Know how to warm up a room without raising a voice.</li>
+                                <li>Scholar style who turns a night into a poem.</li>
+                            </ul>
+                            <p class="result_tags">
+                                <span>#MoodMaker</span><span>#GoodCompany</span><span>#SlowDrinker</span>
+                            </p>
+                        </div>
+
+                        <div class="panel_col">
+                            <h3 class="panel_head">Custom liquor for me</h3>
+                            <ul class="liquor">
+                                <li class="liquor_item">
+                                    <img class="liquor_bottle" src="../products/products_asset/img/peach_makgeolli.png"
+                                        alt="">
+                                    <div class="liquor_body">
+                                        <p class="liquor_name">Peach Makgeolli</p>
+                                        <dl class="liquor_stat">
+                                            <dt>Sweetness</dt>
+                                            <dd><i style="--v:80%"></i></dd>
+                                            <dt>Fizz</dt>
+                                            <dd><i style="--v:50%"></i></dd>
+                                            <dt>Body</dt>
+                                            <dd><i style="--v:45%"></i></dd>
+                                        </dl>
+                                    </div>
+                                </li>
+                                <li class="liquor_item">
+                                    <img class="liquor_bottle" src="../products/products_asset/img/draft_makgeolli.png"
+                                        alt="">
+                                    <div class="liquor_body">
+                                        <p class="liquor_name">Draft Makgeolli</p>
+                                        <dl class="liquor_stat">
+                                            <dt>Sweetness</dt>
+                                            <dd><i style="--v:45%"></i></dd>
+                                            <dt>Fizz</dt>
+                                            <dd><i style="--v:85%"></i></dd>
+                                            <dt>Body</dt>
+                                            <dd><i style="--v:40%"></i></dd>
+                                        </dl>
+                                    </div>
+                                </li>
+                            </ul>
+                            <a class="btn_more" href="../products/products.html">VIEW MORE</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="screen screen_result screen_dim" id="result_c">
+            <div class="result_card">
+                <div class="result_side">
+                    <img class="result_char" src="test_asset/c.png" alt="C. Gourmet Seonbi">
+                    <div class="result_actions">
+                        <button type="button" class="btn_save">SAVE IMAGE</button>
+                        <button type="button" class="btn_share">SHARE SNS</button>
+                    </div>
+                    <button type="button" class="btn_restart" data-next="intro">TRY AGAIN</button>
+                </div>
+
+                <div class="result_main">
+                    <p class="result_label">Your type is :</p>
+                    <h2 class="result_title">GOURMET SEONBI</h2>
+
+                    <div class="result_panel">
+                        <div class="panel_col">
+                            <h3 class="panel_head">Types with good chemistry</h3>
+                            <ul class="chemistry">
+                                <li><img src="test_asset/a.png" alt="A. Dignified Seonbi"></li>
+                                <li><img src="test_asset/f.png" alt="F. Legendary Drinker"></li>
+                            </ul>
+
+                            <h3 class="panel_head">Drinking style of this type</h3>
+                            <ul class="result_desc">
+                                <li>Pick the bottle before picking the place.</li>
+                                <li>Taste first, quantity later.</li>
+                                <li>Scholar style with a sharp palate for good liquor.</li>
+                            </ul>
+                            <p class="result_tags">
+                                <span>#FineTaste</span><span>#BottleCollector</span><span>#SlowSipper</span>
+                            </p>
+                        </div>
+
+                        <div class="panel_col">
+                            <h3 class="panel_head">Custom liquor for me</h3>
+                            <ul class="liquor">
+                                <li class="liquor_item">
+                                    <img class="liquor_bottle" src="../products/products_asset/img/chesnut_makgeolli.png"
+                                        alt="">
+                                    <div class="liquor_body">
+                                        <p class="liquor_name">Chestnut Makgeolli</p>
+                                        <dl class="liquor_stat">
+                                            <dt>Sweetness</dt>
+                                            <dd><i style="--v:55%"></i></dd>
+                                            <dt>Fizz</dt>
+                                            <dd><i style="--v:25%"></i></dd>
+                                            <dt>Body</dt>
+                                            <dd><i style="--v:85%"></i></dd>
+                                        </dl>
+                                    </div>
+                                </li>
+                                <li class="liquor_item">
+                                    <img class="liquor_bottle"
+                                        src="../products/products_asset/img/whitegrape_makgeolli.png" alt="">
+                                    <div class="liquor_body">
+                                        <p class="liquor_name">White Grape Makgeolli</p>
+                                        <dl class="liquor_stat">
+                                            <dt>Sweetness</dt>
+                                            <dd><i style="--v:75%"></i></dd>
+                                            <dt>Fizz</dt>
+                                            <dd><i style="--v:55%"></i></dd>
+                                            <dt>Body</dt>
+                                            <dd><i style="--v:40%"></i></dd>
+                                        </dl>
+                                    </div>
+                                </li>
+                            </ul>
+                            <a class="btn_more" href="../products/products.html">VIEW MORE</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="screen screen_result screen_dim" id="result_d">
+            <div class="result_card">
+                <div class="result_side">
+                    <img class="result_char" src="test_asset/d.png" alt="D. Charming Traveler">
+                    <div class="result_actions">
+                        <button type="button" class="btn_save">SAVE IMAGE</button>
+                        <button type="button" class="btn_share">SHARE SNS</button>
+                    </div>
+                    <button type="button" class="btn_restart" data-next="intro">TRY AGAIN</button>
+                </div>
+
+                <div class="result_main">
+                    <p class="result_label">Your type is :</p>
+                    <h2 class="result_title">CHARMING TRAVELER</h2>
+
+                    <div class="result_panel">
+                        <div class="panel_col">
+                            <h3 class="panel_head">Types with good chemistry</h3>
+                            <ul class="chemistry">
+                                <li><img src="test_asset/b.png" alt="B. Poetic Seonbi"></li>
+                                <li><img src="test_asset/e.png" alt="E. Feasting Wanderer"></li>
+                            </ul>
+
+                            <h3 class="panel_head">Drinking style of this type</h3>
+                            <ul class="result_desc">
+                                <li>The table gets louder the moment you sit down.</li>
+                                <li>Make a stranger a drinking buddy in five minutes.</li>
+                                <li>Traveler style who never drinks alone for long.</li>
+                            </ul>
+                            <p class="result_tags">
+                                <span>#PartyStarter</span><span>#EveryonesFriend</span><span>#LastToLeave</span>
+                            </p>
+                        </div>
+
+                        <div class="panel_col">
+                            <h3 class="panel_head">Custom liquor for me</h3>
+                            <ul class="liquor">
+                                <li class="liquor_item">
+                                    <img class="liquor_bottle"
+                                        src="../products/products_asset/img/strawberry_makgeolli.png" alt="">
+                                    <div class="liquor_body">
+                                        <p class="liquor_name">Strawberry Makgeolli</p>
+                                        <dl class="liquor_stat">
+                                            <dt>Sweetness</dt>
+                                            <dd><i style="--v:85%"></i></dd>
+                                            <dt>Fizz</dt>
+                                            <dd><i style="--v:45%"></i></dd>
+                                            <dt>Body</dt>
+                                            <dd><i style="--v:40%"></i></dd>
+                                        </dl>
+                                    </div>
+                                </li>
+                                <li class="liquor_item">
+                                    <img class="liquor_bottle" src="../products/products_asset/img/draft_makgeolli.png"
+                                        alt="">
+                                    <div class="liquor_body">
+                                        <p class="liquor_name">Draft Makgeolli</p>
+                                        <dl class="liquor_stat">
+                                            <dt>Sweetness</dt>
+                                            <dd><i style="--v:45%"></i></dd>
+                                            <dt>Fizz</dt>
+                                            <dd><i style="--v:85%"></i></dd>
+                                            <dt>Body</dt>
+                                            <dd><i style="--v:40%"></i></dd>
+                                        </dl>
+                                    </div>
+                                </li>
+                            </ul>
+                            <a class="btn_more" href="../products/products.html">VIEW MORE</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="screen screen_result screen_dim" id="result_e">
+            <div class="result_card">
+                <div class="result_side">
+                    <img class="result_char" src="test_asset/e.png" alt="E. Feasting Wanderer">
+                    <div class="result_actions">
+                        <button type="button" class="btn_save">SAVE IMAGE</button>
+                        <button type="button" class="btn_share">SHARE SNS</button>
+                    </div>
+                    <button type="button" class="btn_restart" data-next="intro">TRY AGAIN</button>
+                </div>
+
+                <div class="result_main">
+                    <p class="result_label">Your type is :</p>
+                    <h2 class="result_title">FEASTING WANDERER</h2>
+
+                    <div class="result_panel">
+                        <div class="panel_col">
+                            <h3 class="panel_head">Types with good chemistry</h3>
+                            <ul class="chemistry">
+                                <li><img src="test_asset/a.png" alt="A. Dignified Seonbi"></li>
+                                <li><img src="test_asset/d.png" alt="D. Charming Traveler"></li>
+                            </ul>
+
+                            <h3 class="panel_head">Drinking style of this type</h3>
+                            <ul class="result_desc">
+                                <li>Orders the food first, the drinks second.</li>
+                                <li>One more plate always beats one more round.</li>
+                                <li>Never gets drunk — too busy eating.</li>
+                            </ul>
+                            <p class="result_tags">
+                                <span>#SnackFirst</span><span>#OnePlateMore</span><span>#EatsTillLit</span>
+                            </p>
+                        </div>
+
+                        <div class="panel_col">
+                            <h3 class="panel_head">Custom liquor for me</h3>
+                            <ul class="liquor">
+                                <li class="liquor_item">
+                                    <img class="liquor_bottle" src="../products/products_asset/img/banana_makgeolli.png"
+                                        alt="">
+                                    <div class="liquor_body">
+                                        <p class="liquor_name">Banana Makgeolli</p>
+                                        <dl class="liquor_stat">
+                                            <dt>Sweetness</dt>
+                                            <dd><i style="--v:90%"></i></dd>
+                                            <dt>Fizz</dt>
+                                            <dd><i style="--v:35%"></i></dd>
+                                            <dt>Body</dt>
+                                            <dd><i style="--v:60%"></i></dd>
+                                        </dl>
+                                    </div>
+                                </li>
+                                <li class="liquor_item">
+                                    <img class="liquor_bottle"
+                                        src="../products/products_asset/img/whitegrape_makgeolli.png" alt="">
+                                    <div class="liquor_body">
+                                        <p class="liquor_name">White Grape Makgeolli</p>
+                                        <dl class="liquor_stat">
+                                            <dt>Sweetness</dt>
+                                            <dd><i style="--v:75%"></i></dd>
+                                            <dt>Fizz</dt>
+                                            <dd><i style="--v:55%"></i></dd>
+                                            <dt>Body</dt>
+                                            <dd><i style="--v:40%"></i></dd>
+                                        </dl>
+                                    </div>
+                                </li>
+                            </ul>
+                            <a class="btn_more" href="../products/products.html">VIEW MORE</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="screen screen_result screen_dim" id="result_f">
+            <div class="result_card">
+                <div class="result_side">
+                    <img class="result_char" src="test_asset/f.png" alt="F. Legendary Drinker">
+                    <div class="result_actions">
+                        <button type="button" class="btn_save">SAVE IMAGE</button>
+                        <button type="button" class="btn_share">SHARE SNS</button>
+                    </div>
+                    <button type="button" class="btn_restart" data-next="intro">TRY AGAIN</button>
+                </div>
+
+                <div class="result_main">
+                    <p class="result_label">Your type is :</p>
+                    <h2 class="result_title">LEGENDARY DRINKER</h2>
+
+                    <div class="result_panel">
+                        <div class="panel_col">
+                            <h3 class="panel_head">Types with good chemistry</h3>
+                            <ul class="chemistry">
+                                <li><img src="test_asset/c.png" alt="C. Gourmet Seonbi"></li>
+                                <li><img src="test_asset/d.png" alt="D. Charming Traveler"></li>
+                            </ul>
+
+                            <h3 class="panel_head">Drinking style of this type</h3>
+                            <ul class="result_desc">
+                                <li>The bottle empties before the night begins.</li>
+                                <li>Need no reason and no company to pour a glass.</li>
+                                <li>Traveler style the tavern still tells stories about.</li>
+                            </ul>
+                            <p class="result_tags">
+                                <span>#BottomlessGlass</span><span>#SoloRound</span><span>#TavernLegend</span>
+                            </p>
+                        </div>
+
+                        <div class="panel_col">
+                            <h3 class="panel_head">Custom liquor for me</h3>
+                            <ul class="liquor">
+                                <li class="liquor_item">
+                                    <img class="liquor_bottle" src="../products/products_asset/img/rice_makgeolli.png"
+                                        alt="">
+                                    <div class="liquor_body">
+                                        <p class="liquor_name">Rice Makgeolli</p>
+                                        <dl class="liquor_stat">
+                                            <dt>Sweetness</dt>
+                                            <dd><i style="--v:40%"></i></dd>
+                                            <dt>Fizz</dt>
+                                            <dd><i style="--v:30%"></i></dd>
+                                            <dt>Body</dt>
+                                            <dd><i style="--v:75%"></i></dd>
+                                        </dl>
+                                    </div>
+                                </li>
+                                <li class="liquor_item">
+                                    <img class="liquor_bottle" src="../products/products_asset/img/chesnut_makgeolli.png"
+                                        alt="">
+                                    <div class="liquor_body">
+                                        <p class="liquor_name">Chestnut Makgeolli</p>
+                                        <dl class="liquor_stat">
+                                            <dt>Sweetness</dt>
+                                            <dd><i style="--v:55%"></i></dd>
+                                            <dt>Fizz</dt>
+                                            <dd><i style="--v:25%"></i></dd>
+                                            <dt>Body</dt>
+                                            <dd><i style="--v:85%"></i></dd>
+                                        </dl>
+                                    </div>
+                                </li>
+                            </ul>
+                            <a class="btn_more" href="../products/products.html">VIEW MORE</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 문제 화면에서만 보이는 진행 표시 / 뒤로가기 -->
+        <button type="button" class="btn_back" id="btn_back" aria-label="이전 화면으로">← BACK</button>
+        <p class="progress" id="progress"><span id="progress_now">1</span> / 4</p>
+    </main>
+
+    <script src="test.js"></script>
 </body>
+
 </html>
