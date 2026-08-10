@@ -301,23 +301,43 @@
         btnBack.hidden = trail.length === 0;
     }
 
-    function go(next) {
+    function go(next, forwardWipeDir) {
         var id = resolve(next);
         if (!document.getElementById(id)) return;
 
-        trail.push(current);
+        /* Keep the actual route so BACK can replay that transition in reverse. */
+        trail.push({ id: current, wipeDir: forwardWipeDir || null });
         show(id);
+    }
+
+    function reverseWipeDir(dir) {
+        if (dir === 'ltr') return 'rtl';
+        if (dir === 'rtl') return 'ltr';
+        if (dir === 'ttb') return 'btt';
+        if (dir === 'btt') return 'ttb';
+        return null;
     }
 
     function back() {
         var prev = trail[trail.length - 1];
+        var reverseDir;
         if (!prev) return;
 
         /* BACK은 진행 방향을 되감듯 오른쪽에서 왼쪽으로 쓸며 이전 화면을 보여 줌 */
-        wipe.run('rtl', function () {
+        function restore() {
             trail.pop();
-            show(prev);
-        }, true);
+            show(prev.id);
+        }
+
+        reverseDir = reverseWipeDir(prev.wipeDir);
+
+        /* Only reverse a route that used a directional wipe in the first place. */
+        if (reverseDir) {
+            wipe.run(reverseDir, restore, true);
+            return;
+        }
+
+        restore();
     }
 
     function restart() {
@@ -358,7 +378,7 @@
 
         if (dir) {
             wipe.run(dir, function () {
-                go(next);
+                go(next, dir);
             });
             return;
         }

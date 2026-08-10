@@ -157,6 +157,15 @@ body {
     animation: wipe_out_bottom var(--wipe-reveal) var(--wipe-ease) both;
 }
 
+/* btt = below to above: reverse of the Q2 top-to-bottom wipe */
+.wipe[data-dir="btt"].is_cover {
+    animation: wipe_in_bottom var(--wipe-cover) var(--wipe-ease) both;
+}
+
+.wipe[data-dir="btt"].is_reveal {
+    animation: wipe_out_top var(--wipe-reveal) var(--wipe-ease) both;
+}
+
 @keyframes wipe_in_left {
     from {
         transform: translateX(-100%);
@@ -217,6 +226,26 @@ body {
     }
 }
 
+@keyframes wipe_in_bottom {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes wipe_out_top {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-100%);
+    }
+}
+
 /* 덮개가 도는 동안에는 화면끼리의 페이드를 끔 (덮개 뒤에서 조용히 갈아 끼워짐) */
 .test.is_wiping .screen {
     transition: none;
@@ -248,6 +277,14 @@ body {
 
 .test[data-wipe-dir="ttb"].is_wipe_reveal .screen.is_on {
     animation: screen_pull_from_top var(--wipe-reveal) var(--wipe-ease) both;
+}
+
+.test[data-wipe-dir="btt"].is_wipe_cover .screen.is_on {
+    animation: screen_push_up var(--wipe-cover) var(--wipe-ease) both;
+}
+
+.test[data-wipe-dir="btt"].is_wipe_reveal .screen.is_on {
+    animation: screen_pull_from_bottom var(--wipe-reveal) var(--wipe-ease) both;
 }
 
 @keyframes screen_push_right {
