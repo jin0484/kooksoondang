@@ -194,6 +194,75 @@
     })();
 
     /* ------------------------------------------------------------------
+       선택지 hover 그림 넘기기
+       Beer 위에 마우스를 올린 동안에만 맥주 프레임을 순서대로 돌린다.
+       마우스를 벗어나거나 화면을 이동하면 첫 프레임으로 되돌려, 다음 hover도
+       언제나 맥주.png부터 시작한다.
+    ------------------------------------------------------------------ */
+    var hoverFlipbook = (function () {
+        var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var active = [];
+
+        function frames(img) {
+            return (img.getAttribute('data-hover-frames') || '').split(',').map(function (src) {
+                return src.trim();
+            }).filter(Boolean);
+        }
+
+        function reset(img) {
+            var list = frames(img);
+            if (list.length) img.src = list[0];
+        }
+
+        function stop(button) {
+            active = active.filter(function (item) {
+                if (button && item.button !== button) return true;
+
+                window.clearInterval(item.timer);
+                reset(item.img);
+                return false;
+            });
+        }
+
+        function start(button) {
+            var selector = button.getAttribute('data-hover-animate');
+            var screen = button.closest('.screen');
+            var img = screen && selector ? screen.querySelector(selector) : null;
+            var list = img && frames(img);
+
+            if (reduced || !list || list.length < 2) return;
+
+            stop(button);
+
+            var index = 0;
+            var step = Number(img.getAttribute('data-hover-frame-ms')) || 220;
+            var timer = window.setInterval(function () {
+                index = (index + 1) % list.length;
+                img.src = list[index];
+            }, step);
+
+            active.push({ button: button, img: img, timer: timer });
+        }
+
+        /* 그림이 보이는 시점에 미리 불러 둬 첫 hover가 끊기지 않게 함. */
+        [].forEach.call(document.querySelectorAll('[data-hover-frames]'), function (img) {
+            frames(img).forEach(function (src) {
+                var preload = new Image();
+                preload.src = src;
+            });
+        });
+
+        [].forEach.call(test.querySelectorAll('[data-hover-animate]'), function (button) {
+            button.addEventListener('mouseenter', function () { start(button); });
+            button.addEventListener('mouseleave', function () { stop(button); });
+            button.addEventListener('focus', function () { start(button); });
+            button.addEventListener('blur', function () { stop(button); });
+        });
+
+        return { stopAll: function () { stop(); } };
+    })();
+
+    /* ------------------------------------------------------------------
        쓸고 지나가는 화면 전환
        덮개가 한쪽 끝에서 들어와 화면을 다 덮은 순간에 화면을 갈아 끼우고,
        방향을 되돌리지 않고 그대로 반대쪽으로 빠져나가며 새 화면을 드러냄.
@@ -275,6 +344,7 @@
         });
 
         flipbook.stop();
+        hoverFlipbook.stopAll();
 
         target.classList.add('is_on');
         current = id;

@@ -121,13 +121,15 @@
                 Welcome, traveler.<br>Thanks for coming all this way.<br><br>
                 Drinking alone today, or with companions?
             </p>
+            <img class="mate_preview mate_preview_alone" src="test_asset/양반혼자.png" alt="" aria-hidden="true">
+            <img class="mate_preview mate_preview_together" src="test_asset/양반같이.png" alt="" aria-hidden="true">
             <!-- data-wipe="ttb": 위에서 아래로 쓸어 내리며 넘어감 -->
             <div class="choices">
-                <button type="button" class="choice" data-set="mate:alone" data-next="cut_yangban_alone"
+                <button type="button" class="choice" data-set="mate:alone" data-next="q3_yangban"
                     data-wipe="ttb">
                     I want to enjoy alone.
                 </button>
-                <button type="button" class="choice" data-set="mate:together" data-next="cut_yangban_together"
+                <button type="button" class="choice" data-set="mate:together" data-next="q3_yangban"
                     data-wipe="ttb">
                     I want to enjoy with my friends
                 </button>
@@ -141,41 +143,24 @@
             </p>
             <!-- data-wipe="ttb": 위에서 아래로 쓸어 내리며 넘어감 -->
             <div class="choices">
-                <button type="button" class="choice" data-set="mate:alone" data-next="cut_pyeongmin_alone"
+                <button type="button" class="choice" data-set="mate:alone" data-next="q3_pyeongmin"
                     data-wipe="ttb">
                     I want to enjoy alone.
                 </button>
-                <button type="button" class="choice" data-set="mate:together" data-next="cut_pyeongmin_together"
+                <button type="button" class="choice" data-set="mate:together" data-next="q3_pyeongmin"
                     data-wipe="ttb">
                     I want to enjoy with my friends
                 </button>
             </div>
         </section>
 
-        <!-- ---------- 동행 선택 후 전환 컷 ---------- -->
-        <!-- 인물 그림은 배경과 같은 1920x1080 판이라 그대로 겹쳐 두면 제자리에 앉음 -->
-        <section class="screen screen_cut screen_dim" id="cut_yangban_alone" data-next="q3_yangban">
-            <img class="cut_actor" src="test_asset/Yangban_solo.png" alt="">
-            <p class="cut_caption">양반 - 혼자 선택 시</p>
-        </section>
-        <section class="screen screen_cut screen_dim" id="cut_yangban_together" data-next="q3_yangban">
-            <img class="cut_actor" src="test_asset/Yangban_with.png" alt="">
-            <p class="cut_caption">양반 - 함께 선택 시</p>
-        </section>
-        <section class="screen screen_cut screen_dim" id="cut_pyeongmin_alone" data-next="q3_pyeongmin">
-            <img class="cut_actor" src="test_asset/Pyeongmin_solo.png" alt="">
-            <p class="cut_caption">평민 - 혼자 선택 시</p>
-        </section>
-        <section class="screen screen_cut screen_dim" id="cut_pyeongmin_together" data-next="q3_pyeongmin">
-            <img class="cut_actor" src="test_asset/Pyeongmin_with.png" alt="">
-            <p class="cut_caption">평민 - 함께 선택 시</p>
-        </section>
-
         <!-- ===================== Q3. 술 종류 ===================== -->
         <section class="screen screen_question screen_dim" id="q3_yangban" data-step="3">
             <!-- 배경 그림 위 탁자에 올려 두는 술. 자리 잡는 법은 test.css 의 .stage / .drink 참고 -->
             <div class="stage" aria-hidden="true">
-                <img class="drink drink_beer" src="test_asset/맥주.png" alt="">
+                <img class="drink drink_beer" src="test_asset/맥주.png" alt=""
+                    data-hover-frames="test_asset/맥주.png, test_asset/맥주1.png, test_asset/맥주2.png, test_asset/맥주3.png"
+                    data-hover-frame-ms="220">
                 <img class="drink drink_whiskey" src="test_asset/위스키.png" alt="">
                 <img class="drink drink_wine" src="test_asset/와인.png" alt="">
                 <img class="drink drink_wineglass" src="test_asset/와인잔.png" alt="">
@@ -184,15 +169,18 @@
 
             <p class="question">What type of drink do you prefer?</p>
             <div class="choices">
-                <button type="button" class="choice" data-set="drink:beer" data-next="cut_beer">Beer</button>
-                <button type="button" class="choice" data-set="drink:wine" data-next="cut_wine">Whiskey / Wine</button>
-                <button type="button" class="choice" data-set="drink:cocktail" data-next="cut_cocktail">Cocktail</button>
+                <button type="button" class="choice" data-set="drink:beer" data-next="q4" data-wipe="ttb"
+                    data-hover-animate=".drink_beer">Beer</button>
+                <button type="button" class="choice" data-set="drink:wine" data-next="q4" data-wipe="ttb">Whiskey / Wine</button>
+                <button type="button" class="choice" data-set="drink:cocktail" data-next="q4" data-wipe="ttb">Cocktail</button>
             </div>
         </section>
 
         <section class="screen screen_question screen_dim" id="q3_pyeongmin" data-step="3">
             <div class="stage" aria-hidden="true">
-                <img class="drink drink_beer" src="test_asset/맥주.png" alt="">
+                <img class="drink drink_beer" src="test_asset/맥주.png" alt=""
+                    data-hover-frames="test_asset/맥주.png, test_asset/맥주1.png, test_asset/맥주2.png, test_asset/맥주3.png"
+                    data-hover-frame-ms="220">
                 <img class="drink drink_whiskey" src="test_asset/위스키.png" alt="">
                 <img class="drink drink_wine" src="test_asset/와인.png" alt="">
                 <img class="drink drink_wineglass" src="test_asset/와인잔.png" alt="">
@@ -201,21 +189,11 @@
 
             <p class="question">What type of drink do you prefer?</p>
             <div class="choices">
-                <button type="button" class="choice" data-set="drink:beer" data-next="cut_beer">Beer</button>
-                <button type="button" class="choice" data-set="drink:wine" data-next="cut_wine">Whiskey / Wine</button>
-                <button type="button" class="choice" data-set="drink:cocktail" data-next="cut_cocktail">Cocktail</button>
+                <button type="button" class="choice" data-set="drink:beer" data-next="q4" data-wipe="ttb"
+                    data-hover-animate=".drink_beer">Beer</button>
+                <button type="button" class="choice" data-set="drink:wine" data-next="q4" data-wipe="ttb">Whiskey / Wine</button>
+                <button type="button" class="choice" data-set="drink:cocktail" data-next="q4" data-wipe="ttb">Cocktail</button>
             </div>
-        </section>
-
-        <!-- ---------- 술 선택 후 전환 컷 (신분 공용, 다음 화면은 test.js 가 신분 보고 결정) ---------- -->
-        <section class="screen screen_cut" id="cut_beer" data-next="q4">
-            <p class="cut_caption">맥주 선택 시</p>
-        </section>
-        <section class="screen screen_cut" id="cut_wine" data-next="q4">
-            <p class="cut_caption">위스키 / 와인 선택 시</p>
-        </section>
-        <section class="screen screen_cut" id="cut_cocktail" data-next="q4">
-            <p class="cut_caption">칵테일 선택 시</p>
         </section>
 
         <!-- ===================== Q4. 안주 ===================== -->

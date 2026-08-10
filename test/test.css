@@ -37,9 +37,6 @@ body {
     --wipe-cover: 620ms;
     --wipe-reveal: 620ms;
     --wipe-ease: cubic-bezier(0.65, 0, 0.35, 1);
-    /* 테스트 흐름의 주요 버튼을 공통으로 내리는 거리 */
-    --button-drop: 100px;
-
     position: relative;
     width: 100%;
     min-height: 100vh;
@@ -340,6 +337,26 @@ body {
 @keyframes screen_pull_from_top {
     from {
         transform: translateY(-12%);
+    }
+
+    to {
+        transform: none;
+    }
+}
+
+@keyframes screen_push_up {
+    from {
+        transform: none;
+    }
+
+    to {
+        transform: translateY(-12%);
+    }
+}
+
+@keyframes screen_pull_from_bottom {
+    from {
+        transform: translateY(12%);
     }
 
     to {
@@ -892,14 +909,10 @@ body {
     background-image: url("test_asset/background1.png");
 }
 
-/* 주막 실내. 좌우 가구까지 다 보여야 해서 잘라내지 않고 통째로 맞춰 넣음.
-   화면 비율이 그림(16:9)과 다를 때 남는 자리는 어두운 여백으로 둠.
-   양반 갈래 전환 컷 두 장도 같은 그림을 씀 */
+/* 주막 실내. 양반 질문 화면에서 같은 배경을 씀. */
 #q2_yangban,
 #q3_yangban,
-#q4_yangban,
-#cut_yangban_alone,
-#cut_yangban_together {
+#q4_yangban {
     background-size: cover;
     background-image: url("test_asset/Yangban_background.png");
 }
@@ -911,12 +924,16 @@ body {
     justify-content: center;
 }
 
-/* 평민 갈래는 주막 마당. 같은 방식으로 문제 화면과 전환 컷들이 함께 씀 */
+/* Q2 동행 선택 박스만 기본 위치보다 60px 아래로 배치 */
+#q2_yangban .choices,
+#q2_pyeongmin .choices {
+    translate: 0 60px;
+}
+
+/* 평민 갈래는 주막 마당. 평민 질문 화면에서 같은 배경을 씀. */
 #q2_pyeongmin,
 #q3_pyeongmin,
-#q4_pyeongmin,
-#cut_pyeongmin_alone,
-#cut_pyeongmin_together {
+#q4_pyeongmin {
     background-size: cover;
     background-image: url("test_asset/Pyeongmin_back.png");
 }
@@ -950,6 +967,47 @@ body {
 .screen_dim>* {
     position: relative;
     z-index: 1;
+}
+
+/* Q2 양반 경로에서 동행 선택을 미리 보여 주는 인물 그림.
+   배경과 같은 16:9 캔버스라 cover로 겹치면 원래 전환 컷과 같은 자리에 놓임. */
+#q2_yangban>.mate_preview {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    /* 기존 표시 크기(80%)에서 20% 키운 96% */
+    transform: scale(0.96);
+    transform-origin: center bottom;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#q2_yangban>.question,
+#q2_yangban>.choices {
+    z-index: 2;
+}
+
+#q2_yangban:has(.choice[data-set="mate:alone"]:focus-visible) .mate_preview_alone,
+#q2_yangban:has(.choice[data-set="mate:together"]:focus-visible) .mate_preview_together {
+    opacity: 1;
+}
+
+@media (hover: hover) {
+    #q2_yangban:has(.choice[data-set="mate:alone"]:hover) .mate_preview_alone,
+    #q2_yangban:has(.choice[data-set="mate:together"]:hover) .mate_preview_together {
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #q2_yangban>.mate_preview {
+        transition: none;
+    }
 }
 
 /* ---------- 배경 그림 위에 물건 올리기 ---------- */
@@ -1088,23 +1146,6 @@ body {
    (마크업은 남겨 둬야 파일에서 컷을 구분하기 쉬움) */
 .cut_caption {
     display: none;
-}
-
-/* 전환 컷의 인물 그림. 배경과 같은 1920x1080 판이라
-   object-fit: cover 로 배경(background-size: cover)과 같은 기준을 사용함.
-   어두운 막(z-index 0) 위로 올려서 인물만 또렷하게 남김.
-   .screen_dim>* 규칙보다 뒤에 둬야 position 을 뺏기지 않음 */
-.cut_actor {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    transform: scale(0.8);
-    transform-origin: center bottom;
-    pointer-events: none;
 }
 
 /* ===================== 결과 ===================== */
@@ -1406,17 +1447,6 @@ body {
 
 .btn_more:hover {
     filter: brightness(1.15);
-}
-
-/* 인트로·문항·결과의 주요 버튼은 현재 자리에서 100px 아래에 둠.
-   translate를 써서 각 버튼의 hover transform은 그대로 유지함 */
-.intro_actions,
-.picks,
-.screen_question .choices,
-.result_actions,
-.screen_result .btn_restart,
-.screen_result .btn_more {
-    translate: 0 var(--button-drop);
 }
 
 /* ===================== 진행 표시 / 뒤로가기 ===================== */
