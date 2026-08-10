@@ -40,14 +40,20 @@
                 </div>
             </div>
 
-            <!-- NO 를 눌렀을 때 -->
-            <div class="age_gate_view" data-view="deny" hidden>
-                <h1 class="age_gate_title">Please come back later</h1>
-                <p class="age_gate_desc">
-                    You must be 19 or older to enter.<br>
-                    See you next time!
-                </p>
-                <button type="button" class="age_gate_back" data-answer="back">Choose again</button>
+            <!-- NO 를 눌렀을 때. 글은 왼쪽에 몰아 두고 오른쪽에 캐릭터를 세움 -->
+            <div class="age_gate_view age_gate_deny" data-view="deny" hidden>
+                <div class="age_gate_deny_text">
+                    <h1 class="age_gate_title">Please come back later</h1>
+                    <p class="age_gate_desc">
+                        You must be 19 or older to enter.<br>
+                        See you next time!
+                    </p>
+                    <button type="button" class="age_gate_back" data-answer="back">Choose again</button>
+                </div>
+
+                <!-- 파일 이름에 띄어쓰기가 있어 %20 으로 적어 둠 -->
+                <img class="age_gate_deny_character" src="test/test_asset/주먹쥔_화난%201.png" alt=""
+                    aria-hidden="true">
             </div>
         </div>
 

@@ -328,14 +328,28 @@ body {
     /* 할머니 크기·서는 자리·걷는 시간.
        말풍선이 같은 값으로 자리를 잡아야 해서 화면에 올려 둠 */
     --walker-size: clamp(260px, 31.2vw, 520px);
-    --walker-shift: 500px;
     --walker-walk: 5s;
+
+    /* 왼쪽 글과 오른쪽 할머니가 같이 쓰는 좌우 여백 */
+    --intro-gutter: 8vw;
+
+    /*
+      할머니가 서는 자리를 여백에 맞춰 계산한다.
+
+      할머니 그림은 4000x4000 정사각형인데 실제 몸은 가로 21.5~75.5% 자리만
+      차지한다. 그래서 상자를 오른쪽 끝에 맞추면 남는 투명 여백 24.5% 가
+      그대로 오른쪽 여백에 더해져 왼쪽보다 훨씬 넓어 보인다.
+      몸의 오른쪽 끝(상자 기준 75.5%)이 여백 선에 닿도록 그만큼 당겨 준다.
+
+        몸 오른쪽 끝 = 50vw + shift + 0.255 * 폭   ->   100vw - 여백
+    */
+    --walker-shift: calc(50vw - var(--intro-gutter) - var(--walker-size) * 0.255);
 
     justify-content: center;
     align-items: flex-start;
     background: var(--makgeolli_light4, #FAF8F7);
     color: var(--bekseju_darker_warm, #272625);
-    padding-left: 8%;
+    padding-left: var(--intro-gutter);
 }
 
 /* 오른쪽 화면 밖에서 걸어 들어와 가운데에서 멈추는 할머니.
@@ -1396,8 +1410,9 @@ body {
         padding: 72px 32px;
     }
 
+    /* 여백만 바꾸면 할머니 서는 자리도 같이 따라옴 */
     .screen_intro {
-        padding-left: 32px;
+        --intro-gutter: 32px;
     }
 
     .intro_title {
@@ -1424,6 +1439,14 @@ body {
     .screen {
         gap: 28px;
         padding: 96px 20px 64px;
+    }
+
+    /* 위 .screen 규칙이 뒤에 있어 padding-left 를 덮어쓰므로 여기서 다시 잡아 줌.
+       여백 값을 하나로 둬야 할머니 서는 자리도 같은 선에 맞음 */
+    .screen_intro {
+        --intro-gutter: 20px;
+
+        padding-left: var(--intro-gutter);
     }
 
     .intro_title {

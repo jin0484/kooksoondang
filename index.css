@@ -161,6 +161,31 @@ button {
     display: none;
 }
 
+/* 거절 화면만 가로 두 칸. 왼쪽은 글(왼쪽 정렬), 오른쪽은 캐릭터.
+   질문 화면(data-view="ask")은 지금처럼 가운데 정렬 그대로 둠 */
+.age_gate_deny {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: clamp(1.5rem, 5vw, 4rem);
+    width: min(100%, 56rem);
+    /* .age_gate_inner 의 가운데 정렬을 여기서만 되돌림 */
+    text-align: left;
+}
+
+.age_gate_deny_text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: clamp(1.75rem, 3.5vw, 2.75rem);
+}
+
+.age_gate_deny_character {
+    flex: none;
+    width: clamp(8rem, 17vw, 15rem);
+    height: auto;
+}
+
 @keyframes age_gate_view_in {
     from {
         opacity: 0;
@@ -302,6 +327,18 @@ button {
 
     .age_gate_actions {
         gap: 1rem;
+    }
+
+    /* 좁은 화면에서는 글과 캐릭터를 나란히 두면 글이 눌려서 위아래로 쌓음 */
+    .age_gate_deny {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+    }
+
+    .age_gate_deny_character {
+        align-self: center;
+        width: 8rem;
     }
 
     .age_gate_btn {
