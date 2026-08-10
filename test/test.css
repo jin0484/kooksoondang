@@ -270,23 +270,52 @@ body {
         transform 640ms cubic-bezier(0.165, 0.84, 0.44, 1) calc(var(--intro-desc-start) + var(--type-delay, 0ms));
 }
 
-.btn_start {
+/* 시작 버튼과 메인으로 나가는 링크를 한 줄에 둠 */
+.intro_actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     margin-top: 40px;
+}
+
+/* 두 버튼은 테두리/배경만 다르고 크기·모서리·글씨는 같음 */
+.btn_start,
+.btn_home {
     padding: 12px 28px;
-    border: 0;
+    border: 1px solid transparent;
     /* 위 모서리는 4px, 아래 모서리는 28px */
     border-radius: 4px 4px 28px 28px;
-    background: var(--kooksoondang_orange, #F29556);
-    color: var(--makgeolli_White, #FFF);
     font: var(--PC-Body_Small_14SB);
     letter-spacing: 1px;
     cursor: pointer;
-    transition: transform 0.2s, filter 0.2s;
+    transition: transform 0.2s, filter 0.2s, background-color 0.2s, color 0.2s;
 }
 
-.btn_start:hover {
+.btn_start {
+    background: var(--kooksoondang_orange, #F29556);
+    color: var(--makgeolli_White, #FFF);
+}
+
+/* 메인으로 가는 쪽은 시작 버튼보다 한 걸음 물러난 선 버튼 */
+.btn_home {
+    display: inline-block;
+    border-color: var(--kooksoondang_orange, #F29556);
+    background: transparent;
+    color: var(--kooksoondang_orange, #F29556);
+    text-decoration: none;
+}
+
+.btn_start:hover,
+.btn_home:hover,
+.btn_home:focus-visible {
     transform: translateY(-2px);
     filter: brightness(1.05);
+}
+
+.btn_home:hover,
+.btn_home:focus-visible {
+    background: var(--kooksoondang_orange, #F29556);
+    color: var(--makgeolli_White, #FFF);
 }
 
 /* ===================== 문제 화면 ===================== */
@@ -513,18 +542,15 @@ body {
 
 /* 배경 그림 위에 어두운 막을 한 겹 깖.
    그림과 인물이 같은 연한 색이라 겹쳐 보이던 걸, 그림만 뒤로 물러나게 해서 갈라 놓음.
-   위·아래를 조금 더 진하게 해서 질문과 답 상자가 놓이는 자리를 눌러 줌 */
+   화면 전체에 --bekseju_darker_cold(#232323) 를 80% 로 균일하게 덮음 */
 .screen_dim::before {
     content: "";
     position: absolute;
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    background: linear-gradient(180deg,
-            rgba(36, 26, 21, 0.66) 0%,
-            rgba(36, 26, 21, 0.44) 40%,
-            rgba(36, 26, 21, 0.44) 62%,
-            rgba(36, 26, 21, 0.62) 100%);
+    background: var(--bekseju_darker_cold, #232323);
+    opacity: 0.8;
 }
 
 /* 어두운 막 위로 내용이 올라오게 */

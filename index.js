@@ -9,24 +9,13 @@
     if (!intro || !gate) return;
 
     const views = gate.querySelectorAll('.age_gate_view');
-    const bubble = gate.querySelector('.age_gate_bubble');
-    const character = gate.querySelector('.age_gate_character');
-    const characterImage = character?.querySelector('img');
     // YES 를 눌렀을 때 갈 곳. 마크업에 적어 두고 여기서 읽음
     const passTarget = gate.dataset.pass;
-
-    // 화면마다 캐릭터가 건네는 말이 달라짐
-    const bubbleText = {
-        ask: 'Wanna come inside?',
-        deny: 'Come back when you are older!',
-    };
 
     function showView(name) {
         views.forEach((view) => {
             view.hidden = view.dataset.view !== name;
         });
-
-        if (bubble && bubbleText[name]) bubble.textContent = bubbleText[name];
 
         // 화면이 바뀌면 그 화면의 첫 버튼으로 초점을 옮겨 키보드로도 이어서 쓸 수 있게 함
         const current = gate.querySelector(`.age_gate_view[data-view="${name}"]`);
@@ -56,17 +45,6 @@
 
     // Skip 은 영상만 건너뜀. 인증은 거쳐야 하므로 인증 화면으로 보냄
     skip?.addEventListener('click', openGate);
-
-    // 그림 파일이 아직 없으면 깨진 아이콘이 남으므로 캐릭터 묶음을 통째로 감춤.
-    // 이 스크립트가 읽히기 전에 이미 실패했을 수도 있어서 지금 상태도 함께 살핌
-    function hideCharacter() {
-        if (character) character.hidden = true;
-    }
-
-    if (characterImage) {
-        characterImage.addEventListener('error', hideCharacter);
-        if (characterImage.complete && characterImage.naturalWidth === 0) hideCharacter();
-    }
 
     gate.addEventListener('click', (event) => {
         const button = event.target instanceof Element
