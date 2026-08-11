@@ -1718,12 +1718,6 @@ body {
         padding: 96px 20px 64px;
     }
 
-    /* Keep the companion-choice background static on touch screens. */
-    #q2_yangban>.mate_preview,
-    #q2_pyeongmin>.mate_preview {
-        display: none;
-    }
-
     /* 위 .screen 규칙이 뒤에 있어 padding-left 를 덮어쓰므로 여기서 다시 잡아 줌.
        여백 값을 하나로 둬야 할머니 서는 자리도 같은 선에 맞음 */
     .screen_intro {
@@ -1739,12 +1733,6 @@ body {
             0
             6rem
             var(--intro-gutter);
-    }
-
-    .intro_bubble {
-        bottom: calc(var(--walker-bottom, 0px) + var(--walker-size) * 0.82);
-        transform:
-            translateX(calc(var(--walker-end) + var(--walker-size) * 0.12 - 100px));
     }
 
     .intro_title {
