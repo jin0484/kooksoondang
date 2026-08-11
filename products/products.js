@@ -72,6 +72,46 @@
         document.querySelector('[data-view-details]');
 
 
+    const tabletCarousel =
+        document.querySelector(
+            '[data-tablet-product-carousel]'
+        );
+
+
+    const tabletPreviousButton =
+        document.querySelector(
+            '[data-tablet-product-previous]'
+        );
+
+
+    const tabletNextButton =
+        document.querySelector(
+            '[data-tablet-product-next]'
+        );
+
+
+    const tabletPagination =
+        document.querySelector(
+            '[data-tablet-product-pagination]'
+        );
+
+
+    const tabletCarouselQuery =
+        window.matchMedia(
+            '(min-width: 768px) and (max-width: 1024px)'
+        );
+
+
+    const TABLET_PRODUCTS_PER_PAGE = 4;
+
+
+    let tabletPageIndex = 0;
+
+    let tabletVisibleSignature = '';
+
+    let tabletCarouselFrame = 0;
+
+
     const showcase =
         document.getElementById('product_showcase');
 
@@ -205,6 +245,8 @@
 
         let visibleCount = 0;
 
+        const visibleCards = [];
+
 
         cards.forEach((card) => {
 
@@ -217,6 +259,8 @@
 
             if (isVisible) {
                 visibleCount += 1;
+
+                visibleCards.push(card);
             }
 
         });
@@ -226,6 +270,257 @@
             emptyMessage.hidden =
                 visibleCount > 0;
         }
+
+
+        renderTabletCarousel(
+            visibleCards
+        );
+    }
+
+
+    function setTabletCardVisibility(
+        card,
+        isPageHidden
+    ) {
+
+        card.classList.toggle(
+            'is_tablet_page_hidden',
+            isPageHidden
+        );
+
+
+        if ('inert' in card) {
+            card.inert = isPageHidden;
+        }
+
+
+        if (isPageHidden) {
+            card.setAttribute(
+                'aria-hidden',
+                'true'
+            );
+
+            return;
+        }
+
+
+        card.removeAttribute('aria-hidden');
+    }
+
+
+    function renderTabletPagination(
+        pageCount
+    ) {
+
+        if (!tabletPagination) return;
+
+
+        tabletPagination.replaceChildren();
+
+
+        for (
+            let pageIndex = 0;
+            pageIndex < pageCount;
+            pageIndex += 1
+        ) {
+
+            const button =
+                document.createElement('button');
+
+
+            const isActive =
+                pageIndex === tabletPageIndex;
+
+
+            button.type = 'button';
+
+            button.className =
+                'tablet_product_page_dot';
+
+            button.classList.toggle(
+                'is_active',
+                isActive
+            );
+
+            button.dataset.tabletProductPage =
+                String(pageIndex);
+
+            button.setAttribute(
+                'aria-label',
+                `Show product page ${pageIndex + 1}`
+            );
+
+            button.setAttribute(
+                'aria-current',
+                String(isActive)
+            );
+
+
+            tabletPagination.append(button);
+        }
+    }
+
+
+    function renderTabletCarousel(
+        visibleCards
+    ) {
+
+        if (!tabletCarousel) return;
+
+
+        const isTablet =
+            tabletCarouselQuery.matches;
+
+
+        if (!isTablet) {
+
+            cards.forEach((card) => {
+                setTabletCardVisibility(
+                    card,
+                    false
+                );
+            });
+
+
+            tabletCarousel.classList.remove(
+                'has_tablet_pages'
+            );
+
+
+            if (tabletPreviousButton) {
+                tabletPreviousButton.hidden = true;
+            }
+
+
+            if (tabletNextButton) {
+                tabletNextButton.hidden = true;
+            }
+
+
+            if (tabletPagination) {
+                tabletPagination.hidden = true;
+                tabletPagination.replaceChildren();
+            }
+
+
+            return;
+        }
+
+
+        const visibleSignature =
+            visibleCards
+                .map(
+                    (card) =>
+                        card.dataset.product || ''
+                )
+                .join('|');
+
+
+        if (
+            visibleSignature !==
+            tabletVisibleSignature
+        ) {
+            tabletPageIndex = 0;
+            tabletVisibleSignature = visibleSignature;
+        }
+
+
+        const pageCount = Math.max(
+            1,
+            Math.ceil(
+                visibleCards.length /
+                TABLET_PRODUCTS_PER_PAGE
+            )
+        );
+
+
+        tabletPageIndex = Math.min(
+            tabletPageIndex,
+            pageCount - 1
+        );
+
+
+        const hasMultiplePages =
+            pageCount > 1;
+
+
+        cards.forEach((card) => {
+
+            const visibleIndex =
+                visibleCards.indexOf(card);
+
+
+            const isPageHidden =
+                visibleIndex >= 0 &&
+                Math.floor(
+                    visibleIndex /
+                    TABLET_PRODUCTS_PER_PAGE
+                ) !== tabletPageIndex;
+
+
+            setTabletCardVisibility(
+                card,
+                isPageHidden
+            );
+        });
+
+
+        tabletCarousel.classList.toggle(
+            'has_tablet_pages',
+            hasMultiplePages
+        );
+
+
+        if (tabletPreviousButton) {
+            tabletPreviousButton.hidden =
+                !hasMultiplePages;
+
+            tabletPreviousButton.disabled =
+                tabletPageIndex === 0;
+        }
+
+
+        if (tabletNextButton) {
+            tabletNextButton.hidden =
+                !hasMultiplePages;
+
+            tabletNextButton.disabled =
+                tabletPageIndex === pageCount - 1;
+        }
+
+
+        if (tabletPagination) {
+            tabletPagination.hidden =
+                !hasMultiplePages;
+
+            if (hasMultiplePages) {
+                renderTabletPagination(pageCount);
+            } else {
+                tabletPagination.replaceChildren();
+            }
+        }
+    }
+
+
+    function scheduleTabletCarouselRender() {
+
+        if (tabletCarouselFrame) return;
+
+
+        tabletCarouselFrame =
+            window.requestAnimationFrame(
+                () => {
+
+                    tabletCarouselFrame = 0;
+
+
+                    renderTabletCarousel(
+                        cards.filter(
+                            (card) => !card.hidden
+                        )
+                    );
+                }
+            );
     }
 
 
@@ -531,6 +826,107 @@
     );
 
 
+    tabletPreviousButton?.addEventListener(
+        'click',
+        () => {
+
+            if (
+                !tabletCarouselQuery.matches ||
+                tabletPageIndex === 0
+            ) {
+                return;
+            }
+
+
+            tabletPageIndex -= 1;
+
+
+            renderTabletCarousel(
+                cards.filter(
+                    (card) => !card.hidden
+                )
+            );
+        }
+    );
+
+
+    tabletNextButton?.addEventListener(
+        'click',
+        () => {
+
+            if (!tabletCarouselQuery.matches) {
+                return;
+            }
+
+
+            tabletPageIndex += 1;
+
+
+            renderTabletCarousel(
+                cards.filter(
+                    (card) => !card.hidden
+                )
+            );
+        }
+    );
+
+
+    tabletPagination?.addEventListener(
+        'click',
+        (event) => {
+
+            const button =
+                event.target.closest(
+                    '[data-tablet-product-page]'
+                );
+
+
+            if (
+                !button ||
+                !tabletCarouselQuery.matches
+            ) {
+                return;
+            }
+
+
+            tabletPageIndex = Number(
+                button.dataset.tabletProductPage
+            );
+
+
+            renderTabletCarousel(
+                cards.filter(
+                    (card) => !card.hidden
+                )
+            );
+        }
+    );
+
+
+    if (
+        typeof tabletCarouselQuery.addEventListener ===
+        'function'
+    ) {
+        tabletCarouselQuery.addEventListener(
+            'change',
+            scheduleTabletCarouselRender
+        );
+    } else {
+        tabletCarouselQuery.addListener(
+            scheduleTabletCarouselRender
+        );
+    }
+
+
+    window.addEventListener(
+        'resize',
+        scheduleTabletCarouselRender,
+        {
+            passive: true
+        }
+    );
+
+
     renderProducts();
 
 })();
@@ -620,6 +1016,12 @@
     const prefersReducedMotion =
         window.matchMedia(
             '(prefers-reduced-motion: reduce)'
+        ).matches;
+
+
+    const isMobileHero =
+        window.matchMedia(
+            '(max-width: 767px)'
         ).matches;
 
 
@@ -821,7 +1223,7 @@
 
     /* 백세주 */
 
-    if (center) {
+    if (center && !isMobileHero) {
 
         introTl.fromTo(
             center,
@@ -934,6 +1336,16 @@
     }
 
 
+    /* Mobile uses its own pinned scroll sequence below. */
+    if (
+        window.matchMedia(
+            '(max-width: 767px)'
+        ).matches
+    ) {
+        return;
+    }
+
+
     /* =========================================
        다음 콘텐츠는 원래 위치 그대로
 
@@ -978,24 +1390,9 @@
 
 
     /*
-     * 중앙 백세주는 css 에서 translate(-50%, -50%) 로
-     * 가운데를 잡고 있음.
-     * gsap 이 transform 을 넘겨받을 때 그 값을 잃지 않도록
-     * 같은 값을 gsap 방식으로 먼저 심어 둠
+     * CSS individual translate owns horizontal centering. GSAP only animates
+     * the bottle's vertical entry and scale.
      */
-    if (centerBottle) {
-
-        gsap.set(
-            centerBottle,
-
-            {
-                xPercent: -50,
-
-                yPercent: -50
-            }
-        );
-
-    }
 
 
     /* 잠겨 있는 동안 들어오는 스크롤 입력을 전부 막음 */
@@ -1209,6 +1606,232 @@
     /* =========================================
        로딩 후 ScrollTrigger 재계산
     ========================================= */
+
+    window.addEventListener(
+        'load',
+
+        () => {
+
+            ScrollTrigger.refresh();
+
+        },
+
+        {
+            once: true
+        }
+    );
+
+})();
+
+
+/* =========================================================
+   4-1. Mobile Hero Scroll Motion
+========================================================= */
+
+(() => {
+
+    const mobileQuery =
+        window.matchMedia(
+            '(max-width: 767px)'
+        );
+
+
+    const prefersReducedMotion =
+        window.matchMedia(
+            '(prefers-reduced-motion: reduce)'
+        ).matches;
+
+
+    if (
+        !mobileQuery.matches ||
+        prefersReducedMotion ||
+        typeof gsap === 'undefined' ||
+        typeof ScrollTrigger === 'undefined'
+    ) {
+        return;
+    }
+
+
+    const hero =
+        document.querySelector(
+            '.products_hero'
+        );
+
+
+    if (!hero) return;
+
+
+    const centerBottle =
+        hero.querySelector(
+            '.hero_bottle_center'
+        );
+
+
+    const sideBottles =
+        [
+            '.hero_bottle_rice',
+            '.hero_bottle_draft',
+            '.hero_bottle_prebiotics',
+            '.hero_bottle_strawberry'
+        ]
+            .map(
+                (selector) =>
+                    hero.querySelector(selector)
+            )
+            .filter(Boolean);
+
+
+    const getSideBottleExit =
+        (index) => {
+
+            const heroHeight =
+                hero.offsetHeight;
+
+
+            const viewportWidth =
+                window.innerWidth;
+
+
+            return [
+                {
+                    x: viewportWidth * -0.42,
+                    y: heroHeight * -0.18,
+                    scale: 0.5
+                },
+                {
+                    x: viewportWidth * -0.46,
+                    y: heroHeight * 0.27,
+                    scale: 0.5
+                },
+                {
+                    x: viewportWidth * 0.4,
+                    y: heroHeight * -0.18,
+                    scale: 0.5
+                },
+                {
+                    x: viewportWidth * 0.46,
+                    y: heroHeight * 0.26,
+                    scale: 0.5
+                }
+            ][index];
+
+        };
+
+
+    if (!centerBottle || !sideBottles.length) {
+        return;
+    }
+
+
+    gsap.registerPlugin(
+        ScrollTrigger
+    );
+
+
+    const getEntryY =
+        () =>
+            hero.offsetHeight * 0.38;
+
+
+    /*
+     * The CSS `translate` keeps the bottle centered horizontally.
+     * The bottom edge stays visible as the bottle rises into place.
+     */
+    gsap.set(
+        centerBottle,
+        {
+            autoAlpha: 1,
+            y: getEntryY,
+            scale: 1,
+            transformOrigin: '50% 100%'
+        }
+    );
+
+
+    const mobileHeroTimeline =
+        gsap.timeline({
+
+            scrollTrigger: {
+
+                trigger: hero,
+
+                start: 'top top',
+
+                end: () =>
+                    `+=${Math.round(
+                        Math.max(
+                            window.innerHeight * 1.15,
+                            hero.offsetHeight * 0.9
+                        )
+                    )}`,
+
+                pin: true,
+
+                pinSpacing: true,
+
+                scrub: 0.35,
+
+                anticipatePin: 1,
+
+                invalidateOnRefresh: true
+            }
+
+        });
+
+
+    mobileHeroTimeline
+        .to(
+            sideBottles,
+            {
+                x: (index) =>
+                    getSideBottleExit(index).x,
+
+                y: (index) =>
+                    getSideBottleExit(index).y,
+
+                scale: (index) =>
+                    getSideBottleExit(index).scale,
+
+                autoAlpha: 0,
+
+                duration: 0.7,
+
+                ease: 'power2.in',
+
+                stagger: 0.02
+            },
+
+            0
+        )
+        .to(
+            centerBottle,
+            {
+                y: -10,
+
+                scale: 1.06,
+
+                duration: 0.56,
+
+                ease: 'power3.out'
+            },
+
+            0.02
+        )
+        .to(
+            centerBottle,
+            {
+                y: 0,
+
+                scale: 1,
+
+                duration: 0.22,
+
+                ease: 'power2.out'
+            },
+
+            0.56
+        );
+
 
     window.addEventListener(
         'load',
@@ -1578,7 +2201,24 @@
   const hasGSAP =
     typeof window.gsap !== "undefined";
 
-  if (reduceMotion || !hasGSAP) return;
+
+  const isTabletLayout =
+    window.matchMedia(
+      "(min-width: 768px) and (max-width: 1024px)"
+    ).matches;
+
+
+  const isMobileLayout =
+    window.matchMedia(
+      "(max-width: 767px)"
+    ).matches;
+
+
+  if (
+    reduceMotion ||
+    !hasGSAP ||
+    isTabletLayout
+  ) return;
 
 
   const section =
@@ -1675,6 +2315,31 @@
 
     const strawberry =
       cards[0];
+
+
+    if (isMobileLayout) {
+
+      cards.slice(1).forEach(
+        (card) => {
+
+          gsap.set(card, {
+            x: strawberry.offsetLeft - card.offsetLeft,
+
+            y: strawberry.offsetTop - card.offsetTop,
+
+            scale: 0.98,
+
+            rotation: 0,
+
+            transformOrigin: "center center"
+          });
+
+        }
+      );
+
+
+      return;
+    }
 
     const strawberryRect =
       strawberry.getBoundingClientRect();
@@ -1882,6 +2547,59 @@
 
 if (cards.length > 1) {
 
+  if (isMobileLayout) {
+
+    tl.to(
+      cards[1],
+      {
+        x: 0,
+        y: 0,
+
+        scale: 1,
+
+        rotation: -8.67,
+
+        duration: 0.56,
+
+        ease: "power3.out"
+      },
+
+      "-=0.05"
+    );
+
+
+    if (cards[2]) {
+
+      tl.to(
+        cards[2],
+        {
+          x: 0,
+          y: 0,
+
+          scale: 1,
+
+          rotation: 3.38,
+
+          duration: 0.6,
+
+          ease: "power3.out"
+        },
+
+        "-=0.30"
+      );
+
+    }
+
+
+    tl.set(
+      cards.slice(1),
+      {
+        clearProps: "transform"
+      }
+    );
+
+  } else {
+
   /* 딸기 카드 */
   tl.to(
     cards[0],
@@ -1935,6 +2653,8 @@ if (cards.length > 1) {
 
     "-=0.22"
   );
+
+  }
 
 }
 
@@ -2033,7 +2753,9 @@ if (cards.length > 1) {
       },
 
       {
-        threshold: 0.75
+        threshold: isMobileLayout
+          ? 0.3
+          : 0.75
       }
 
     );

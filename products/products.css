@@ -182,6 +182,9 @@
   left: 50%;
   top: 70%;
 
+  /* Keep the splash centered independently of GSAP scale transforms. */
+  translate: -50% -50%;
+
   width:
     clamp(31.2rem, 54vw, 64.8rem);
 
@@ -189,9 +192,7 @@
 
   z-index: 1;
 
-  transform:
-    translate(-50%, -50%)
-    scale(1);
+  transform: none;
 
   transform-origin: center center;
 
@@ -237,12 +238,14 @@
   /* 아래로 200px 내렸다가 다시 100px 올림 */
   top: calc(71% + 100px);
 
+  /* GSAP animates transform; layout centering stays on the individual translate. */
+  translate: -50% -50%;
+
   height: 69.6%;
 
   z-index: 4;
 
-  transform:
-    translate(-50%, -50%);
+  transform: none;
 }
 
 
@@ -2310,8 +2313,8 @@
 
 
   .hero_splash {
-    top: 78%;
-    width: clamp(26rem, 125vw, 34rem);
+    top: 57%;
+    width: min(198.6vw, 44.6875rem);
   }
 
 
@@ -2344,8 +2347,8 @@
 
 
   .hero_bottle_center {
-    top: 78%;
-    height: 47%;
+    top: 66%;
+    height: min(70.6%, 31.0625rem);
   }
 
   .products_content_layer {
@@ -2653,6 +2656,64 @@
     width: 2rem;
   }
 
+
+  /* Mobile starter kit: final fan layout from the Figma mobile frame. */
+  .starter_kit_list {
+    position: relative;
+
+    display: block;
+
+    width: min(100vw, 22.5rem);
+    height: auto;
+    aspect-ratio: 360 / 575;
+    margin-top: clamp(2.5rem, 12vw, 3.25rem);
+  }
+
+
+  .starter_kit_card,
+  .starter_kit_card:nth-child(2),
+  .starter_kit_card:nth-child(3) {
+    position: absolute;
+
+    box-sizing: border-box;
+
+    width: 41.6667%;
+    height: min(55.556vw, 12.5rem);
+    margin: 0;
+    padding: clamp(0.9375rem, 6.95vw, 1.5625rem) 0.5rem clamp(0.75rem, 4.17vw, 0.9375rem);
+
+    border-radius: clamp(1.25rem, 6.86vw, 1.544rem);
+
+    transition: none;
+  }
+
+
+  .starter_kit_card:nth-child(1) {
+    top: 3.073%;
+    left: 13.3278%;
+    z-index: 3;
+
+    transform: rotate(0deg);
+  }
+
+
+  .starter_kit_card:nth-child(2) {
+    top: 9.638%;
+    left: 35%;
+    z-index: 2;
+
+    transform: rotate(-8.67deg);
+  }
+
+
+  .starter_kit_card:nth-child(3) {
+    top: 18.16%;
+    left: 23.8889%;
+    z-index: 1;
+
+    transform: rotate(3.38deg);
+  }
+
 }
 
 
@@ -2928,5 +2989,956 @@
 
     transform:
       translate(-50%, 0);
+  }
+}
+
+
+/* =========================================================
+   TABLET FIGMA REFINEMENT (768px - 1024px)
+
+   Desktop markup is shared with tablet. These additions only become
+   visible in the tablet range so the existing PC composition is kept.
+========================================================= */
+
+.tablet_product_carousel {
+  display: contents;
+}
+
+
+.tablet_product_carousel_arrow,
+.tablet_product_pagination {
+  display: none;
+}
+
+
+@media (min-width: 768px) and (max-width: 1024px) {
+
+  .products_main {
+    --products_gutter: 2.5rem;
+
+    background:
+      linear-gradient(
+        180deg,
+        #ffffff 0%,
+        #f8f4f2 98.893%
+      );
+  }
+
+
+  /* ---------- Tablet header ---------- */
+
+  .site_header {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+
+  .site_header_inner {
+    justify-content: flex-start;
+
+    width: calc(100% - 5rem);
+    min-height: 6.25rem;
+    height: 6.25rem;
+    padding: 0;
+
+    column-gap: 1.625rem;
+  }
+
+
+  .site_header_inner::before {
+    width: 2rem;
+    height: 2rem;
+    background:
+      linear-gradient(
+        to bottom,
+        var(--bekseju_dark1) 0 2px,
+        transparent 2px 7px,
+        var(--bekseju_dark1) 7px 9px,
+        transparent 9px 14px,
+        var(--bekseju_dark1) 14px 16px
+      )
+      center / 1.5rem 1rem
+      no-repeat;
+  }
+
+
+  .site_header_left {
+    position: static;
+
+    gap: 1.625rem;
+
+    transform: none;
+  }
+
+
+  .site_logo_mark {
+    width: 12.5rem;
+  }
+
+
+  .primary_nav {
+    display: none;
+  }
+
+
+  .site_search_input {
+    position: static;
+
+    transform: none;
+  }
+
+
+  .search_button img {
+    width: 1.875rem;
+    height: 1.875rem;
+  }
+
+
+  /* ---------- Hero / curation ---------- */
+
+  .products_hero {
+    height: 58.5625rem;
+    min-height: 0;
+    padding: 7.75rem 0 0;
+
+    background:
+      linear-gradient(
+        180deg,
+        rgba(250, 248, 247, 0) 0%,
+        #c7b7ac 100%
+      );
+  }
+
+
+  .products_hero_inner {
+    width: 100%;
+  }
+
+
+  .products_hero_title {
+    margin-top: 0;
+
+    font-size: 4rem;
+    line-height: 0.9;
+    letter-spacing: -0.08rem;
+  }
+
+
+  .hero_splash {
+    top: 36.625rem;
+
+    width: 61.25rem;
+  }
+
+
+  .hero_bottle_center {
+    top: 44.5625rem;
+
+    height: 34.625rem;
+  }
+
+
+  .hero_bottle_rice {
+    left: 9.5%;
+    top: 39.3%;
+
+    height: 16.5rem;
+
+    transform:
+      translate(-50%, -50%)
+      rotate(53.71deg);
+  }
+
+
+  .hero_bottle_draft {
+    left: 14%;
+    top: 88%;
+
+    height: 19.9375rem;
+
+    transform:
+      translate(-50%, -50%)
+      rotate(16.73deg);
+  }
+
+
+  .hero_bottle_prebiotics {
+    left: 88%;
+    top: 36%;
+
+    height: 15.25rem;
+
+    transform:
+      translate(-50%, -50%)
+      rotate(19.28deg);
+  }
+
+
+  .hero_bottle_strawberry {
+    left: 89.5%;
+    top: 88%;
+
+    height: 20.1875rem;
+
+    transform:
+      translate(-50%, -50%)
+      rotate(-25.38deg);
+  }
+
+
+  .products_content_layer {
+    min-height: 0;
+
+    border-radius: 0;
+
+    box-shadow: none;
+  }
+
+
+  /* ---------- Search / filtering ---------- */
+
+  .experience_filter {
+    padding-top: 6.6875rem;
+
+    background: #faf8f7;
+  }
+
+
+  .experience_filter_title {
+    font-size: 1.75rem;
+    line-height: 1.3;
+    letter-spacing: 0;
+  }
+
+
+  .craving_search {
+    width: 35.625rem;
+    height: 3.75rem;
+    margin-top: 2.5rem;
+    padding-inline: 1.4375rem;
+
+    border-radius: 0.9375rem;
+  }
+
+
+  .craving_search_input {
+    font-size: 1rem;
+    font-weight: 400;
+  }
+
+
+  .craving_search_button {
+    width: 1.6492rem;
+    height: 1.4872rem;
+  }
+
+
+  .craving_search_icon {
+    width: 1.6492rem;
+    height: 1.4872rem;
+  }
+
+
+  .experience_tags {
+    flex-wrap: nowrap;
+
+    gap: 1.79375rem;
+    margin-top: 1.25rem;
+  }
+
+
+  .experience_tag {
+    padding: 0;
+
+    font-size: 1.125rem;
+    font-weight: 400;
+
+    text-decoration: none;
+  }
+
+
+  .experience_tag.is_active::after {
+    content: none;
+  }
+
+
+  /* ---------- Product showcase ---------- */
+
+  .product_showcase {
+    padding: 10.6875rem 0 7.75rem;
+
+    background: #faf8f7;
+  }
+
+
+  .product_showcase_title {
+    font-size: 2rem;
+    line-height: 1.3;
+    letter-spacing: -0.04rem;
+  }
+
+
+  .product_category {
+    gap: 0.75rem;
+    margin-top: 3.75rem;
+  }
+
+
+  .category_button {
+    width: auto;
+    min-width: 0;
+    height: 3.375rem;
+    padding: 0 1.75rem;
+
+    border-radius: 0.25rem 0.25rem 1.75rem 1.75rem;
+
+    font-size: 0.875rem;
+  }
+
+
+  .category_button[aria-disabled="true"] {
+    opacity: 1;
+  }
+
+
+  .tablet_product_carousel {
+    display: grid;
+    grid-template-columns: 32.5rem;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    margin-top: 3.125rem;
+  }
+
+
+  .tablet_product_carousel.has_tablet_pages {
+    grid-template-columns: 3.75rem 32.5rem 3.75rem;
+    column-gap: 1.875rem;
+  }
+
+
+  .tablet_product_carousel_arrow {
+    display: none;
+    place-items: center;
+
+    width: 3.75rem;
+    height: 3.75rem;
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    color: var(--bekseju_dark1);
+
+    cursor: pointer;
+
+    transition:
+      opacity 180ms ease,
+      transform 180ms ease;
+  }
+
+
+  .tablet_product_carousel.has_tablet_pages
+  .tablet_product_carousel_arrow:not([hidden]) {
+    display: grid;
+  }
+
+
+  .tablet_product_carousel_arrow span {
+    display: block;
+
+    width: 1rem;
+    height: 1rem;
+
+    border-top: 0.125rem solid currentColor;
+    border-left: 0.125rem solid currentColor;
+  }
+
+
+  .tablet_product_carousel_arrow--previous {
+    grid-column: 1;
+  }
+
+
+  .tablet_product_carousel_arrow--previous span {
+    transform: rotate(-45deg);
+  }
+
+
+  .tablet_product_carousel_arrow--next {
+    grid-column: 3;
+  }
+
+
+  .tablet_product_carousel_arrow--next span {
+    transform: rotate(135deg);
+  }
+
+
+  .tablet_product_carousel_arrow:not(:disabled):hover {
+    transform: scale(1.08);
+  }
+
+
+  .tablet_product_carousel_arrow:disabled {
+    cursor: default;
+
+    opacity: 0.35;
+  }
+
+
+  .tablet_product_carousel .product_grid {
+    grid-column: 1;
+
+    grid-template-columns: repeat(2, 15rem);
+    grid-auto-rows: 21.875rem;
+    gap: 2.5rem;
+
+    width: 32.5rem;
+    max-width: 100%;
+    margin: 0;
+  }
+
+
+  .tablet_product_carousel.has_tablet_pages
+  .product_grid {
+    grid-column: 2;
+  }
+
+
+  .product_card.is_tablet_page_hidden {
+    display: none;
+  }
+
+
+  .product_card {
+    width: 15rem;
+    height: 21.875rem;
+
+    border-radius: 0.5rem;
+  }
+
+
+  .product_card > article {
+    display: block;
+
+    height: 21.875rem;
+    min-height: 21.875rem;
+    padding: 0;
+
+    overflow: hidden;
+
+    border-radius: inherit;
+
+    box-shadow: none;
+  }
+
+
+  .product_media {
+    position: absolute;
+    inset: 0 auto auto 0;
+
+    width: 15rem;
+    height: 16.875rem;
+
+    aspect-ratio: auto;
+  }
+
+
+  .product_tone {
+    top: 8.8125rem;
+
+    width: 12.875rem;
+    height: 12.875rem;
+
+    border-radius: 50%;
+
+    transition: none;
+  }
+
+
+  .product_card[data-product="prebiotics"]
+  .product_tone {
+    background: #fdfaf7;
+  }
+
+
+  .product_card[data-product="strawberry"]
+  .product_tone {
+    background: #f1898a;
+  }
+
+
+  .product_bottle {
+    top: 1.25rem;
+
+    height: 15.625rem;
+
+    filter:
+      drop-shadow(
+        0 0.375rem 0.5rem
+        rgba(76, 59, 51, 0.12)
+      );
+
+    transform: translateX(-50%);
+
+    transition: none;
+  }
+
+
+  .product_fruit {
+    top: 8.8125rem;
+
+    width: 12.75rem;
+
+    opacity: 1;
+
+    transform: translate(-50%, -50%);
+
+    transition: none;
+  }
+
+
+  .product_card > article:hover,
+  .product_card > article:focus-visible,
+  .product_card > article:focus-within {
+    box-shadow: none;
+  }
+
+
+  .product_card > article:hover
+  .product_tone,
+  .product_card > article:focus-visible
+  .product_tone,
+  .product_card > article:focus-within
+  .product_tone {
+    width: 12.875rem;
+    height: 12.875rem;
+
+    border-radius: 50%;
+  }
+
+
+  .product_card > article:hover
+  .product_bottle,
+  .product_card > article:focus-visible
+  .product_bottle,
+  .product_card > article:focus-within
+  .product_bottle {
+    transform: translateX(-50%);
+  }
+
+
+  .product_card > article:hover
+  .product_fruit,
+  .product_card > article:focus-visible
+  .product_fruit,
+  .product_card > article:focus-within
+  .product_fruit {
+    transform: translate(-50%, -50%);
+  }
+
+
+  .product_name,
+  .product_taste {
+    position: absolute;
+    right: 0.75rem;
+    left: 0.75rem;
+
+    width: auto;
+    margin: 0;
+
+    overflow: hidden;
+
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+
+  .product_name {
+    top: 16.875rem;
+
+    font-size: 1.25rem;
+    line-height: 1.3;
+  }
+
+
+  .product_taste {
+    top: 19.0625rem;
+
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+
+  .product_taste[data-tablet-taste] {
+    font-size: 0;
+  }
+
+
+  .product_taste[data-tablet-taste]::before {
+    content: attr(data-tablet-taste);
+
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+
+  .tablet_product_pagination {
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+
+    min-height: 1.75rem;
+    margin-top: 2.25rem;
+  }
+
+
+  .tablet_product_pagination:not([hidden]) {
+    display: flex;
+  }
+
+
+  .tablet_product_page_dot {
+    display: block;
+
+    width: 0.625rem;
+    height: 0.625rem;
+    padding: 0;
+
+    border: 0;
+    border-radius: 50%;
+
+    background: var(--makgeolli_light1);
+
+    cursor: pointer;
+
+    transition:
+      transform 180ms ease,
+      background-color 180ms ease;
+  }
+
+
+  .tablet_product_page_dot.is_active {
+    width: 1.75rem;
+    height: 1.75rem;
+
+    border-radius: 0;
+
+    background:
+      url('products_asset/icon/cup.svg')
+      center / contain
+      no-repeat;
+  }
+
+
+  .tablet_product_page_dot:not(.is_active):hover {
+    background: var(--bekseju_dark4);
+
+    transform: scale(1.15);
+  }
+
+
+  .view_all_wrap {
+    display: none;
+  }
+
+
+  /* ---------- Beginner's starter kit ---------- */
+
+  .starter_kit {
+    box-sizing: border-box;
+
+    height: 48.552rem;
+    min-height: 0;
+    padding: 5.625rem 3.75rem;
+
+    overflow: hidden;
+
+    background: #f6f0ec;
+  }
+
+
+  .starter_kit_inner {
+    position: relative;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 21.677rem auto;
+    gap: 2.8125rem;
+
+    width: min(100%, 40.5rem);
+    min-height: 37.302rem;
+    height: 37.302rem;
+  }
+
+
+  .starter_kit_copy {
+    position: static;
+
+    display: flex;
+    flex-direction: column;
+    grid-row: 1;
+    align-items: center;
+
+    max-width: none;
+    padding: 0;
+
+    text-align: center;
+  }
+
+
+  .starter_kit_title {
+    font-size: 2rem;
+    line-height: 1.3;
+    letter-spacing: -0.04rem;
+  }
+
+
+  .starter_kit_desc {
+    margin-top: 0.625rem;
+
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+
+  .starter_kit_cta {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    z-index: 5;
+
+    min-width: 14.5625rem;
+    height: 3.375rem;
+    margin: 0;
+
+    border-radius: 0.25rem 0.25rem 2rem 2rem;
+
+    font-size: 1.25rem;
+
+    transform: translateX(-50%);
+  }
+
+
+  .starter_kit_character {
+    top: 0.75rem;
+    right: 0;
+    bottom: auto;
+
+    width: 8.4375rem;
+    height: 8.4375rem;
+
+    opacity: 0.15;
+
+    transform:
+      rotate(180deg)
+      scaleY(-1) !important;
+  }
+
+
+  .starter_kit_list {
+    position: relative;
+    grid-row: 2;
+
+    display: block;
+
+    width: 39.732rem;
+    height: 21.677rem;
+    padding: 0;
+    margin: 0 auto;
+  }
+
+
+  .starter_kit_card,
+  .starter_kit_card:nth-child(2),
+  .starter_kit_card:nth-child(3) {
+    position: absolute;
+
+    box-sizing: border-box;
+
+    width: 12.5rem;
+    height: 16.667rem;
+    margin: 0;
+    padding: 2.291rem 0.667rem 1.75rem;
+
+    border-radius: 2.042rem;
+
+    background: #eadfd8;
+
+    box-shadow:
+      0.042rem 0.042rem 0.167rem
+      rgba(0, 0, 0, 0.1);
+
+    transition: none;
+  }
+
+
+  .starter_kit_card:nth-child(1) {
+    top: 0.5625rem;
+    left: 0;
+    z-index: 3;
+
+    transform: rotate(4.76deg) !important;
+  }
+
+
+  .starter_kit_card:nth-child(2) {
+    top: 3.5625rem;
+    left: 12.0625rem;
+    z-index: 2;
+
+    transform: rotate(-7.09deg) !important;
+  }
+
+
+  .starter_kit_card:nth-child(3) {
+    top: 0;
+    left: 23.444rem;
+    z-index: 1;
+
+    transform: rotate(14.5deg) !important;
+  }
+
+
+  .starter_kit_visual {
+    width: 11.124rem;
+    height: 9.082rem;
+
+    aspect-ratio: auto;
+  }
+
+
+  .starter_kit_splash {
+    width: 11.087rem;
+    height: 9.082rem;
+
+    object-fit: contain;
+    object-position: bottom;
+  }
+
+
+  .starter_kit_can {
+    top: 5.875rem;
+    left: 3.919rem;
+
+    width: 3.333rem;
+    height: 5.624rem;
+
+    transform:
+      translate(-50%, -50%)
+      rotate(-12deg);
+  }
+
+
+  .starter_kit_bottle {
+    top: 3.7125rem;
+    left: 6.8125rem;
+
+    width: 3.125rem;
+    height: 9.791rem;
+
+    filter: none;
+
+    transform:
+      translate(-50%, -50%)
+      rotate(9deg);
+  }
+
+
+  .starter_kit_name {
+    margin-top: 0.5416rem;
+
+    font-size: 1.25rem;
+    line-height: 1.3;
+  }
+
+
+  .starter_kit_best {
+    top: -1.875rem;
+    left: -0.5rem;
+
+    width: 5.297rem;
+
+    border-width: 0.25rem;
+
+    font-size: 1.6875rem;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+
+    transform: rotate(-12deg) !important;
+  }
+
+
+  /* Reset desktop GSAP inline styles when a window enters tablet width. */
+  .starter_kit_inner,
+  .starter_kit_title,
+  .starter_kit_desc {
+    opacity: 1 !important;
+    visibility: visible !important;
+
+    transform: none !important;
+  }
+
+
+  .starter_kit_cta {
+    opacity: 1 !important;
+    visibility: visible !important;
+
+    transform: translateX(-50%) !important;
+  }
+
+
+  .starter_kit_character {
+    opacity: 0.15 !important;
+    visibility: visible !important;
+
+    transform:
+      rotate(180deg)
+      scaleY(-1) !important;
+  }
+
+
+  .starter_kit_card {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+
+  /* ---------- Marquee ---------- */
+
+  .brand_keyword {
+    padding: 3.5625rem 0;
+
+    background: #faf8f7;
+  }
+
+
+  .keyword_row {
+    height: 9.5rem;
+  }
+
+
+  .keyword_row + .keyword_row {
+    margin-top: 0;
+  }
+
+
+  .keyword_group {
+    gap: 0.59375rem;
+    padding-right: 0.59375rem;
+
+    font-size: 3.75rem;
+    line-height: 0.9;
+    letter-spacing: -0.075rem;
+  }
+
+
+  .keyword_group img {
+    width: 4.0625rem;
+    max-height: 2.8125rem;
   }
 }
