@@ -1935,21 +1935,6 @@
     padding: 1.25rem 0;
   }
 
-  .site_header_inner::before {
-    content: '';
-    flex: 0 0 auto;
-    width: 1.25rem;
-    height: 1rem;
-    background: linear-gradient(
-      to bottom,
-      var(--bekseju_dark1) 0 2px,
-      transparent 2px 7px,
-      var(--bekseju_dark1) 7px 9px,
-      transparent 9px 14px,
-      var(--bekseju_dark1) 14px 16px
-    );
-  }
-
   .site_header_left {
     position: absolute;
     left: 50%;
@@ -2255,25 +2240,48 @@
     padding: 1rem 0;
   }
 
-  .site_header_inner::before {
-    content: '';
-    flex: 0 0 auto;
-    width: 1rem;
-    height: 0.875rem;
-    background: linear-gradient(
-      to bottom,
-      var(--bekseju_dark1) 0 2px,
-      transparent 2px 6px,
-      var(--bekseju_dark1) 6px 8px,
-      transparent 8px 12px,
-      var(--bekseju_dark1) 12px 14px
-    );
+  /* 햄버거가 진짜 버튼이 되면서 site_header_left 안으로 들어왔으므로,
+     가운데로 보내는 것은 줄(왼쪽 햄버거 / 가운데 로고) 이 아니라 로고 하나뿐 */
+  .site_header_left {
+    position: static;
+    transform: none;
   }
 
-  .site_header_left {
+  .site_logo {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
+  }
+
+  .nav_toggle {
+    width: 1rem;
+    height: 0.875rem;
+  }
+
+  .nav_toggle_bars,
+  .nav_toggle_bars::before,
+  .nav_toggle_bars::after {
+    height: 2px;
+  }
+
+  .nav_toggle_bars {
+    top: calc(50% - 1px);
+  }
+
+  .nav_toggle_bars::before {
+    top: -6px;
+  }
+
+  .nav_toggle_bars::after {
+    top: 6px;
+  }
+
+  .nav_toggle[aria-expanded="true"] .nav_toggle_bars::before {
+    transform: translateY(6px) rotate(45deg);
+  }
+
+  .nav_toggle[aria-expanded="true"] .nav_toggle_bars::after {
+    transform: translateY(-6px) rotate(-45deg);
   }
 
   .primary_nav {
@@ -3185,22 +3193,7 @@
   }
 
 
-  .site_header_inner::before {
-    width: 2rem;
-    height: 2rem;
-    background:
-      linear-gradient(
-        to bottom,
-        var(--bekseju_dark1) 0 2px,
-        transparent 2px 7px,
-        var(--bekseju_dark1) 7px 9px,
-        transparent 9px 14px,
-        var(--bekseju_dark1) 14px 16px
-      )
-      center / 1.5rem 1rem
-      no-repeat;
-  }
-
+  /* 햄버거 자체 치수는 common.css 태블릿 블록(24 x 16) 을 그대로 씀 */
 
   .site_header_left {
     position: static;

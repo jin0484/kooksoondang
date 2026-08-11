@@ -61,6 +61,11 @@
   <header class="site_header" id="site_header">
     <div class="site_header_inner">
       <div class="site_header_left">
+        <!-- 태블릿(<=768px) 에서만 보임. 데스크톱에서는 css 가 감춰서 아래 primary_nav 가 그대로 쓰임 -->
+        <button class="nav_toggle" type="button" aria-label="Open menu" aria-expanded="false"
+          aria-controls="products_nav_drawer" data-nav-toggle>
+          <span class="nav_toggle_bars" aria-hidden="true"></span>
+        </button>
         <a class="site_logo" href="../main/main.html" aria-label="Kooksoondang home">
           <svg class="site_logo_mark" width="270" height="33.0299" viewBox="0 0 270 33.0299" aria-hidden="true"
             focusable="false">
@@ -88,6 +93,20 @@
       </div>
     </div>
   </header>
+
+  <!-- 햄버거로 여는 서랍. 헤더에 backdrop-filter 가 걸려 있어 그 안에서는 fixed 가 헤더 박스에 갇히므로 밖에 둠 -->
+  <div class="nav_drawer" id="products_nav_drawer" data-nav-drawer>
+    <button class="nav_drawer_scrim" type="button" aria-label="Close menu" data-nav-close></button>
+    <nav class="nav_drawer_panel" aria-label="Primary navigation">
+      <ul>
+        <li><a href="../aboutbrand/aboutbrand.html">ABOUT BRAND</a></li>
+        <li><a href="./products.html" aria-current="page">PRODUCTS</a></li>
+        <li><a href="../pairing/pairing.html">PAIRING</a></li>
+        <li><span class="is_disabled" aria-disabled="true">EVENT/PROMOTION</span></li>
+        <li><span class="is_disabled" aria-disabled="true">CONTACT US</span></li>
+      </ul>
+    </nav>
+  </div>
 
 
   <main class="products_main">

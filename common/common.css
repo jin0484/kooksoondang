@@ -500,22 +500,22 @@ html.lenis body {
 /* ---------- shared side navigation ---------- */
 
 .side_nav {
-    --side-nav-radius: 2.5rem;
-    --side-nav-handle-width: 30px;
-    --side-nav-handle-height: 125px;
-    --side-nav-handle-radius: 8px;
+    --side-nav-radius: 3rem;
+    --side-nav-handle-width: 36px;
+    --side-nav-handle-height: 150px;
+    --side-nav-handle-radius: 10px;
     --side-nav-surface: var(--bekseju_dark1);
 
     position: fixed;
     z-index: 40;
     isolation: isolate;
     right: 0;
-    top: calc(50% + 300px);
+    top: calc(50% + 270px);
     transform: translate(100%, -50%);
     transition: transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
     display: flex;
     align-items: center;
-    padding: 1rem 0.75rem;
+    padding: 1.2rem 0.9rem;
     background: var(--side-nav-surface);
     border-radius: var(--side-nav-radius) 0 0 var(--side-nav-radius);
 }
@@ -547,7 +547,7 @@ html.lenis body {
     writing-mode: vertical-rl;
     text-orientation: upright;
     color: var(--kooksoondang_green);
-    font-size: 0.75rem;
+    font-size: 0.9rem;
     font-weight: 600;
     /* 세로쓰기에서 자간은 글자 사이 위아래 간격이 됨 */
     letter-spacing: 0.08em;
@@ -558,7 +558,7 @@ html.lenis body {
     z-index: 1;
     display: flex;
     flex-direction: column;
-    gap: 0.7rem;
+    gap: 0.84rem;
     transform: scale(0.9);
     transform-origin: center;
 }
@@ -566,30 +566,30 @@ html.lenis body {
 .side_nav li a {
     display: flex;
     align-items: center;
-    gap: 0.7rem;
-    padding-left: 0.5rem;
-    font-size: 0.875rem;
+    gap: 0.84rem;
+    padding-left: 0.6rem;
+    font-size: 1.05rem;
     color: var(--makgeolli_White);
     white-space: nowrap;
     transition: color 260ms ease, font-size 260ms ease, padding-left 260ms ease;
 }
 
 .side_nav li a img {
-    width: 0.7rem;
-    height: 0.7rem;
+    width: 0.84rem;
+    height: 0.84rem;
     transition: width 260ms ease, height 260ms ease;
 }
 
 .side_nav li.is_current a {
     padding-left: 0;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 1.2rem;
     color: var(--kooksoondang_green);
 }
 
 .side_nav li.is_current a img {
-    width: 1.8rem;
-    height: 1.25rem;
+    width: 2.16rem;
+    height: 1.5rem;
 }
 
 .side_nav li a img.is_icon_animating {
@@ -791,10 +791,11 @@ html.lenis body {
     width: 3.5rem;
 }
 
-/* ---------- tablet (<= 768px) ---------- */
-/* 헤더는 햄버거 + 서랍으로 바뀜. 서랍 마크업이 아직 없는 페이지는 :has 로 걸러 기존 배치를 유지함 */
+/* ---------- tablet (<= 1024px) ---------- */
+/* 헤더는 햄버거 + 서랍으로 바뀜. 서랍 마크업이 아직 없는 페이지는 :has 로 걸러 기존 배치를 유지함.
+   본문 쪽 태블릿 블록(main.css / products.css 의 64rem)과 경계를 맞춰 둠 */
 
-@media (max-width: 48rem) {
+@media (max-width: 64rem) {
     .site_header_inner {
         width: calc(100% - 5rem);
         padding: 2.375rem 0;
@@ -806,6 +807,38 @@ html.lenis body {
 
     .site_header:has(.nav_toggle) .nav_toggle {
         display: block;
+    }
+
+    /* 태블릿 시안의 햄버거는 24 x 16 에 2px 짜리 줄 세 개 */
+    .nav_toggle {
+        width: 1.5rem;
+        height: 1rem;
+    }
+
+    .nav_toggle_bars,
+    .nav_toggle_bars::before,
+    .nav_toggle_bars::after {
+        height: 2px;
+    }
+
+    .nav_toggle_bars {
+        top: calc(50% - 1px);
+    }
+
+    .nav_toggle_bars::before {
+        top: -7px;
+    }
+
+    .nav_toggle_bars::after {
+        top: 7px;
+    }
+
+    .nav_toggle[aria-expanded="true"] .nav_toggle_bars::before {
+        transform: translateY(7px) rotate(45deg);
+    }
+
+    .nav_toggle[aria-expanded="true"] .nav_toggle_bars::after {
+        transform: translateY(-7px) rotate(-45deg);
     }
 
     .site_header:has(.nav_toggle) .primary_nav {
