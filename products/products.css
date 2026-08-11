@@ -2313,8 +2313,8 @@
 
 
   .hero_splash {
-    top: 57%;
-    width: min(198.6vw, 44.6875rem);
+    top: 78%;
+    width: clamp(26rem, 125vw, 34rem);
   }
 
 
@@ -2347,8 +2347,8 @@
 
 
   .hero_bottle_center {
-    top: 66%;
-    height: min(70.6%, 31.0625rem);
+    top: 78%;
+    height: 47%;
   }
 
   .products_content_layer {
@@ -2399,14 +2399,14 @@
   }
 
   .product_showcase_title {
-    max-width: 14rem;
+    max-width: clamp(15.5rem, 56vw, 20rem);
     margin-inline: auto;
-    font-size: clamp(1.8rem, 8.2vw, 2.2rem);
-    line-height: 0.98;
+    font-size: clamp(1.9rem, 8.2vw, 3rem);
+    line-height: 1.3;
   }
 
   .product_category {
-    margin-top: 1.5rem;
+    margin-top: clamp(3.75rem, 14.6vw, 5rem);
   }
 
   .product_category li:not(:has(.is_active)) {
@@ -2414,10 +2414,10 @@
   }
 
   .category_button {
-    min-width: 8.75rem;
-    height: 2.5rem;
+    min-width: clamp(9.25rem, 40.9vw, 14rem);
+    height: clamp(2.5rem, 9.85vw, 3.375rem);
     padding-inline: 1.25rem;
-    font-size: 0.7rem;
+    font-size: clamp(0.7rem, 2.6vw, 0.875rem);
   }
 
   .category_button.is_active::after {
@@ -2433,53 +2433,242 @@
 
   .product_grid {
     grid-template-columns: minmax(0, 1fr);
-    gap: 0.75rem;
-    max-width: 25rem;
-    margin: 1.5rem auto 0;
+    gap: clamp(1.25rem, 5.5vw, 1.875rem);
+
+    max-width: none;
+    margin: clamp(2.75rem, 11vw, 3.75rem) auto 0;
+
+    transition:
+      transform 220ms ease,
+      opacity 160ms ease;
+
+    touch-action: pan-y;
+  }
+
+
+  @media (pointer: fine) {
+    .product_grid {
+      cursor: grab;
+    }
+  }
+
+
+  .product_grid.is_mobile_dragging {
+    transform:
+      translateX(
+        var(--mobile-drag-offset, 0px)
+      );
+
+    transition: none;
+
+    user-select: none;
+  }
+
+
+  @media (pointer: fine) {
+    .product_grid.is_mobile_dragging {
+      cursor: grabbing;
+    }
+  }
+
+
+  .product_grid img {
+    -webkit-user-drag: none;
+    user-drag: none;
+  }
+
+
+  .product_grid.is_mobile_page_leaving {
+    opacity: 0;
+
+    transform:
+      translateX(
+        calc(var(--mobile-page-direction, 1) * -1.5rem)
+      );
+  }
+
+
+  .product_grid.is_mobile_page_entering {
+    opacity: 0;
+
+    transform:
+      translateX(
+        calc(var(--mobile-page-direction, 1) * 1.5rem)
+      );
+
+    transition: none;
   }
 
   .product_card {
-    min-height: clamp(7.25rem, 31vw, 8.5rem);
+    height: clamp(7.625rem, 33.75vw, 11.5625rem);
+    min-height: 0;
+
+    border-radius: clamp(0.75rem, 3vw, 1rem);
+
+    overflow: hidden;
+  }
+
+  .product_card.is_mobile_page_hidden {
+    display: none;
   }
 
 
   .product_card > article {
     display: grid;
-    grid-template-columns: minmax(6.5rem, 42%) minmax(0, 1fr);
-    grid-template-rows: auto auto;
-    align-content: center;
+    grid-template-columns: 44.5% minmax(0, 1fr);
+    grid-template-rows: 1fr 1fr;
+    align-content: stretch;
     align-items: end;
-    column-gap: clamp(0.85rem, 4vw, 1.25rem);
-    padding: 0.65rem clamp(0.85rem, 4vw, 1.15rem) 0.65rem 0.65rem;
+    column-gap: clamp(0.75rem, 3.5vw, 1.25rem);
+    padding: 0 clamp(0.85rem, 4vw, 1.15rem) 0 0;
+
+    overflow: hidden;
+
     text-align: left;
   }
 
   .product_media {
     grid-row: 1 / 3;
     width: 100%;
-    aspect-ratio: 1;
+    height: 100%;
+    aspect-ratio: auto;
   }
 
   .product_tone {
+    inset: 0;
     width: 100%;
+    height: 100%;
+
+    border-radius: 0 999px 999px 0;
+
+    transform: none;
+
+    transition: none;
+  }
+
+  .product_fruit {
+    top: 50%;
+    width: 95%;
+
+    opacity: 1;
+
+    transform: translate(-50%, -50%);
+
+    transition: none;
+  }
+
+  .product_bottle {
+    transition: none;
+  }
+
+  .product_card > article:hover,
+  .product_card > article:focus-visible,
+  .product_card > article:focus-within {
+    box-shadow: none;
+  }
+
+  .product_card > article:hover .product_tone,
+  .product_card > article:focus-visible .product_tone,
+  .product_card > article:focus-within .product_tone {
+    width: 100%;
+    height: 100%;
+
+    border-radius: 0 999px 999px 0;
+
+    transform: none;
+  }
+
+  .product_card > article:hover .product_bottle,
+  .product_card > article:focus-visible .product_bottle,
+  .product_card > article:focus-within .product_bottle {
+    transform: translate(-50%, -50%);
+  }
+
+  .product_card > article:hover .product_fruit,
+  .product_card > article:focus-visible .product_fruit,
+  .product_card > article:focus-within .product_fruit {
+    transform: translate(-50%, -50%);
   }
 
   .product_name {
     align-self: end;
+    min-width: 0;
     margin-top: 0;
-    font-size: clamp(0.75rem, 3.5vw, 0.92rem);
+    font-size: clamp(0.875rem, 3.5vw, 1.25rem);
     line-height: 1.25;
   }
 
   .product_taste {
     align-self: start;
     margin-top: 0.5rem;
-    font-size: clamp(0.58rem, 2.6vw, 0.7rem);
+    font-size: clamp(0.75rem, 3vw, 1rem);
     line-height: 1.45;
   }
 
+  .product_card[data-product="prebiotics"] .product_name {
+    max-width: 12rem;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .view_all_wrap {
-    margin-top: 2.25rem;
+    display: none;
+  }
+
+  .mobile_product_pagination {
+    --mobile-product-page-gap: clamp(0.75rem, 3.5vw, 1rem);
+
+    align-items: center;
+    justify-content: center;
+    gap: var(--mobile-product-page-gap);
+
+    min-height: 1.75rem;
+    margin-top: clamp(3.25rem, 20vw, 7rem);
+
+  }
+
+  .mobile_product_pagination:not([hidden]) {
+    display: flex;
+  }
+
+  .mobile_product_page_dot {
+    display: block;
+
+    width: 0.625rem;
+    height: 0.625rem;
+    padding: 0;
+
+    border: 0;
+    border-radius: 50%;
+
+    background: var(--makgeolli_light1);
+
+    cursor: pointer;
+
+    transition:
+      transform 180ms ease,
+      background-color 180ms ease;
+  }
+
+  .mobile_product_page_dot.is_active {
+    width: 1.75rem;
+    height: 1.75rem;
+
+    border-radius: 0;
+
+    background:
+      url('products_asset/icon/cup.svg')
+      center / contain
+      no-repeat;
+  }
+
+  .mobile_product_page_dot:not(.is_active):hover {
+    background: var(--bekseju_dark4);
+
+    transform: scale(1.15);
   }
 
   .view_all_button {
@@ -2539,18 +2728,22 @@
     width: clamp(10.5rem, 48vw, 12.5rem);
     margin-left: 0;
     padding: 1rem 0.8rem 1.25rem;
+    transition: none;
   }
 
   .starter_kit_card:nth-child(1) {
     margin-right: clamp(3rem, 15vw, 4.5rem);
+    transform: rotate(-5deg);
   }
 
   .starter_kit_card:nth-child(2) {
     margin-left: clamp(3.5rem, 17vw, 5rem);
+    transform: rotate(7deg);
   }
 
   .starter_kit_card:nth-child(3) {
     margin-right: clamp(2rem, 10vw, 3rem);
+    transform: rotate(-14deg);
   }
 
 
@@ -2656,63 +2849,6 @@
     width: 2rem;
   }
 
-
-  /* Mobile starter kit: final fan layout from the Figma mobile frame. */
-  .starter_kit_list {
-    position: relative;
-
-    display: block;
-
-    width: min(100vw, 22.5rem);
-    height: auto;
-    aspect-ratio: 360 / 575;
-    margin-top: clamp(2.5rem, 12vw, 3.25rem);
-  }
-
-
-  .starter_kit_card,
-  .starter_kit_card:nth-child(2),
-  .starter_kit_card:nth-child(3) {
-    position: absolute;
-
-    box-sizing: border-box;
-
-    width: 41.6667%;
-    height: min(55.556vw, 12.5rem);
-    margin: 0;
-    padding: clamp(0.9375rem, 6.95vw, 1.5625rem) 0.5rem clamp(0.75rem, 4.17vw, 0.9375rem);
-
-    border-radius: clamp(1.25rem, 6.86vw, 1.544rem);
-
-    transition: none;
-  }
-
-
-  .starter_kit_card:nth-child(1) {
-    top: 3.073%;
-    left: 13.3278%;
-    z-index: 3;
-
-    transform: rotate(0deg);
-  }
-
-
-  .starter_kit_card:nth-child(2) {
-    top: 9.638%;
-    left: 35%;
-    z-index: 2;
-
-    transform: rotate(-8.67deg);
-  }
-
-
-  .starter_kit_card:nth-child(3) {
-    top: 18.16%;
-    left: 23.8889%;
-    z-index: 1;
-
-    transform: rotate(3.38deg);
-  }
 
 }
 
@@ -3007,6 +3143,11 @@
 
 .tablet_product_carousel_arrow,
 .tablet_product_pagination {
+  display: none;
+}
+
+
+.mobile_product_pagination {
   display: none;
 }
 
@@ -3707,6 +3848,7 @@
 
   .starter_kit_cta {
     position: absolute;
+    top: auto;
     bottom: 0;
     left: 50%;
     z-index: 5;
@@ -3719,6 +3861,7 @@
 
     font-size: 1.25rem;
 
+    /* GSAP preserves this centering while it animates the CTA. */
     transform: translateX(-50%);
   }
 
@@ -3733,9 +3876,9 @@
 
     opacity: 0.15;
 
-    transform:
-      rotate(180deg)
-      scaleY(-1) !important;
+    /* Preserve the illustration flip while GSAP controls transform. */
+    rotate: 180deg;
+    scale: 1 -1;
   }
 
 
@@ -3781,7 +3924,7 @@
     left: 0;
     z-index: 3;
 
-    transform: rotate(4.76deg) !important;
+    transform: rotate(4.76deg);
   }
 
 
@@ -3790,7 +3933,7 @@
     left: 12.0625rem;
     z-index: 2;
 
-    transform: rotate(-7.09deg) !important;
+    transform: rotate(-7.09deg);
   }
 
 
@@ -3799,7 +3942,7 @@
     left: 23.444rem;
     z-index: 1;
 
-    transform: rotate(14.5deg) !important;
+    transform: rotate(14.5deg);
   }
 
 
@@ -3866,17 +4009,17 @@
 
     font-size: 1.6875rem;
 
-    opacity: 1 !important;
-    visibility: visible !important;
+    opacity: 1;
+    visibility: visible;
 
-    transform: rotate(-12deg) !important;
+    transform: rotate(-12deg);
   }
 
 
-  /* Reset desktop GSAP inline styles when a window enters tablet width. */
-  .starter_kit_inner,
-  .starter_kit_title,
-  .starter_kit_desc {
+  /* Static fallback when JavaScript motion is unavailable. */
+  .starter_kit:not(.is-tablet-motion-ready) .starter_kit_inner,
+  .starter_kit:not(.is-tablet-motion-ready) .starter_kit_title,
+  .starter_kit:not(.is-tablet-motion-ready) .starter_kit_desc {
     opacity: 1 !important;
     visibility: visible !important;
 
@@ -3884,7 +4027,7 @@
   }
 
 
-  .starter_kit_cta {
+  .starter_kit:not(.is-tablet-motion-ready) .starter_kit_cta {
     opacity: 1 !important;
     visibility: visible !important;
 
@@ -3892,17 +4035,17 @@
   }
 
 
-  .starter_kit_character {
+  .starter_kit:not(.is-tablet-motion-ready) .starter_kit_character {
     opacity: 0.15 !important;
     visibility: visible !important;
 
-    transform:
-      rotate(180deg)
-      scaleY(-1) !important;
+    rotate: 180deg !important;
+    scale: 1 -1 !important;
+    transform: none !important;
   }
 
 
-  .starter_kit_card {
+  .starter_kit:not(.is-tablet-motion-ready) .starter_kit_card {
     opacity: 1 !important;
     visibility: visible !important;
   }

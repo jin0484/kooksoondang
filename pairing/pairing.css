@@ -1922,37 +1922,51 @@
     }
 
     .pairing_page .pairing_question_panel.is_open {
-        height: min(30rem, calc(100dvh - 6rem));
+        height: min(27rem, calc(100dvh - 6rem));
         overflow-y: auto;
     }
 
     .pairing_page .pairing_question_panel.is_collapsed {
-        height: 3.5rem;
+        height: 3.25rem;
     }
 
     .pairing_page .pairing_question_content {
-        padding: 1.5rem 1rem;
+        padding: 1rem 0.875rem;
     }
 
     .pairing_page .pairing_question_tab {
-        gap: 0.75rem;
-        min-height: 3.5rem;
-        padding: 0.75rem 1rem;
-    }
-
-    .pairing_page .pairing_question_number,
-    .pairing_page .pairing_question_tab .pairing_question_prompt {
-        font-size: 0.9375rem;
-    }
-
-    .pairing_page .pairing_question_option {
-        min-height: 3.375rem;
-        gap: 0.75rem;
+        gap: 0.625rem;
+        min-height: 3.25rem;
         padding: 0.625rem 0.875rem;
     }
 
-    .pairing_page .pairing_question_option_label {
-        font-size: 0.9375rem;
+    .pairing_page .pairing_question_number {
+        font-size: 1.125rem;
+    }
+
+    .pairing_page .pairing_question_prompt,
+    .pairing_page .pairing_question_tab .pairing_question_prompt {
+        font-size: 1rem;
+    }
+
+    .pairing_page .pairing_question_options {
+        gap: 0.375rem;
+        margin-top: 0.75rem;
+    }
+
+    .pairing_page .pairing_question_option {
+        min-height: 3rem;
+        gap: 0.625rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .pairing_page .pairing_question_icon {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    .pairing_page .pairing_question_option_text {
+        font-size: 0.875rem;
     }
 
     .pairing_page .pairing_food_tabs {
@@ -2190,31 +2204,40 @@
     }
 }
 
-/* Give each food card enough space for the dish and its labels on phones. */
+/* Compact phone cards let people compare several food pairings while swiping. */
 @media (max-width: 47.9375rem) {
     .pairing_page .pairing_food_track {
-        grid-auto-columns: min(76vw, 19rem);
-        gap: 1rem;
+        grid-auto-columns: min(42vw, 10rem);
+        gap: 0.625rem;
+        scroll-snap-type: inline mandatory;
+        scroll-snap-stop: always;
     }
 
     .pairing_page .pairing_food_card {
-        min-height: 20.5rem;
-        gap: 0.875rem;
-        padding: 1.125rem;
+        min-height: 15.75rem;
+        gap: 0.5rem;
+        padding: 0.625rem;
     }
 
     .pairing_page .pairing_food_card_image {
-        height: clamp(10.5rem, 51vw, 12.25rem);
+        height: clamp(6.25rem, 30vw, 7.25rem);
     }
 
     .pairing_page .pairing_food_card h3 {
-        font-size: 1.125rem;
-        line-height: 1.4;
+        font-size: 0.875rem;
+        line-height: 1.35;
     }
 
     .pairing_page .pairing_food_card p {
-        font-size: 0.9375rem;
-        line-height: 1.5;
+        overflow-wrap: anywhere;
+        font-size: 0.75rem;
+        line-height: 1.4;
+        white-space: normal;
+    }
+
+    .pairing_page .pairing_food_tag {
+        font-size: 0.6875rem;
+        line-height: 1.35;
     }
 }
 
@@ -2437,5 +2460,61 @@
     .pairing_page .pairing_food_tab:active,
     .pairing_page .pairing_recipe_picker:active {
         transform: scale(0.975);
+    }
+}
+
+/* Keep the two long-form pairing sections within a 1920 × 1080 desktop view. */
+@media (min-width: 118rem) and (max-width: 122rem) and (min-height: 64rem) and (max-height: 70rem) {
+    .pairing_page .pairing_drink_finder {
+        padding-block: 4rem;
+    }
+
+    .pairing_page .pairing_questionnaire {
+        min-height: 37.5rem;
+        margin-top: 2rem;
+    }
+
+    .pairing_page .pairing_question_content {
+        padding-block: 1.25rem;
+    }
+
+    .pairing_page .pairing_question_options {
+        gap: 0.375rem;
+        margin-top: 0.75rem;
+    }
+
+    .pairing_page .pairing_question_option {
+        min-height: 3.25rem;
+        padding-block: 0.5rem;
+    }
+
+    .pairing_page .pairing_question_navigation {
+        margin-top: 0.75rem;
+    }
+
+    .pairing_page .pairing_question_nav_button {
+        min-height: 2.75rem;
+    }
+
+    .pairing_page .pairing_recipes_section {
+        padding-top: 4rem;
+        padding-bottom: 4.5rem;
+    }
+
+    .pairing_page .pairing_recipe_viewport {
+        margin-top: 1.5rem;
+    }
+
+    .pairing_page .pairing_recipe_card {
+        aspect-ratio: 1024 / 430;
+    }
+
+    .pairing_page .pairing_recipe_content {
+        --pairing-recipe-block-padding: clamp(1.25rem, 2.5cqw, 2.5rem);
+    }
+
+    .pairing_page .pairing_recipe_inner,
+    .pairing_page .pairing_recipe_details {
+        gap: clamp(1.125rem, 1.5cqw, 1.5rem);
     }
 }

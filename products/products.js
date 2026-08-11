@@ -96,13 +96,28 @@
         );
 
 
+    const mobilePagination =
+        document.querySelector(
+            '[data-mobile-product-pagination]'
+        );
+
+
     const tabletCarouselQuery =
         window.matchMedia(
             '(min-width: 768px) and (max-width: 1024px)'
         );
 
 
+    const mobileCarouselQuery =
+        window.matchMedia(
+            '(max-width: 767px)'
+        );
+
+
     const TABLET_PRODUCTS_PER_PAGE = 4;
+
+
+    const MOBILE_PRODUCTS_PER_PAGE = 4;
 
 
     let tabletPageIndex = 0;
@@ -111,6 +126,12 @@
 
     let tabletCarouselFrame = 0;
 
+
+    let mobilePageIndex = 0;
+
+    let mobileVisibleSignature = '';
+
+    let mobilePageTransitioning = false;
 
     const showcase =
         document.getElementById('product_showcase');
@@ -270,6 +291,19 @@
             emptyMessage.hidden =
                 visibleCount > 0;
         }
+
+
+        if (mobileCarouselQuery.matches) {
+
+            renderMobileCarousel(
+                visibleCards
+            );
+
+            return;
+        }
+
+
+        resetMobileCarousel();
 
 
         renderTabletCarousel(
@@ -502,6 +536,967 @@
     }
 
 
+    function setMobileCardVisibility(
+        card,
+        isPageHidden
+    ) {
+
+        card.classList.toggle(
+            'is_mobile_page_hidden',
+            isPageHidden
+        );
+
+
+        if ('inert' in card) {
+            card.inert = isPageHidden;
+        }
+
+
+        if (isPageHidden) {
+            card.setAttribute(
+                'aria-hidden',
+                'true'
+            );
+
+            return;
+        }
+
+
+        card.removeAttribute('aria-hidden');
+    }
+
+
+    function resetMobileCarousel() {
+
+        cards.forEach((card) => {
+            setMobileCardVisibility(
+                card,
+                false
+            );
+        });
+
+
+        grid.classList.remove(
+            'is_mobile_dragging'
+        );
+
+
+        grid.removeAttribute('tabindex');
+        grid.removeAttribute('aria-label');
+
+
+        mobilePageIndex = 0;
+        mobileVisibleSignature = '';
+
+
+        if (!mobilePagination) return;
+
+
+        mobilePagination.hidden = true;
+        mobilePagination.replaceChildren();
+    }
+
+
+    function renderMobilePagination(
+        visibleCards
+    ) {
+
+        if (!mobilePagination) return;
+
+
+        mobilePagination.replaceChildren();
+
+
+        const pageCount = Math.ceil(
+            visibleCards.length /
+            MOBILE_PRODUCTS_PER_PAGE
+        );
+
+
+        for (
+            let pageIndex = 0;
+            pageIndex < pageCount;
+            pageIndex += 1
+        ) {
+
+            const button =
+                document.createElement('button');
+
+
+            const firstProductIndex =
+                pageIndex *
+                MOBILE_PRODUCTS_PER_PAGE;
+
+
+            const isActive =
+                pageIndex === mobilePageIndex;
+
+
+            button.type = 'button';
+
+            button.className =
+                'mobile_product_page_dot';
+
+            button.classList.toggle(
+                'is_active',
+                isActive
+            );
+
+            button.dataset.mobileProductPage =
+                String(pageIndex);
+
+            const productName =
+                visibleCards[firstProductIndex]
+                    ?.querySelector('.product_name')
+                    ?.textContent
+                    ?.trim() ||
+                `product ${pageIndex + 1}`;
+
+
+            button.setAttribute(
+                'aria-label',
+                `Show product group starting with ${productName}`
+            );
+
+            if (isActive) {
+                button.setAttribute(
+                    'aria-current',
+                    'page'
+                );
+            }
+
+
+            mobilePagination.append(button);
+        }
+    }
+
+
+    function updateMobilePagination() {
+
+        if (!mobilePagination) return;
+
+
+        mobilePagination
+            .querySelectorAll('[data-mobile-product-page]')
+            .forEach((button, index) => {
+
+                const isActive =
+                    index === mobilePageIndex;
+
+
+                button.classList.toggle(
+                    'is_active',
+                    isActive
+                );
+
+
+                if (isActive) {
+                    button.setAttribute(
+                        'aria-current',
+                        'page'
+                    );
+
+                    return;
+                }
+
+
+                button.removeAttribute('aria-current');
+            });
+    }
+
+
+    function getMobileCardScrollStart(card) {
+
+        return (
+            grid.scrollLeft +
+            card.getBoundingClientRect().left -
+            grid.getBoundingClientRect().left
+        );
+    }
+
+
+    function scrollToMobileProduct(
+        visibleCards,
+        productIndex
+    ) {
+
+        const target =
+            visibleCards[productIndex];
+
+
+        if (!target) return;
+
+
+        const reduceMotion =
+            window.matchMedia(
+                '(prefers-reduced-motion: reduce)'
+            ).matches;
+
+
+        grid.scrollTo({
+            left: getMobileCardScrollStart(target),
+            behavior: reduceMotion
+                ? 'auto'
+                : 'smooth'
+        });
+    }
+
+
+    function syncMobileCarouselPosition() {
+
+        if (!mobileCarouselQuery.matches) return;
+
+
+        const visibleCards =
+            cards.filter((card) => !card.hidden);
+
+
+        if (!visibleCards.length) return;
+
+
+        const starts =
+            visibleCards.map(
+                getMobileCardScrollStart
+            );
+
+
+        const nearestIndex =
+            starts.reduce(
+                (nearest, start, index) => (
+                    Math.abs(
+                        start - grid.scrollLeft
+                    ) < Math.abs(
+                        starts[nearest] - grid.scrollLeft
+                    )
+                        ? index
+                        : nearest
+                ),
+                0
+            );
+
+
+        if (nearestIndex === mobilePageIndex) return;
+
+
+        mobilePageIndex = nearestIndex;
+        updateMobilePagination();
+    }
+
+
+    function scheduleMobileCarouselSync() {
+
+        if (mobileCarouselFrame) return;
+
+
+        mobileCarouselFrame =
+            window.requestAnimationFrame(() => {
+                mobileCarouselFrame = 0;
+                syncMobileCarouselPosition();
+            });
+    }
+
+
+    function getVisibleMobileCards() {
+
+        return cards.filter(
+            (card) => !card.hidden
+        );
+    }
+
+
+    function createMobileProductDragScroller(element) {
+
+        let isPointerDown = false;
+        let isDragging = false;
+        let pointerId = null;
+        let startX = 0;
+        let startY = 0;
+        let startScrollLeft = 0;
+        let pendingScrollLeft = null;
+        let dragFrame = 0;
+        let suppressClick = false;
+
+
+        const applyPendingScroll = () => {
+
+            if (pendingScrollLeft !== null) {
+                element.scrollLeft = pendingScrollLeft;
+                pendingScrollLeft = null;
+            }
+
+
+            dragFrame = 0;
+        };
+
+
+        const flushPendingScroll = () => {
+
+            if (dragFrame) {
+                window.cancelAnimationFrame(dragFrame);
+                dragFrame = 0;
+            }
+
+
+            applyPendingScroll();
+        };
+
+
+        const releasePointer = () => {
+
+            const capturedPointerId = pointerId;
+
+
+            pointerId = null;
+            isPointerDown = false;
+            isDragging = false;
+            element.classList.remove('is_mobile_dragging');
+
+            if (
+                capturedPointerId !== null &&
+                element.hasPointerCapture(capturedPointerId)
+            ) {
+                element.releasePointerCapture(capturedPointerId);
+            }
+        };
+
+
+        element.addEventListener('pointerdown', (event) => {
+
+            if (!mobileCarouselQuery.matches) return;
+
+
+            if (
+                event.pointerType === 'mouse' &&
+                event.button !== 0
+            ) {
+                return;
+            }
+
+
+            if (
+                element.scrollWidth <=
+                element.clientWidth + 1
+            ) {
+                return;
+            }
+
+
+            isPointerDown = true;
+            pointerId = event.pointerId;
+            startX = event.clientX;
+            startY = event.clientY;
+            startScrollLeft = element.scrollLeft;
+
+
+            element.setPointerCapture(event.pointerId);
+        });
+
+
+        element.addEventListener('pointermove', (event) => {
+
+            if (
+                !isPointerDown ||
+                event.pointerId !== pointerId
+            ) {
+                return;
+            }
+
+
+            const distanceX =
+                event.clientX - startX;
+
+
+            const distanceY =
+                event.clientY - startY;
+
+
+            if (!isDragging) {
+
+                if (
+                    Math.max(
+                        Math.abs(distanceX),
+                        Math.abs(distanceY)
+                    ) < 6
+                ) {
+                    return;
+                }
+
+
+                if (
+                    Math.abs(distanceY) >
+                    Math.abs(distanceX)
+                ) {
+                    releasePointer();
+                    return;
+                }
+
+
+                isDragging = true;
+                element.classList.add('is_mobile_dragging');
+            }
+
+
+            event.preventDefault();
+            pendingScrollLeft =
+                startScrollLeft - distanceX;
+
+
+            if (!dragFrame) {
+                dragFrame = window.requestAnimationFrame(
+                    applyPendingScroll
+                );
+            }
+        });
+
+
+        const finishDragging = (event) => {
+
+            if (
+                !isPointerDown ||
+                event.pointerId !== pointerId
+            ) {
+                return;
+            }
+
+
+            const didDrag = isDragging;
+
+
+            flushPendingScroll();
+            releasePointer();
+
+
+            if (!didDrag) return;
+
+
+            suppressClick = true;
+
+
+            window.setTimeout(() => {
+                suppressClick = false;
+            }, 0);
+        };
+
+
+        element.addEventListener('pointerup', finishDragging);
+        element.addEventListener('pointercancel', finishDragging);
+        element.addEventListener('lostpointercapture', finishDragging);
+
+
+        element.addEventListener(
+            'click',
+            (event) => {
+
+                if (!suppressClick) return;
+
+
+                event.preventDefault();
+                event.stopPropagation();
+                suppressClick = false;
+            },
+            true
+        );
+
+
+        element.addEventListener('dragstart', (event) => {
+
+            if (!mobileCarouselQuery.matches) return;
+
+
+            event.preventDefault();
+        });
+
+
+        element.addEventListener(
+            'scroll',
+            scheduleMobileCarouselSync,
+            { passive: true }
+        );
+
+
+        element.addEventListener('keydown', (event) => {
+
+            if (!mobileCarouselQuery.matches) return;
+
+
+            const direction =
+                event.key === 'ArrowRight'
+                    ? 1
+                    : event.key === 'ArrowLeft'
+                        ? -1
+                        : 0;
+
+
+            if (!direction) return;
+
+
+            const visibleCards =
+                getVisibleMobileCards();
+
+
+            if (!visibleCards.length) return;
+
+
+            const starts =
+                visibleCards.map(
+                    getMobileCardScrollStart
+                );
+
+
+            const currentIndex =
+                starts.reduce(
+                    (nearest, start, index) => (
+                        Math.abs(
+                            start - grid.scrollLeft
+                        ) < Math.abs(
+                            starts[nearest] - grid.scrollLeft
+                        )
+                            ? index
+                            : nearest
+                    ),
+                    0
+                );
+
+
+            const nextIndex = Math.max(
+                0,
+                Math.min(
+                    visibleCards.length - 1,
+                    currentIndex + direction
+                )
+            );
+
+
+            if (nextIndex === currentIndex) return;
+
+
+            event.preventDefault();
+            scrollToMobileProduct(
+                visibleCards,
+                nextIndex
+            );
+        });
+    }
+
+
+    function changeMobileProductPage(
+        visibleCards,
+        nextPageIndex,
+        direction
+    ) {
+
+        const pageCount = Math.max(
+            1,
+            Math.ceil(
+                visibleCards.length /
+                MOBILE_PRODUCTS_PER_PAGE
+            )
+        );
+
+
+        const targetPageIndex = Math.max(
+            0,
+            Math.min(
+                pageCount - 1,
+                nextPageIndex
+            )
+        );
+
+
+        if (
+            mobilePageTransitioning ||
+            targetPageIndex === mobilePageIndex
+        ) {
+            return;
+        }
+
+
+        const reduceMotion =
+            window.matchMedia(
+                '(prefers-reduced-motion: reduce)'
+            ).matches;
+
+
+        if (reduceMotion) {
+            mobilePageIndex = targetPageIndex;
+            renderMobileCarousel(visibleCards);
+            return;
+        }
+
+
+        mobilePageTransitioning = true;
+
+
+        grid.style.setProperty(
+            '--mobile-page-direction',
+            String(direction)
+        );
+
+
+        grid.classList.remove(
+            'is_mobile_page_entering'
+        );
+
+
+        grid.classList.add(
+            'is_mobile_page_leaving'
+        );
+
+
+        window.setTimeout(() => {
+
+            mobilePageIndex = targetPageIndex;
+            renderMobileCarousel(visibleCards);
+
+
+            grid.classList.remove(
+                'is_mobile_page_leaving'
+            );
+
+
+            grid.classList.add(
+                'is_mobile_page_entering'
+            );
+
+
+            window.requestAnimationFrame(() => {
+                window.requestAnimationFrame(() => {
+
+                    grid.classList.remove(
+                        'is_mobile_page_entering'
+                    );
+
+
+                    window.setTimeout(() => {
+                        mobilePageTransitioning = false;
+                    }, 220);
+                });
+            });
+        }, 160);
+    }
+
+
+    function createMobileProductPageSwipe(element) {
+
+        let isPointerDown = false;
+        let isDragging = false;
+        let pointerId = null;
+        let startX = 0;
+        let startY = 0;
+        let lastDistanceX = 0;
+        let suppressClick = false;
+
+
+        const releasePointer = () => {
+
+            const capturedPointerId = pointerId;
+
+
+            pointerId = null;
+            isPointerDown = false;
+            isDragging = false;
+
+
+            element.classList.remove('is_mobile_dragging');
+            element.style.removeProperty('--mobile-drag-offset');
+
+
+            if (
+                capturedPointerId !== null &&
+                element.hasPointerCapture(capturedPointerId)
+            ) {
+                element.releasePointerCapture(capturedPointerId);
+            }
+        };
+
+
+        element.addEventListener('pointerdown', (event) => {
+
+            if (
+                !mobileCarouselQuery.matches ||
+                mobilePageTransitioning
+            ) {
+                return;
+            }
+
+
+            if (
+                event.pointerType === 'mouse' &&
+                event.button !== 0
+            ) {
+                return;
+            }
+
+
+            isPointerDown = true;
+            pointerId = event.pointerId;
+            startX = event.clientX;
+            startY = event.clientY;
+            lastDistanceX = 0;
+
+
+            element.setPointerCapture(event.pointerId);
+        });
+
+
+        element.addEventListener('pointermove', (event) => {
+
+            if (
+                !isPointerDown ||
+                event.pointerId !== pointerId
+            ) {
+                return;
+            }
+
+
+            const distanceX = event.clientX - startX;
+            const distanceY = event.clientY - startY;
+
+
+            if (!isDragging) {
+
+                if (
+                    Math.max(
+                        Math.abs(distanceX),
+                        Math.abs(distanceY)
+                    ) < 6
+                ) {
+                    return;
+                }
+
+
+                if (
+                    Math.abs(distanceY) >
+                    Math.abs(distanceX)
+                ) {
+                    releasePointer();
+                    return;
+                }
+
+
+                isDragging = true;
+                element.classList.add('is_mobile_dragging');
+            }
+
+
+            lastDistanceX = distanceX;
+
+
+            element.style.setProperty(
+                '--mobile-drag-offset',
+                `${Math.max(-28, Math.min(28, distanceX * 0.14))}px`
+            );
+
+
+            event.preventDefault();
+        });
+
+
+        const finishDragging = (event) => {
+
+            if (
+                !isPointerDown ||
+                event.pointerId !== pointerId
+            ) {
+                return;
+            }
+
+
+            const didDrag = isDragging;
+            const direction =
+                lastDistanceX < 0
+                    ? 1
+                    : -1;
+
+
+            releasePointer();
+
+
+            if (!didDrag) return;
+
+
+            suppressClick = true;
+
+
+            window.setTimeout(() => {
+                suppressClick = false;
+            }, 0);
+
+
+            if (Math.abs(lastDistanceX) < 40) return;
+
+
+            changeMobileProductPage(
+                getVisibleMobileCards(),
+                mobilePageIndex + direction,
+                direction
+            );
+        };
+
+
+        element.addEventListener('pointerup', finishDragging);
+        element.addEventListener('pointercancel', finishDragging);
+        element.addEventListener('lostpointercapture', finishDragging);
+
+
+        element.addEventListener(
+            'click',
+            (event) => {
+
+                if (!suppressClick) return;
+
+
+                event.preventDefault();
+                event.stopPropagation();
+                suppressClick = false;
+            },
+            true
+        );
+
+
+        element.addEventListener('dragstart', (event) => {
+
+            if (!mobileCarouselQuery.matches) return;
+
+
+            event.preventDefault();
+        });
+
+
+        element.addEventListener('keydown', (event) => {
+
+            if (!mobileCarouselQuery.matches) return;
+
+
+            const direction =
+                event.key === 'ArrowRight'
+                    ? 1
+                    : event.key === 'ArrowLeft'
+                        ? -1
+                        : 0;
+
+
+            if (!direction) return;
+
+
+            event.preventDefault();
+
+
+            changeMobileProductPage(
+                getVisibleMobileCards(),
+                mobilePageIndex + direction,
+                direction
+            );
+        });
+    }
+
+
+    createMobileProductPageSwipe(grid);
+
+
+    function renderMobileCarousel(
+        visibleCards
+    ) {
+
+        if (!mobileCarouselQuery.matches) {
+            resetMobileCarousel();
+            return;
+        }
+
+
+        /* A previous tablet page must not leave cards inert on mobile. */
+        cards.forEach((card) => {
+            setTabletCardVisibility(
+                card,
+                false
+            );
+        });
+
+
+        const visibleSignature =
+            visibleCards
+                .map(
+                    (card) =>
+                        card.dataset.product || ''
+                )
+                .join('|');
+
+
+        const hasNewMobileProducts =
+            visibleSignature !==
+            mobileVisibleSignature;
+
+
+        if (hasNewMobileProducts) {
+            mobilePageIndex = 0;
+            mobileVisibleSignature = visibleSignature;
+        }
+
+
+        const pageCount = Math.max(
+            1,
+            Math.ceil(
+                visibleCards.length /
+                MOBILE_PRODUCTS_PER_PAGE
+            )
+        );
+
+
+        mobilePageIndex = Math.min(
+            mobilePageIndex,
+            pageCount - 1
+        );
+
+
+        const hasMultiplePages =
+            pageCount > 1;
+
+
+        cards.forEach((card) => {
+
+            const visibleIndex =
+                visibleCards.indexOf(card);
+
+
+            const isPageHidden =
+                visibleIndex >= 0 &&
+                Math.floor(
+                    visibleIndex /
+                    MOBILE_PRODUCTS_PER_PAGE
+                ) !== mobilePageIndex;
+
+
+            setMobileCardVisibility(
+                card,
+                isPageHidden
+            );
+        });
+
+
+        grid.tabIndex = 0;
+
+
+        grid.setAttribute(
+            'aria-label',
+            'Product carousel. Drag or swipe horizontally to browse products.'
+        );
+
+
+        if (!mobilePagination) return;
+
+
+        mobilePagination.hidden =
+            !hasMultiplePages;
+
+
+        if (hasMultiplePages) {
+            renderMobilePagination(visibleCards);
+        } else {
+            mobilePagination.replaceChildren();
+        }
+    }
+
+
     function scheduleTabletCarouselRender() {
 
         if (tabletCarouselFrame) return;
@@ -514,11 +1509,7 @@
                     tabletCarouselFrame = 0;
 
 
-                    renderTabletCarousel(
-                        cards.filter(
-                            (card) => !card.hidden
-                        )
-                    );
+                    renderProducts();
                 }
             );
     }
@@ -903,6 +1894,44 @@
     );
 
 
+    mobilePagination?.addEventListener(
+        'click',
+        (event) => {
+
+            const button =
+                event.target.closest(
+                    '[data-mobile-product-page]'
+                );
+
+
+            if (
+                !button ||
+                !mobileCarouselQuery.matches
+            ) {
+                return;
+            }
+
+
+            const targetPageIndex = Number(
+                button.dataset.mobileProductPage
+            );
+
+
+            const visibleCards =
+                getVisibleMobileCards();
+
+
+            changeMobileProductPage(
+                visibleCards,
+                targetPageIndex,
+                targetPageIndex > mobilePageIndex
+                    ? 1
+                    : -1
+            );
+        }
+    );
+
+
     if (
         typeof tabletCarouselQuery.addEventListener ===
         'function'
@@ -913,6 +1942,21 @@
         );
     } else {
         tabletCarouselQuery.addListener(
+            scheduleTabletCarouselRender
+        );
+    }
+
+
+    if (
+        typeof mobileCarouselQuery.addEventListener ===
+        'function'
+    ) {
+        mobileCarouselQuery.addEventListener(
+            'change',
+            scheduleTabletCarouselRender
+        );
+    } else {
+        mobileCarouselQuery.addListener(
             scheduleTabletCarouselRender
         );
     }
@@ -1085,7 +2129,7 @@
 
     /* Rice */
 
-    if (rice) {
+    if (!isMobileHero && rice) {
 
         introTl.fromTo(
             rice,
@@ -1112,7 +2156,7 @@
 
     /* 1000 */
 
-    if (prebiotics) {
+    if (!isMobileHero && prebiotics) {
 
         introTl.fromTo(
             prebiotics,
@@ -1139,7 +2183,7 @@
 
     /* Draft */
 
-    if (draft) {
+    if (!isMobileHero && draft) {
 
         introTl.fromTo(
             draft,
@@ -1166,7 +2210,7 @@
 
     /* Strawberry */
 
-    if (strawberry) {
+    if (!isMobileHero && strawberry) {
 
         introTl.fromTo(
             strawberry,
@@ -1193,7 +2237,7 @@
 
     /* Splash */
 
-    if (splash) {
+    if (!isMobileHero && splash) {
 
         introTl.fromTo(
             splash,
@@ -1730,17 +2774,22 @@
 
     const getEntryY =
         () =>
-            hero.offsetHeight * 0.38;
+            Math.min(
+                hero.offsetHeight * 0.16,
+                120
+            );
 
 
     /*
-     * The CSS `translate` keeps the bottle centered horizontally.
-     * The bottom edge stays visible as the bottle rises into place.
+     * The original mobile CSS owns the final composition. Keep enough of the
+     * bottle visible at the start, then let it rise into that static position.
      */
     gsap.set(
         centerBottle,
         {
             autoAlpha: 1,
+            xPercent: -50,
+            yPercent: -50,
             y: getEntryY,
             scale: 1,
             transformOrigin: '50% 100%'
@@ -1806,30 +2855,16 @@
         .to(
             centerBottle,
             {
-                y: -10,
-
-                scale: 1.06,
-
-                duration: 0.56,
-
-                ease: 'power3.out'
-            },
-
-            0.02
-        )
-        .to(
-            centerBottle,
-            {
                 y: 0,
 
                 scale: 1,
 
-                duration: 0.22,
+                duration: 0.74,
 
                 ease: 'power2.out'
             },
 
-            0.56
+            0.08
         );
 
 
@@ -2214,10 +3249,15 @@
     ).matches;
 
 
+  const ctaXPercent =
+    isTabletLayout
+      ? -50
+      : 0;
+
+
   if (
     reduceMotion ||
-    !hasGSAP ||
-    isTabletLayout
+    !hasGSAP
   ) return;
 
 
@@ -2225,6 +3265,13 @@
     document.querySelector(".starter_kit");
 
   if (!section) return;
+
+
+  if (isTabletLayout) {
+    section.classList.add(
+      "is-tablet-motion-ready"
+    );
+  }
 
 
   const inner =
@@ -2252,6 +3299,11 @@
   const best =
     section.querySelector(".starter_kit_best");
 
+  const starterEntryOffset =
+    isMobileLayout
+      ? 12
+      : 30;
+
   /* =====================================================
      1. 처음 상태
   ===================================================== */
@@ -2260,7 +3312,7 @@
     [title, desc, character].filter(Boolean),
     {
       autoAlpha: 0,
-      y: 30
+      y: starterEntryOffset
     }
   );
 
@@ -2268,9 +3320,10 @@
   if (cta) {
     gsap.set(cta, {
       autoAlpha: 0,
-      y: 24,
-      scale: 0.75,
-      rotation: -5
+      xPercent: ctaXPercent,
+      y: isMobileLayout ? 12 : 24,
+      scale: isMobileLayout ? 1 : 0.75,
+      rotation: isMobileLayout ? 0 : -5
     });
   }
 
@@ -2282,12 +3335,10 @@
   if (best) {
     gsap.set(best, {
       autoAlpha: 0,
-      scale: 1.8,
-      rotation: -35
+      scale: isMobileLayout ? 0.92 : 1.8,
+      rotation: isMobileLayout ? -12 : -35
     });
   }
-
-
 
   /* =====================================================
      2. 카드 겹쳐놓기
@@ -2308,7 +3359,7 @@
       먼저 카드들을 최종 위치로 초기화한 다음
       실제 좌표를 계산합니다.
     */
-    gsap.set(cards, {
+    gsap.set(isMobileLayout ? cards.slice(1) : cards, {
       clearProps: "transform"
     });
 
@@ -2317,19 +3368,65 @@
       cards[0];
 
 
-    if (isMobileLayout) {
+    if (isTabletLayout) {
 
       cards.slice(1).forEach(
-        (card) => {
+        (card, index) => {
 
           gsap.set(card, {
             x: strawberry.offsetLeft - card.offsetLeft,
 
             y: strawberry.offsetTop - card.offsetTop,
 
-            scale: 0.98,
+            scale: 1 - ((index + 1) * 0.02),
 
-            rotation: 0,
+            rotation: 4.76,
+
+            transformOrigin: "center center"
+          });
+
+        }
+      );
+
+
+      return;
+    }
+
+
+    if (isMobileLayout) {
+
+      cards.slice(1).forEach(
+        (card, index) => {
+
+          const layerOffset =
+            index === 0
+              ? {
+                  x: 14,
+                  y: 14,
+                  scale: 0.96,
+                  rotation: 4
+                }
+              : {
+                  x: -12,
+                  y: 28,
+                  scale: 0.92,
+                  rotation: -7
+                };
+
+          gsap.set(card, {
+            x:
+              strawberry.offsetLeft -
+              card.offsetLeft +
+              layerOffset.x,
+
+            y:
+              strawberry.offsetTop -
+              card.offsetTop +
+              layerOffset.y,
+
+            scale: layerOffset.scale,
+
+            rotation: layerOffset.rotation,
 
             transformOrigin: "center center"
           });
@@ -2409,7 +3506,7 @@
      inner 전체가 먼저 오른쪽 → 왼쪽으로 싸악
   --------------------------------------------- */
 
-  if (inner) {
+  if (inner && !isMobileLayout) {
 
     tl.fromTo(
       inner,
@@ -2484,7 +3581,9 @@
 
           duration: 0.22,
 
-          ease: "back.out(1.5)"
+          ease: isMobileLayout
+            ? "power2.out"
+            : "back.out(1.5)"
         },
 
         "-=0.10"
@@ -2505,37 +3604,45 @@
         {
           autoAlpha: 1,
 
+          xPercent: ctaXPercent,
+
           y: 0,
 
-          scale: 1.12,
+          scale: isMobileLayout ? 1 : 1.12,
 
-          rotation: 3,
+          rotation: isMobileLayout ? 0 : 3,
 
-          duration: 0.18,
+          duration: isMobileLayout ? 0.22 : 0.18,
 
-          ease: "back.out(3)"
+          ease: isMobileLayout
+            ? "power2.out"
+            : "back.out(3)"
         },
 
         "-=0.14"
       );
 
 
-      tl.to(
-        cta,
-        {
-          scale: 1,
+      if (!isMobileLayout) {
 
-          rotation: 0,
+        tl.to(
+          cta,
+          {
+            xPercent: ctaXPercent,
 
-          duration: 0.07
-        },
+            scale: 1,
 
-        "-=0.03"
-      );
+            rotation: 0,
+
+            duration: 0.07
+          },
+
+          "-=0.03"
+        );
+
+      }
 
     }
-
-
 
    /* =================================================
    카드 휘리릭 펼치기
@@ -2557,7 +3664,7 @@ if (cards.length > 1) {
 
         scale: 1,
 
-        rotation: -8.67,
+        rotation: 7,
 
         duration: 0.56,
 
@@ -2578,7 +3685,7 @@ if (cards.length > 1) {
 
           scale: 1,
 
-          rotation: 3.38,
+          rotation: -14,
 
           duration: 0.6,
 
@@ -2586,6 +3693,57 @@ if (cards.length > 1) {
         },
 
         "-=0.30"
+      );
+
+    }
+
+
+    tl.set(
+      cards.slice(1),
+      {
+        clearProps: "transform"
+      }
+    );
+
+  } else if (isTabletLayout) {
+
+    tl.to(
+      cards[1],
+      {
+        x: 0,
+        y: 0,
+
+        scale: 1,
+
+        rotation: -7.09,
+
+        duration: 0.52,
+
+        ease: "power3.out"
+      },
+
+      "-=0.05"
+    );
+
+
+    if (cards[2]) {
+
+      tl.to(
+        cards[2],
+        {
+          x: 0,
+          y: 0,
+
+          scale: 1,
+
+          rotation: 14.5,
+
+          duration: 0.52,
+
+          ease: "power3.out"
+        },
+
+        "-=0.32"
       );
 
     }
@@ -2666,48 +3824,71 @@ if (cards.length > 1) {
 
     if (best) {
 
-      tl.to(
-        best,
-        {
-          autoAlpha: 1,
+      if (isMobileLayout) {
 
-          scale: 0.82,
+        tl.to(
+          best,
+          {
+            autoAlpha: 1,
 
-          rotation: -5,
+            scale: 1,
 
-          duration: 0.13,
+            rotation: -12,
 
-          ease: "power4.in"
-        },
+            duration: 0.22,
 
-        "-=0.10"
-      );
+            ease: "power2.out"
+          },
+
+          "-=0.08"
+        );
+
+      } else {
+
+        tl.to(
+          best,
+          {
+            autoAlpha: 1,
+
+            scale: 0.82,
+
+            rotation: -5,
+
+            duration: 0.13,
+
+            ease: "power4.in"
+          },
+
+          "-=0.10"
+        );
 
 
-      tl.to(
-        best,
-        {
-          scale: 1.12,
+        tl.to(
+          best,
+          {
+            scale: 1.12,
 
-          rotation: -15,
+            rotation: -15,
 
-          duration: 0.08,
+            duration: 0.08,
 
-          ease: "back.out(4)"
-        }
-      );
+            ease: "back.out(4)"
+          }
+        );
 
 
-      tl.to(
-        best,
-        {
-          scale: 1,
+        tl.to(
+          best,
+          {
+            scale: 1,
 
-          rotation: -12,
+            rotation: -12,
 
-          duration: 0.06
-        }
-      );
+            duration: 0.06
+          }
+        );
+
+      }
 
     }
 
@@ -2754,8 +3935,10 @@ if (cards.length > 1) {
 
       {
         threshold: isMobileLayout
-          ? 0.3
-          : 0.75
+          ? 0.15
+          : isTabletLayout
+            ? 0.3
+            : 0.75
       }
 
     );
