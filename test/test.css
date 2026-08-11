@@ -477,15 +477,14 @@ body {
 .intro_bubble {
     position: absolute;
     left: 50%;
-    /* Center above the walker head instead of extending into the intro copy. */
-    bottom: calc(var(--walker-bottom, 0px) + var(--walker-size) * 0.82);
+    bottom: calc(var(--walker-bottom, 0px) + var(--walker-size) * 0.652);
     z-index: 2;
     width: calc(var(--walker-size) * 0.62);
     height: auto;
     overflow: visible;
     pointer-events: none;
     transform:
-        translateX(calc(var(--walker-end) + var(--walker-size) * 0.12 - 100px));
+        translateX(calc(var(--walker-end) - var(--walker-size) * 0.55));
 }
 
 /* 대기 상태에서는 획이 지워진 채로 있다가 js 가 재생 클래스를 붙이면 그려짐 */
@@ -1012,12 +1011,6 @@ body {
     opacity: 0;
     pointer-events: none;
     transition: opacity 520ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* The companion-choice screen keeps its background static. */
-#q2_yangban>.mate_preview,
-#q2_pyeongmin>.mate_preview {
-    display: none;
 }
 
 #q2_pyeongmin>.mate_preview {
@@ -1725,6 +1718,12 @@ body {
         padding: 96px 20px 64px;
     }
 
+    /* Keep the companion-choice background static on touch screens. */
+    #q2_yangban>.mate_preview,
+    #q2_pyeongmin>.mate_preview {
+        display: none;
+    }
+
     /* 위 .screen 규칙이 뒤에 있어 padding-left 를 덮어쓰므로 여기서 다시 잡아 줌.
        여백 값을 하나로 둬야 할머니 서는 자리도 같은 선에 맞음 */
     .screen_intro {
@@ -1740,6 +1739,12 @@ body {
             0
             6rem
             var(--intro-gutter);
+    }
+
+    .intro_bubble {
+        bottom: calc(var(--walker-bottom, 0px) + var(--walker-size) * 0.82);
+        transform:
+            translateX(calc(var(--walker-end) + var(--walker-size) * 0.12 - 100px));
     }
 
     .intro_title {
