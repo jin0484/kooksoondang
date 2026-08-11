@@ -485,7 +485,7 @@ body {
     overflow: visible;
     pointer-events: none;
     transform:
-        translateX(calc(var(--walker-end) + var(--walker-size) * 0.12 - 200px));
+        translateX(calc(var(--walker-end) + var(--walker-size) * 0.12 - 100px));
 }
 
 /* 대기 상태에서는 획이 지워진 채로 있다가 js 가 재생 클래스를 붙이면 그려짐 */
