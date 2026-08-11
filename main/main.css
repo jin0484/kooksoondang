@@ -303,6 +303,12 @@ section[id] {
 
 .btn_pill_check {
   background: var(--btn-check);
+  transition: transform 180ms ease, background-color 180ms ease;
+}
+
+.btn_pill_check.is_pairing_ready,
+.pairing_roulette_check.is_pairing_ready {
+  background: var(--kooksoondang_orange);
 }
 
 /* ---------- hero ---------- */
@@ -2031,6 +2037,10 @@ section[id] {
   /* 버튼이 작아 반지름만 줄임. 위가 평평하고 아래가 둥근 방향은 그대로 */
   border-radius: 0.25rem 0.25rem 0.75rem 0.75rem;
   font-size: 1rem;
+}
+
+.pairing_result_next {
+  background: var(--kooksoondang_orange);
 }
 
 /* 양 끝 opacity 를 0 으로 맞춰 루프가 되감기는 순간이 보이지 않게 하고,

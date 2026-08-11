@@ -135,6 +135,7 @@
     const desktopQuery = window.matchMedia('(min-width: 768px)');
 
     const lead = document.querySelector('.history_vision_lead');
+    const since = document.querySelector('.history_vision_since');
 
     // VISION 은 여섯 칸뿐이라 또박또박, 문구는 예순 자가 넘어 촘촘하게
     const WORD_STEP_MS = 70;
@@ -143,6 +144,7 @@
     const REVEAL_MS = 500;
     // VISION 이 자리를 잡고 나서 문구가 시작하기까지의 사이
     const LEAD_GAP_MS = 120;
+    const MOTION_BUFFER_MS = 180;
 
     // 쪼갤 글자를 담은 텍스트 노드를 문서 순서대로 모은다.
     // 글자가 없는 요소(O 이미지)는 더 들어가지 않고 통째로 한 칸이 되고,
@@ -206,10 +208,27 @@
     // 뒤늦게 터지지 않도록 매번 걷어 낸다.
     let timers = [];
     let isShown = false;
+    let isScrollLocked = false;
 
     function clearTimers() {
         timers.forEach(window.clearTimeout);
         timers = [];
+    }
+
+    function lockScroll() {
+        if (!desktopQuery.matches || isScrollLocked) return;
+
+        isScrollLocked = true;
+        document.documentElement.classList.add('is_vision_intro_locked');
+        window.siteLenis?.stop?.();
+    }
+
+    function unlockScroll() {
+        if (!isScrollLocked) return;
+
+        isScrollLocked = false;
+        document.documentElement.classList.remove('is_vision_intro_locked');
+        window.siteLenis?.start?.();
     }
 
     const charsOf = (root) => [...root.querySelectorAll('.reveal_char')];
@@ -229,15 +248,26 @@
         if (!isShown) return;
 
         const items = charsOf(word);
+        const wordMotionEnd = Math.max(0, items.length - 1) * WORD_STEP_MS + REVEAL_MS;
 
+        since?.classList.add('is_revealed');
         reveal(items, WORD_STEP_MS, 0);
 
-        if (!lead) return;
+        if (!lead) {
+            lockScroll();
+            timers.push(window.setTimeout(unlockScroll, wordMotionEnd + MOTION_BUFFER_MS));
+            return;
+        }
 
         // VISION 의 마지막 글자가 다 나타난 뒤에 문구가 이어서 시작한다
         const leadStart = (items.length - 1) * WORD_STEP_MS + REVEAL_MS + LEAD_GAP_MS;
 
-        reveal(charsOf(lead), LEAD_STEP_MS, leadStart);
+        const leadItems = charsOf(lead);
+        const motionEnd = leadStart + Math.max(0, leadItems.length - 1) * LEAD_STEP_MS + REVEAL_MS;
+
+        reveal(leadItems, LEAD_STEP_MS, leadStart);
+        lockScroll();
+        timers.push(window.setTimeout(unlockScroll, motionEnd + MOTION_BUFFER_MS));
     }
 
     function play() {
@@ -262,6 +292,7 @@
 
         isShown = false;
         clearTimers();
+        unlockScroll();
 
         // VISION 과 문구를 한꺼번에 되돌린다 (둘 다 panel 안에 있다)
         charsOf(panel).forEach((item) => item.classList.remove('is_revealed'));
@@ -271,8 +302,12 @@
 
     if (lead) split(lead);
 
+    document.addEventListener('aboutbrand:history-vision-ready', () => {
+        if (desktopQuery.matches) play();
+    });
+
     if (!('IntersectionObserver' in window)) {
-        play();
+        if (!desktopQuery.matches) play();
         return;
     }
 
@@ -281,7 +316,7 @@
     // 실제로 그려진 자리를 보므로 그대로 쓸 수 있다.
     const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
-            if (entry.isIntersecting) {
+            if (entry.isIntersecting && !desktopQuery.matches) {
                 play();
                 return;
             }
@@ -299,6 +334,10 @@
     }, { threshold: 0.6 });
 
     observer.observe(panel);
+
+    desktopQuery.addEventListener('change', () => {
+        if (!desktopQuery.matches) unlockScroll();
+    });
 })();
 
 
@@ -601,6 +640,7 @@
 
     let horizontalTween = null;
     let isPinned = false;
+    let hasReachedVisionEnd = false;
 
     const canUseGsap = () => typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined';
     const shouldPin = () => canUseGsap() && desktopQuery.matches && !reducedMotionQuery.matches;
@@ -930,12 +970,12 @@
     // 가로 이동이 끝난 뒤, vision 패널을 화면 한 번 분량만큼 붙잡아 둔다.
     // 이 구간에서는 아무것도 움직이지 않고 pin 만 유지되므로,
     // 화면이 완전히 넘어간 뒤에야 세로 스크롤로 풀린다.
-    const holdDistance = () => screenHeight();
-
     // 사진이 각 img_box 자리에 닿을 때마다 한 번씩 멈춰 서는 거리.
     // 이만큼은 스크롤을 해도 트랙이 움직이지 않아서, 한 번 걸렸다가
     // 다시 스크롤하면 다음 자리로 넘어간다.
     const dwellDistance = () => Math.round(screenHeight() * 0.4);
+    // 마지막 패널에 닿은 프레임에서 고정 처리를 시작할 수 있도록 아주 짧은 여유를 둔다.
+    const visionLockDistance = () => 24;
 
     // 멈춰 설 지점(트랙 이동 거리 기준). 이미 자리에 있는 첫 칸(0)은 뺀다.
     function dwellStops(distance) {
@@ -949,7 +989,7 @@
     function getTotalDistance() {
         const distance = getScrollDistance();
 
-        return distance + dwellStops(distance).length * dwellDistance() + holdDistance();
+        return distance + dwellStops(distance).length * dwellDistance() + visionLockDistance();
     }
 
     // 멈춤 지점을 오갈 때 속도를 어느 정도까지 죽일지.
@@ -1000,7 +1040,7 @@
         const distance = getScrollDistance();
         const total = getTotalDistance();
         // 끝에서 붙잡아 두는 구간을 뺀, 가로로 쓸 수 있는 스크롤 거리
-        const usable = Math.max(0, total - holdDistance());
+        const usable = Math.max(0, total - visionLockDistance());
         const scrolled = Math.min(usable, scrollProxy.progress * total);
         const moved = distance > 0
             ? Math.min(1, movedByScroll(scrolled, distance) / distance)
@@ -1009,6 +1049,15 @@
         gsap.set(stage, { x: -distance * moved });
         updatePhoto(moved);
         updateFocus();
+
+        const atVisionEnd = distance === 0 || moved >= 0.9999;
+
+        if (atVisionEnd && !hasReachedVisionEnd) {
+            hasReachedVisionEnd = true;
+            document.dispatchEvent(new CustomEvent('aboutbrand:history-vision-ready'));
+        } else if (!atVisionEnd) {
+            hasReachedVisionEnd = false;
+        }
     }
 
     function buildHorizontalScroll() {
@@ -1020,6 +1069,7 @@
         isPinned = true;
         viewport.scrollLeft = 0;
         scrollProxy.progress = 0;
+        hasReachedVisionEnd = false;
 
         horizontalTween = gsap.to(scrollProxy, {
             progress: 1,
@@ -1054,6 +1104,7 @@
         horizontalTween.scrollTrigger?.kill();
         horizontalTween.kill();
         horizontalTween = null;
+        hasReachedVisionEnd = false;
 
         gsap.set(stage, { clearProps: 'transform' });
         section.classList.remove('is_history_pinned');

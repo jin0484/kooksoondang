@@ -118,17 +118,23 @@
         <!-- ===================== Q2. 동행 ===================== -->
         <section class="screen screen_question screen_dim" id="q2_yangban" data-step="2">
             <p class="question">
-                Welcome, traveler.<br>Thanks for coming all this way.<br><br>
-                Drinking alone today, or with companions?
+                <span>Welcome, traveler.<br>Thanks for coming all this way.</span>
+                <span>Drinking alone today, or with companions?</span>
             </p>
+            <img class="mate_preview mate_preview_alone" src="test_asset/양반혼자.png" alt="" aria-hidden="true"
+                data-hover-frames="test_asset/양반혼자.png, test_asset/양반혼자1.png"
+                data-hover-frame-ms="300">
+            <img class="mate_preview mate_preview_together" src="test_asset/양반같이.png" alt="" aria-hidden="true"
+                data-hover-frames="test_asset/양반같이.png, test_asset/양반같이2.png"
+                data-hover-frame-ms="300">
             <!-- data-wipe="ttb": 위에서 아래로 쓸어 내리며 넘어감 -->
             <div class="choices">
-                <button type="button" class="choice" data-set="mate:alone" data-next="cut_yangban_alone"
-                    data-wipe="ttb">
+                <button type="button" class="choice" data-set="mate:alone" data-next="q3_yangban"
+                    data-wipe="ttb" data-hover-animate=".mate_preview_alone">
                     I want to enjoy alone.
                 </button>
-                <button type="button" class="choice" data-set="mate:together" data-next="cut_yangban_together"
-                    data-wipe="ttb">
+                <button type="button" class="choice" data-set="mate:together" data-next="q3_yangban"
+                    data-wipe="ttb" data-hover-animate=".mate_preview_together">
                     I want to enjoy with my friends
                 </button>
             </div>
@@ -136,96 +142,92 @@
 
         <section class="screen screen_question screen_dim" id="q2_pyeongmin" data-step="2">
             <p class="question">
-                Welcome, traveler.<br>Thanks for coming all this way.<br><br>
-                Drinking alone today, or with companions?
+                <span>Welcome, traveler.<br>Thanks for coming all this way.</span>
+                <span>Drinking alone today, or with companions?</span>
             </p>
+            <img class="mate_preview mate_preview_alone" src="test_asset/평민혼자.png" alt="" aria-hidden="true"
+                data-hover-frames="test_asset/평민혼자.png, test_asset/평민혼자2.png"
+                data-hover-frame-ms="300">
+            <img class="mate_preview mate_preview_together" src="test_asset/평민같이.png" alt="" aria-hidden="true"
+                data-hover-frames="test_asset/평민같이.png, test_asset/평민같이2.png"
+                data-hover-frame-ms="300">
             <!-- data-wipe="ttb": 위에서 아래로 쓸어 내리며 넘어감 -->
             <div class="choices">
-                <button type="button" class="choice" data-set="mate:alone" data-next="cut_pyeongmin_alone"
-                    data-wipe="ttb">
+                <button type="button" class="choice" data-set="mate:alone" data-next="q3_pyeongmin"
+                    data-wipe="ttb" data-hover-animate=".mate_preview_alone">
                     I want to enjoy alone.
                 </button>
-                <button type="button" class="choice" data-set="mate:together" data-next="cut_pyeongmin_together"
-                    data-wipe="ttb">
+                <button type="button" class="choice" data-set="mate:together" data-next="q3_pyeongmin"
+                    data-wipe="ttb" data-hover-animate=".mate_preview_together">
                     I want to enjoy with my friends
                 </button>
             </div>
-        </section>
-
-        <!-- ---------- 동행 선택 후 전환 컷 ---------- -->
-        <!-- 인물 그림은 배경과 같은 1920x1080 판이라 그대로 겹쳐 두면 제자리에 앉음 -->
-        <section class="screen screen_cut screen_dim" id="cut_yangban_alone" data-next="q3_yangban">
-            <img class="cut_actor" src="test_asset/Yangban_solo.png" alt="">
-            <p class="cut_caption">양반 - 혼자 선택 시</p>
-        </section>
-        <section class="screen screen_cut screen_dim" id="cut_yangban_together" data-next="q3_yangban">
-            <img class="cut_actor" src="test_asset/Yangban_with.png" alt="">
-            <p class="cut_caption">양반 - 함께 선택 시</p>
-        </section>
-        <section class="screen screen_cut screen_dim" id="cut_pyeongmin_alone" data-next="q3_pyeongmin">
-            <img class="cut_actor" src="test_asset/Pyeongmin_solo.png" alt="">
-            <p class="cut_caption">평민 - 혼자 선택 시</p>
-        </section>
-        <section class="screen screen_cut screen_dim" id="cut_pyeongmin_together" data-next="q3_pyeongmin">
-            <img class="cut_actor" src="test_asset/Pyeongmin_with.png" alt="">
-            <p class="cut_caption">평민 - 함께 선택 시</p>
         </section>
 
         <!-- ===================== Q3. 술 종류 ===================== -->
         <section class="screen screen_question screen_dim" id="q3_yangban" data-step="3">
             <!-- 배경 그림 위 탁자에 올려 두는 술. 자리 잡는 법은 test.css 의 .stage / .drink 참고 -->
             <div class="stage" aria-hidden="true">
-                <img class="drink drink_beer" src="test_asset/맥주.png" alt="">
+                <img class="drink drink_beer" src="test_asset/맥주.png" alt=""
+                    data-hover-frames="test_asset/맥주.png, test_asset/맥주1.png, test_asset/맥주2.png, test_asset/맥주3.png"
+                    data-hover-frame-ms="300">
                 <img class="drink drink_whiskey" src="test_asset/위스키.png" alt="">
-                <img class="drink drink_wine" src="test_asset/와인.png" alt="">
+                <img class="drink drink_wine" src="test_asset/와인.png" alt=""
+                    data-hover-frames="test_asset/와인.png, test_asset/와인1.png, test_asset/와인2.png, test_asset/와인3.png"
+                    data-hover-frame-ms="300">
                 <img class="drink drink_wineglass" src="test_asset/와인잔.png" alt="">
-                <img class="drink drink_cocktail" src="test_asset/칵테일딸.png" alt="">
+                <img class="drink drink_cocktail" src="test_asset/칵테일.png" alt=""
+                    data-hover-frames="test_asset/칵테일.png, test_asset/칵테일1.png, test_asset/칵테일2.png, test_asset/칵테일3.png"
+                    data-hover-frame-ms="300">
             </div>
 
             <p class="question">What type of drink do you prefer?</p>
             <div class="choices">
-                <button type="button" class="choice" data-set="drink:beer" data-next="cut_beer">Beer</button>
-                <button type="button" class="choice" data-set="drink:wine" data-next="cut_wine">Whiskey / Wine</button>
-                <button type="button" class="choice" data-set="drink:cocktail" data-next="cut_cocktail">Cocktail</button>
+                <button type="button" class="choice" data-set="drink:beer" data-next="q4" data-wipe="ttb"
+                    data-hover-animate=".drink_beer">Beer</button>
+                <button type="button" class="choice" data-set="drink:wine" data-next="q4" data-wipe="ttb"
+                    data-hover-animate=".drink_wine">Whiskey / Wine</button>
+                <button type="button" class="choice" data-set="drink:cocktail" data-next="q4" data-wipe="ttb"
+                    data-hover-animate=".drink_cocktail">Cocktail</button>
             </div>
         </section>
 
         <section class="screen screen_question screen_dim" id="q3_pyeongmin" data-step="3">
             <div class="stage" aria-hidden="true">
-                <img class="drink drink_beer" src="test_asset/맥주.png" alt="">
+                <img class="drink drink_beer" src="test_asset/맥주.png" alt=""
+                    data-hover-frames="test_asset/맥주.png, test_asset/맥주1.png, test_asset/맥주2.png, test_asset/맥주3.png"
+                    data-hover-frame-ms="300">
                 <img class="drink drink_whiskey" src="test_asset/위스키.png" alt="">
-                <img class="drink drink_wine" src="test_asset/와인.png" alt="">
+                <img class="drink drink_wine" src="test_asset/와인.png" alt=""
+                    data-hover-frames="test_asset/와인.png, test_asset/와인1.png, test_asset/와인2.png, test_asset/와인3.png"
+                    data-hover-frame-ms="300">
                 <img class="drink drink_wineglass" src="test_asset/와인잔.png" alt="">
-                <img class="drink drink_cocktail" src="test_asset/칵테일딸.png" alt="">
+                <img class="drink drink_cocktail" src="test_asset/칵테일.png" alt=""
+                    data-hover-frames="test_asset/칵테일.png, test_asset/칵테일1.png, test_asset/칵테일2.png, test_asset/칵테일3.png"
+                    data-hover-frame-ms="300">
             </div>
 
             <p class="question">What type of drink do you prefer?</p>
             <div class="choices">
-                <button type="button" class="choice" data-set="drink:beer" data-next="cut_beer">Beer</button>
-                <button type="button" class="choice" data-set="drink:wine" data-next="cut_wine">Whiskey / Wine</button>
-                <button type="button" class="choice" data-set="drink:cocktail" data-next="cut_cocktail">Cocktail</button>
+                <button type="button" class="choice" data-set="drink:beer" data-next="q4" data-wipe="ttb"
+                    data-hover-animate=".drink_beer">Beer</button>
+                <button type="button" class="choice" data-set="drink:wine" data-next="q4" data-wipe="ttb"
+                    data-hover-animate=".drink_wine">Whiskey / Wine</button>
+                <button type="button" class="choice" data-set="drink:cocktail" data-next="q4" data-wipe="ttb"
+                    data-hover-animate=".drink_cocktail">Cocktail</button>
             </div>
-        </section>
-
-        <!-- ---------- 술 선택 후 전환 컷 (신분 공용, 다음 화면은 test.js 가 신분 보고 결정) ---------- -->
-        <section class="screen screen_cut" id="cut_beer" data-next="q4">
-            <p class="cut_caption">맥주 선택 시</p>
-        </section>
-        <section class="screen screen_cut" id="cut_wine" data-next="q4">
-            <p class="cut_caption">위스키 / 와인 선택 시</p>
-        </section>
-        <section class="screen screen_cut" id="cut_cocktail" data-next="q4">
-            <p class="cut_caption">칵테일 선택 시</p>
         </section>
 
         <!-- ===================== Q4. 안주 ===================== -->
         <section class="screen screen_question screen_dim" id="q4_yangban" data-step="4">
             <p class="question">How do you want to fill your table tonight?</p>
             <div class="choices">
-                <button type="button" class="choice" data-set="food:no" data-next="cut_yangban_nofood">
+                <button type="button" class="choice" data-set="food:no" data-next="result">
+                    <img class="food_preview" src="test_asset/Yangban_3.png" alt="" aria-hidden="true">
                     I want to focus only on drinking
                 </button>
-                <button type="button" class="choice" data-set="food:yes" data-next="cut_yangban_food">
+                <button type="button" class="choice" data-set="food:yes" data-next="result">
+                    <img class="food_preview" src="test_asset/Yangban_4.png" alt="" aria-hidden="true">
                     I am looking for a combination with drinking
                 </button>
             </div>
@@ -234,35 +236,15 @@
         <section class="screen screen_question screen_dim" id="q4_pyeongmin" data-step="4">
             <p class="question">How do you want to fill your table tonight?</p>
             <div class="choices">
-                <button type="button" class="choice" data-set="food:no" data-next="cut_pyeongmin_nofood">
+                <button type="button" class="choice" data-set="food:no" data-next="result">
+                    <img class="food_preview" src="test_asset/Pyeongmin_4.png" alt="" aria-hidden="true">
                     I want to focus only on drinking
                 </button>
-                <button type="button" class="choice" data-set="food:yes" data-next="cut_pyeongmin_food">
+                <button type="button" class="choice" data-set="food:yes" data-next="result">
+                    <img class="food_preview" src="test_asset/Pyeongmin_3.png" alt="" aria-hidden="true">
                     I am looking for a combination with drinking
                 </button>
             </div>
-        </section>
-
-        <!-- ---------- 안주 선택 후 전환 컷 ---------- -->
-        <!-- data-frames 에 적은 그림을 data-frame-ms 간격으로 돌려 끼워 움직이는 것처럼 보이게 함.
-             화면이 켜져 있는 동안만 돌고, 나가면 첫 장으로 되돌아감 (test.js 의 flipbook) -->
-        <section class="screen screen_cut screen_white" id="cut_yangban_nofood" data-next="result">
-            <img class="cut_solo" src="test_asset/Yangban_1.png" alt=""
-                data-frames="test_asset/Yangban_1.png, test_asset/Yangban_2.png" data-frame-ms="450">
-            <p class="cut_caption">양반 안주 미선택 시</p>
-        </section>
-        <section class="screen screen_cut screen_white" id="cut_yangban_food" data-next="result">
-            <img class="cut_solo" src="test_asset/Yangban_1.png" alt=""
-                data-frames="test_asset/Yangban_1.png, test_asset/Yangban_2.png" data-frame-ms="450">
-            <p class="cut_caption">양반 안주 선택 시</p>
-        </section>
-        <section class="screen screen_cut screen_white" id="cut_pyeongmin_nofood" data-next="result">
-            <img class="cut_solo" src="test_asset/Pyeongmin_1.png" alt="">
-            <p class="cut_caption">평민 안주 미선택 시</p>
-        </section>
-        <section class="screen screen_cut screen_white" id="cut_pyeongmin_food" data-next="result">
-            <img class="cut_solo" src="test_asset/Pyeongmin_1.png" alt="">
-            <p class="cut_caption">평민 안주 선택 시</p>
         </section>
 
         <!-- ===================== 결과 ===================== -->
@@ -731,6 +713,7 @@
         <!-- 문제 화면에서만 보이는 진행 표시 / 뒤로가기 -->
         <button type="button" class="btn_back" id="btn_back" aria-label="이전 화면으로">← BACK</button>
         <p class="progress" id="progress"><span id="progress_now">1</span> / 4</p>
+        <button type="button" class="btn_skip" id="btn_skip" aria-label="메인 페이지로 이동" hidden>SKIP</button>
 
         <!-- 화면을 한쪽에서 반대쪽으로 쓸고 지나가는 덮개.
              다 덮인 순간에 화면을 갈아 끼우고, 같은 방향으로 계속 빠져나가며 새 화면을 드러냄 -->

@@ -32,14 +32,11 @@ body {
     /* 화면끼리 겹쳐 넘어가는 시간 */
     --screen-fade: 450ms;
     /* 위쪽에 한 겹 더 까는 어두운 띠의 높이 */
-    --top-shade: clamp(140px, 24vh, 240px);
+    --top-shade: clamp(160px, calc(24vh + 20px), 260px);
     /* 쓸고 지나가는 전환. 덮는 시간 / 걷는 시간 / 가속 곡선(gsap 의 power3.inOut 과 비슷한 값) */
-    --wipe-cover: 620ms;
-    --wipe-reveal: 620ms;
+    --wipe-cover: 470ms;
+    --wipe-reveal: 470ms;
     --wipe-ease: cubic-bezier(0.65, 0, 0.35, 1);
-    /* 테스트 흐름의 주요 버튼을 공통으로 내리는 거리 */
-    --button-drop: 100px;
-
     position: relative;
     width: 100%;
     min-height: 100vh;
@@ -347,6 +344,26 @@ body {
     }
 }
 
+@keyframes screen_push_up {
+    from {
+        transform: none;
+    }
+
+    to {
+        transform: translateY(-12%);
+    }
+}
+
+@keyframes screen_pull_from_bottom {
+    from {
+        transform: translateY(12%);
+    }
+
+    to {
+        transform: none;
+    }
+}
+
 /* 덮개가 걷힌 뒤 .is_wipe_reveal 이 빠지면서 규칙이 .screen.is_on 으로 되돌아가면
    screen_in(투명 -> 불투명)이 처음부터 다시 돌아 버린다.
    그때 지나간 화면은 이미 감춰진 뒤라 뒤쪽 종이 바탕(--test_paper)이 그대로 비쳐
@@ -489,13 +506,13 @@ body {
 /* 할머니가 다 걸어와 멈춘 뒤에 그려지기 시작함
    (제목 시작 시각 + 걷는 시간). 획 그리는 방식은 잔 그림과 같음 */
 .intro_bubble.is_draw_running path {
-    animation: intro_cup_draw 1.3s cubic-bezier(0.22, 1, 0.36, 1)
+    animation: intro_cup_draw 2.3s cubic-bezier(0.22, 1, 0.36, 1)
         calc(var(--intro-pour-delay) + var(--walker-walk-duration)) forwards;
 }
 
 .intro_bubble.is_draw_running .intro_bubble_text {
     animation: intro_bubble_text_in 280ms ease-out
-        calc(var(--intro-pour-delay) + var(--walker-walk-duration) + 900ms) forwards;
+        calc(var(--intro-pour-delay) + var(--walker-walk-duration) + 1900ms) forwards;
 }
 
 @keyframes intro_bubble_text_in {
@@ -746,6 +763,7 @@ body {
     padding: 0;
     color: var(--test_ink);
     font: var(--PC-Heading1_28R);
+    font-family: var(--font-Albert_Sans);
     letter-spacing: var(--PC-Heading1_28R-letter-spacing);
     text-align: center;
 }
@@ -892,16 +910,30 @@ body {
     background-image: url("test_asset/background1.png");
 }
 
-/* 주막 실내. 좌우 가구까지 다 보여야 해서 잘라내지 않고 통째로 맞춰 넣음.
-   화면 비율이 그림(16:9)과 다를 때 남는 자리는 어두운 여백으로 둠.
-   양반 갈래 전환 컷 두 장도 같은 그림을 씀 */
+/* 주막 실내. 양반 질문 화면에서 같은 배경을 씀. */
 #q2_yangban,
 #q3_yangban,
-#q4_yangban,
-#cut_yangban_alone,
-#cut_yangban_together {
+#q4_yangban {
     background-size: cover;
     background-image: url("test_asset/Yangban_background.png");
+}
+
+#q3_yangban {
+    background-position: calc(50% - 40px) center;
+}
+
+/* 배경을 아주 조금 더 크게 잡아 이동 후에도 가장자리가 비지 않게 함 */
+@media (min-aspect-ratio: 16 / 9) {
+    #q3_yangban {
+        background-position: -40px center;
+        background-size: calc(100% + 40px) auto;
+    }
+}
+
+@media (max-aspect-ratio: 16 / 9) {
+    #q3_yangban {
+        background-size: auto calc(100% + 48px);
+    }
 }
 
 /* 2번 문제만 예외로 세로 가운데 정렬.
@@ -911,12 +943,22 @@ body {
     justify-content: center;
 }
 
-/* 평민 갈래는 주막 마당. 같은 방식으로 문제 화면과 전환 컷들이 함께 씀 */
+#q2_yangban>.question,
+#q2_pyeongmin>.question {
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Q2 동행 선택 박스만 기본 위치보다 60px 아래로 배치 */
+#q2_yangban .choices,
+#q2_pyeongmin .choices {
+    translate: 0 140px;
+}
+
+/* 평민 갈래는 주막 마당. 평민 질문 화면에서 같은 배경을 씀. */
 #q2_pyeongmin,
 #q3_pyeongmin,
-#q4_pyeongmin,
-#cut_pyeongmin_alone,
-#cut_pyeongmin_together {
+#q4_pyeongmin {
     background-size: cover;
     background-image: url("test_asset/Pyeongmin_back.png");
 }
@@ -952,6 +994,143 @@ body {
     z-index: 1;
 }
 
+/* Q2 양반 경로에서 동행 선택을 미리 보여 주는 인물 그림.
+   배경과 같은 16:9 캔버스라 cover로 겹치면 원래 전환 컷과 같은 자리에 놓임. */
+#q2_yangban>.mate_preview,
+#q2_pyeongmin>.mate_preview {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    /* 기존 표시 크기(80%)에서 20% 키운 96% */
+    transform: translateY(-30px) scale(0.96);
+    transform-origin: center bottom;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#q2_pyeongmin>.mate_preview {
+    transform: scale(0.96);
+}
+
+#q2_yangban>.question,
+#q2_yangban>.choices,
+#q2_pyeongmin>.question,
+#q2_pyeongmin>.choices {
+    z-index: 2;
+}
+
+#q2_yangban:has(.choice[data-set="mate:alone"]:focus-visible) .mate_preview_alone,
+#q2_yangban:has(.choice[data-set="mate:together"]:focus-visible) .mate_preview_together,
+#q2_pyeongmin:has(.choice[data-set="mate:alone"]:focus-visible) .mate_preview_alone,
+#q2_pyeongmin:has(.choice[data-set="mate:together"]:focus-visible) .mate_preview_together {
+    opacity: 1;
+}
+
+@media (hover: hover) {
+    #q2_yangban:has(.choice[data-set="mate:alone"]:hover) .mate_preview_alone,
+    #q2_yangban:has(.choice[data-set="mate:together"]:hover) .mate_preview_together,
+    #q2_pyeongmin:has(.choice[data-set="mate:alone"]:hover) .mate_preview_alone,
+    #q2_pyeongmin:has(.choice[data-set="mate:together"]:hover) .mate_preview_together {
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #q2_yangban>.mate_preview,
+    #q2_pyeongmin>.mate_preview {
+        transition: none;
+    }
+}
+
+/* ---------- Q4 안주 선택 hover 캐릭터 ---------- */
+
+/* 캐릭터를 버튼 안에 두면, 그림 위로 포인터가 지나가도 hover 상태가 끊기지 않는다. */
+#q4_yangban .choice,
+#q4_pyeongmin .choice {
+    position: relative;
+}
+
+#q4_yangban .food_preview,
+#q4_pyeongmin .food_preview {
+    position: absolute;
+    /* PNG 하단 투명 여백까지 보정해 받침이 버튼 상단에 맞닿게 함 */
+    bottom: calc(100% - 16px);
+    left: 50%;
+    z-index: 1;
+    width: clamp(220px, 22vw, 420px);
+    height: auto;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, 16px) scale(0.96);
+    transform-origin: center bottom;
+    transition: opacity 260ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#q4_yangban .choice:focus-visible .food_preview,
+#q4_pyeongmin .choice:focus-visible .food_preview {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+}
+
+@media (hover: hover) {
+    #q4_yangban .choice:hover .food_preview,
+    #q4_pyeongmin .choice:hover .food_preview {
+        opacity: 1;
+        transform: translate(-50%, 0) scale(1);
+    }
+}
+
+/* Yangban_4 미리보기는 버튼 위 공간에 맞게 원본 표시 크기의 66%로 조정 */
+#q4_yangban .choice[data-set="food:yes"] .food_preview {
+    transform: translate(-50%, 16px) scale(0.6336);
+}
+
+#q4_yangban .choice[data-set="food:yes"]:focus-visible .food_preview {
+    transform: translate(-50%, 0) scale(0.66);
+}
+
+@media (hover: hover) {
+    #q4_yangban .choice[data-set="food:yes"]:hover .food_preview {
+        transform: translate(-50%, 0) scale(0.66);
+    }
+}
+
+/* Pyeongmin_3 미리보기는 원본 표시 크기의 70%로 조정 */
+#q4_pyeongmin .choice[data-set="food:yes"] .food_preview {
+    transform: translate(-50%, 16px) scale(0.672);
+}
+
+#q4_pyeongmin .choice[data-set="food:yes"]:focus-visible .food_preview {
+    transform: translate(-50%, 0) scale(0.7);
+}
+
+@media (hover: hover) {
+    #q4_pyeongmin .choice[data-set="food:yes"]:hover .food_preview {
+        transform: translate(-50%, 0) scale(0.7);
+    }
+}
+
+@media (max-width: 767px) {
+    #q4_yangban .food_preview,
+    #q4_pyeongmin .food_preview {
+        width: min(78vw, 360px);
+    }
+
+    /* 세로로 쌓이는 Whiskey / Wine 버튼의 가운데에 와인잔을 맞춤 */
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #q4_yangban .food_preview,
+    #q4_pyeongmin .food_preview {
+        transition: none;
+    }
+}
+
 /* ---------- 배경 그림 위에 물건 올리기 ---------- */
 
 /* 배경 그림(1920x1080)이 cover 로 채워지는 자리와 똑같은 크기·위치의 빈 상자.
@@ -985,24 +1164,31 @@ body {
     filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45));
 }
 
+/* 선택지와 같은 프레임 애니메이션을 술 그림 위에서도 바로 확인할 수 있게 함 */
+.drink[data-hover-frames] {
+    pointer-events: auto;
+    cursor: pointer;
+}
+
 /* 주막 실내(양반) — 낮은 상 위 */
 #q3_yangban .drink {
     --y: 21%;
 }
 
 #q3_yangban .drink_beer {
-    --x: 39%;
+    --x: 42%;
     --w: 6.5%;
 }
 
 #q3_yangban .drink_whiskey {
-    --x: 46.5%;
+    --x: 40%;
     --w: 5.5%;
 }
 
 #q3_yangban .drink_wine {
-    --x: 53%;
+    --x: 51%;
     --w: 6.5%;
+    margin-left: -20px;
 }
 
 #q3_yangban .drink_wineglass {
@@ -1011,8 +1197,9 @@ body {
 }
 
 #q3_yangban .drink_cocktail {
-    --x: 63.5%;
-    --w: 3.6%;
+    --x: 59%;
+    --w: 5.184%;
+    margin-left: -30px;
 }
 
 /* 주막 마당(평민) — 평상 위. 상판이 더 넓고 낮아서 자리와 크기를 따로 잡음 */
@@ -1031,8 +1218,9 @@ body {
 }
 
 #q3_pyeongmin .drink_wine {
-    --x: 56%;
+    --x: 50.5%;
     --w: 7%;
+    margin-left: -20px;
 }
 
 #q3_pyeongmin .drink_wineglass {
@@ -1041,8 +1229,30 @@ body {
 }
 
 #q3_pyeongmin .drink_cocktail {
-    --x: 67.5%;
-    --w: 3.9%;
+    --x: 59%;
+    --w: 5.616%;
+    margin-left: -30px;
+}
+
+@media (max-width: 767px) {
+    /* 세로로 쌓이는 버튼 아래에서는 두 잔을 화면 중앙에 배치 */
+    #q3_yangban .stage,
+    #q3_pyeongmin .stage {
+        margin-left: 0;
+    }
+
+    #q3_yangban .drink_wine,
+    #q3_pyeongmin .drink_wine {
+        --x: 50%;
+        margin-left: 0;
+    }
+
+    #q3_yangban .drink_cocktail,
+    #q3_pyeongmin .drink_cocktail {
+        --x: 50%;
+        --w: 11.52%;
+        margin-left: 0;
+    }
 }
 
 /* ===================== 전환 컷 ===================== */
@@ -1088,23 +1298,6 @@ body {
    (마크업은 남겨 둬야 파일에서 컷을 구분하기 쉬움) */
 .cut_caption {
     display: none;
-}
-
-/* 전환 컷의 인물 그림. 배경과 같은 1920x1080 판이라
-   object-fit: cover 로 배경(background-size: cover)과 같은 기준을 사용함.
-   어두운 막(z-index 0) 위로 올려서 인물만 또렷하게 남김.
-   .screen_dim>* 규칙보다 뒤에 둬야 position 을 뺏기지 않음 */
-.cut_actor {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    transform: scale(0.8);
-    transform-origin: center bottom;
-    pointer-events: none;
 }
 
 /* ===================== 결과 ===================== */
@@ -1166,8 +1359,8 @@ body {
 
 /* 왼쪽은 밝은 알약에 어두운 글씨, 오른쪽은 상세 판과 같은 갈색 알약에 밝은 글씨 */
 .btn_main {
-    background: var(--bekseju_dark4, #C7B7AC);
-    color: var(--bekseju_darker_warm, #272625);
+    background: var(--kooksoondang_orange, #F29556);
+    color: var(--makgeolli_White, #FFF);
 }
 
 .btn_share {
@@ -1178,6 +1371,11 @@ body {
 .btn_share:hover {
     transform: translateY(-2px);
     filter: brightness(1.12);
+}
+
+.btn_share:focus-visible {
+    outline: 2px solid var(--kooksoondang_orange, #F29556);
+    outline-offset: 3px;
 }
 
 /* 다시 하기는 디자인에 없는 버튼이라 두 버튼 아래에 글자만 작게 둠 */
@@ -1401,30 +1599,22 @@ body {
     font-size: 12px;
     letter-spacing: 0.5px;
     text-decoration: none;
-    transition: filter 0.2s;
+    transition: opacity 0.2s;
 }
 
 .btn_more:hover {
-    filter: brightness(1.15);
-}
-
-/* 인트로·문항·결과의 주요 버튼은 현재 자리에서 100px 아래에 둠.
-   translate를 써서 각 버튼의 hover transform은 그대로 유지함 */
-.intro_actions,
-.picks,
-.screen_question .choices,
-.result_actions,
-.screen_result .btn_restart,
-.screen_result .btn_more {
-    translate: 0 var(--button-drop);
+    opacity: 0.8;
 }
 
 /* ===================== 진행 표시 / 뒤로가기 ===================== */
 
 /* 인트로·결과에서는 test.js 가 hidden 을 붙여 숨김 */
 .btn_back,
+.btn_skip,
 .progress {
     position: absolute;
+    top: calc(var(--frame) + 40px);
+    translate: 0 -50%;
     z-index: 5;
     font: var(--PC-Body_Small_14M);
     color: var(--test_dim);
@@ -1433,8 +1623,11 @@ body {
 /* 종이 틀 바깥으로 나가지 않게 틀 폭만큼 안쪽으로 밀어 둠.
    좌우 100px 은 .screen 의 좌우 여백과 같은 줄에 세우려는 값 */
 .btn_back {
-    top: calc(var(--frame) + 20px);
     left: calc(var(--frame) + 100px);
+}
+
+.btn_back,
+.btn_skip {
     padding: 8px 14px;
     border: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: 999px;
@@ -1442,17 +1635,24 @@ body {
     cursor: pointer;
 }
 
-.btn_back:hover {
+.btn_skip {
+    right: calc(var(--frame) + 100px);
+}
+
+.btn_back:hover,
+.btn_skip:hover {
     color: var(--test_ink);
 }
 
 .progress {
-    top: calc(var(--frame) + 24px);
-    right: calc(var(--frame) + 100px);
+    left: 50%;
+    right: auto;
+    translate: -50% -50%;
     letter-spacing: 2px;
 }
 
 .btn_back[hidden],
+.btn_skip[hidden],
 .progress[hidden] {
     display: none;
 }
@@ -1607,14 +1807,23 @@ body {
         font-size: 13px;
     }
 
+    .btn_back,
+    .btn_skip,
+    .progress {
+        top: 40px;
+    }
+
     .btn_back {
-        top: 20px;
         left: 20px;
     }
 
-    .progress {
-        top: 24px;
+    .btn_skip {
         right: 20px;
+    }
+
+    .progress {
+        left: 50%;
+        right: auto;
     }
 
     .result_card {

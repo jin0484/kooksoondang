@@ -1079,6 +1079,14 @@
         if (feedback) feedback.textContent = message;
     }
 
+    function syncCheckButtons() {
+        const isComplete = Boolean(selectedCards.food && selectedCards.drink);
+
+        [checkButton, rouletteCheckButton].forEach((button) => {
+            button?.classList.toggle('is_pairing_ready', isComplete);
+        });
+    }
+
     function syncPlate(plate) {
         const type = plate.dataset.pairingPlate;
         const selectedCard = selectedCards[type];
@@ -1193,6 +1201,7 @@
         if (previousCard !== card) animateCardIntoPlate(card, plate, sourceBounds);
         card.classList.add('is_pairing_selected');
         syncPlate(plate);
+        syncCheckButtons();
         stopHint();
         section.classList.add('is_pairing_hint_paused');
 
@@ -1211,6 +1220,7 @@
         plates.forEach(syncPlate);
         // 룰렛에서는 늘 한 장씩 올라와 있어야 하므로 비운 자리를 곧바로 다시 채움
         renderRoulette();
+        syncCheckButtons();
     }
 
     /* 태블릿 룰렛: 접시로 끌어다 놓는 대신 줄마다 카드 한 장만 보여 주고
@@ -1233,6 +1243,7 @@
         });
 
         plates.forEach(syncPlate);
+        syncCheckButtons();
         setFeedback('');
     }
 

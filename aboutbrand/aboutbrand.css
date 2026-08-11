@@ -17,6 +17,19 @@
     --about_max: var(--page-max);
 }
 
+/* VISION 타이틀 모션이 끝날 때까지 다음 스크롤을 잠시 막는다. */
+html.is_vision_intro_locked,
+html.is_vision_intro_locked body {
+    overflow: hidden;
+    background: var(--bekseju_darker_cold);
+    scrollbar-width: none;
+}
+
+html.is_vision_intro_locked::-webkit-scrollbar,
+html.is_vision_intro_locked body::-webkit-scrollbar {
+    display: none;
+}
+
 /* 키보드 초점. 색만으로 구분하지 않도록 굵은 외곽선을 함께 씀 */
 .intro_section :focus-visible,
 .history_section :focus-visible,
@@ -1913,6 +1926,10 @@
    ========================================================================= */
 
 @media (prefers-reduced-motion: reduce) {
+    .history_vision_since.reveal_char {
+        opacity: 1;
+    }
+
     .intro_arrow img {
         animation: none;
     }

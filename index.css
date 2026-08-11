@@ -169,6 +169,8 @@ button {
     justify-content: space-between;
     gap: clamp(1.5rem, 5vw, 4rem);
     width: min(100%, 56rem);
+    scale: 1.3;
+    transform-origin: center;
     /* .age_gate_inner 의 가운데 정렬을 여기서만 되돌림 */
     text-align: left;
 }
