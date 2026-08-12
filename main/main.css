@@ -682,6 +682,22 @@ section[id] {
   isolation: isolate;
 }
 
+/* The collage responds to mouse movement, so its open-hand cursor makes that interaction discoverable. */
+@media (hover: hover) and (pointer: fine) and (min-width: 64.0625rem) {
+  .best_collage {
+    cursor: grab;
+  }
+
+  .best_collage:active {
+    cursor: grabbing;
+  }
+
+  /* Product cards remain links, so retain the familiar click affordance on them. */
+  .best_collage .best_card {
+    cursor: pointer;
+  }
+}
+
 .best_card {
   position: absolute;
   z-index: 1;

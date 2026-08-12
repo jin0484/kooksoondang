@@ -608,6 +608,59 @@ html.lenis body {
     }
 }
 
+/* ---------- main page side navigation discovery cue ---------- */
+/* Keep the existing side-tab design, but give its resting state a clearer visual affordance. */
+@media (min-width: 64.0625rem) {
+    .main_page .side_nav {
+        --side-nav-handle-width: 3.25rem;
+        --side-nav-handle-height: 10.25rem;
+        --side-nav-handle-radius: 1.125rem;
+
+        filter: drop-shadow(-0.75rem 0.625rem 1.5rem rgba(48, 35, 26, 0.2));
+        animation: main_side_nav_hint 720ms cubic-bezier(0.22, 1, 0.36, 1) 900ms 1;
+    }
+
+    .main_page .side_nav::after {
+        right: calc(100% - 2px);
+        z-index: 2;
+        color: var(--kooksoondang_green);
+        font-size: 1.125rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+    }
+
+    /* Bridge the handle to the rounded panel so no white corner gaps appear while it is expanded. */
+    .main_page .side_nav::before {
+        content: "";
+        position: absolute;
+        z-index: 0;
+        top: 50%;
+        right: calc(100% - var(--side-nav-radius));
+        width: var(--side-nav-radius);
+        height: var(--side-nav-handle-height);
+        transform: translateY(-50%);
+        pointer-events: none;
+        background: var(--side-nav-surface);
+    }
+}
+
+@keyframes main_side_nav_hint {
+    0%,
+    100% {
+        transform: translate(100%, -50%);
+    }
+
+    52% {
+        transform: translate(calc(100% - 0.75rem), -50%);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .main_page .side_nav {
+        animation: none;
+    }
+}
+
 /* ---------- shared footer ---------- */
 
 .site_footer {
