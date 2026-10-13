@@ -258,11 +258,17 @@
             });
         });
 
+        /* 탭해서 고른 선택지(.is_picked)는 넘어갈 때까지 계속 돌려야 해서,
+           그 사이 다른 곳을 눌러 포인터·포커스가 빠져도 멈추지 않음 (멈춤은 tapPreview 가 맡음) */
+        function release(button) {
+            if (!button.classList.contains('is_picked')) stop(button);
+        }
+
         [].forEach.call(test.querySelectorAll('[data-hover-animate]'), function (button) {
             button.addEventListener('mouseenter', function () { start(button); });
-            button.addEventListener('mouseleave', function () { stop(button); });
+            button.addEventListener('mouseleave', function () { release(button); });
             button.addEventListener('focus', function () { start(button); });
-            button.addEventListener('blur', function () { stop(button); });
+            button.addEventListener('blur', function () { release(button); });
         });
 
         [].forEach.call(test.querySelectorAll('.drink[data-hover-frames]'), function (img) {
@@ -270,7 +276,57 @@
             img.addEventListener('mouseleave', function () { stop(img); });
         });
 
-        return { stopAll: function () { stop(); } };
+        return { start: start, stop: stop, stopAll: function () { stop(); } };
+    })();
+
+    /* ------------------------------------------------------------------
+       탭 미리보기 (hover 가 안 되는 기기)
+       PC 에서는 선택지에 마우스를 올려야 보이는 그림(Q2 동행 / Q3 술 움직임 / Q4 안주)을,
+       터치 기기에서는 탭한 뒤에 보여 주고 잠시 뒤 다음 화면으로 넘어감.
+       그림이 나타나는 모양은 css(.is_picked)가 맡고 여기서는 시점만 잡아 줌
+    ------------------------------------------------------------------ */
+    var tapPreview = (function () {
+        var noHover = window.matchMedia('(hover: none)');
+        /* 그림을 보여 주는 시간 */
+        var HOLD = 2000;
+        var timer = 0;
+        var picked = null;
+        /* 시간이 다 되어 넘어가는 중. 이때는 다른 답을 눌러도 받지 않음 */
+        var leaving = false;
+
+        function has(trigger) {
+            return noHover.matches
+                && (trigger.hasAttribute('data-hover-animate') || Boolean(trigger.querySelector('.food_preview')));
+        }
+
+        function clear() {
+            window.clearTimeout(timer);
+            leaving = false;
+            if (!picked) return;
+
+            picked.classList.remove('is_picked');
+            hoverFlipbook.stop(picked);
+            picked = null;
+        }
+
+        /* done 은 그림을 보여 준 뒤에 부를 실제 화면 이동 */
+        function run(trigger, done) {
+            if (leaving || trigger === picked) return;
+
+            /* 기다리는 동안 다른 답을 누르면 그쪽 그림으로 바꾸고 시간을 처음부터 다시 잼 */
+            clear();
+
+            picked = trigger;
+            trigger.classList.add('is_picked');
+            hoverFlipbook.start(trigger);
+
+            timer = window.setTimeout(function () {
+                leaving = true;
+                done();
+            }, HOLD);
+        }
+
+        return { has: has, run: run, clear: clear };
     })();
 
     /* ------------------------------------------------------------------
@@ -412,6 +468,7 @@
         });
 
         flipbook.stop();
+        tapPreview.clear();
         hoverFlipbook.stopAll();
 
         target.classList.add('is_on');
@@ -467,6 +524,9 @@
         var prev = trail[trail.length - 1];
         var reverseDir;
         if (!prev) return;
+
+        /* 탭 미리보기를 보여 주며 기다리던 중이면 그 이동은 취소함 */
+        tapPreview.clear();
 
         /* BACK은 진행 방향을 되감듯 오른쪽에서 왼쪽으로 쓸며 이전 화면을 보여 줌 */
         function restore() {
@@ -560,6 +620,30 @@
         });
     }
 
+    /* 선택지(또는 시작 버튼)를 고른 것으로 치고 다음 화면으로 넘어감 */
+    function choose(trigger) {
+        var next = trigger.getAttribute('data-next');
+
+        /* data-set="key:value" 형태로 적힌 답을 기록 */
+        var set = trigger.getAttribute('data-set');
+        if (set) {
+            var pair = set.split(':');
+            answers[pair[0]] = pair[1];
+        }
+
+        /* data-wipe 가 붙은 선택지는 그 방향으로 화면을 쓸며 넘어감 */
+        var dir = trigger.getAttribute('data-wipe');
+
+        if (dir) {
+            wipe.run(dir, function () {
+                go(next, dir);
+            });
+            return;
+        }
+
+        go(next);
+    }
+
     /* ------------------------------------------------------------------
        클릭 처리
        선택지 버튼, 전환 컷(섹션 전체), 시작/다시하기 버튼이 모두 data-next 를 갖고 있음
@@ -592,24 +676,15 @@
             return;
         }
 
-        /* data-set="key:value" 형태로 적힌 답을 기록 */
-        var set = trigger.getAttribute('data-set');
-        if (set) {
-            var pair = set.split(':');
-            answers[pair[0]] = pair[1];
-        }
-
-        /* data-wipe 가 붙은 선택지는 그 방향으로 화면을 쓸며 넘어감 */
-        var dir = trigger.getAttribute('data-wipe');
-
-        if (dir) {
-            wipe.run(dir, function () {
-                go(next, dir);
+        /* hover 가 안 되는 기기에서는 hover 로만 보이던 그림을 먼저 보여 준 뒤에 넘어감 */
+        if (tapPreview.has(trigger)) {
+            tapPreview.run(trigger, function () {
+                choose(trigger);
             });
             return;
         }
 
-        go(next);
+        choose(trigger);
     });
 
     /* 전환 컷은 키보드로도 넘어갈 수 있게 */

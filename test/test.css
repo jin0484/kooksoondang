@@ -924,8 +924,10 @@ body {
     transition: transform 0.2s, background-color 0.2s;
 }
 
-/* 키보드로 선택지를 탐색할 때도 같은 피드백을 줌 */
+/* 키보드로 선택지를 탐색할 때도 같은 피드백을 줌.
+   hover 가 안 되는 기기에서 탭해 고른 선택지(.is_picked, test.js 가 붙임)도 같은 모양 */
 .choice:focus-visible,
+.choice.is_picked,
 .pick:focus-visible .choice {
     background: var(--kooksoondang_orange, #F29556);
     transform: translateY(-3px);
@@ -1157,10 +1159,11 @@ body {
     z-index: 2;
 }
 
-#q2_yangban:has(.choice[data-set="mate:alone"]:focus-visible) .mate_preview_alone,
-#q2_yangban:has(.choice[data-set="mate:together"]:focus-visible) .mate_preview_together,
-#q2_pyeongmin:has(.choice[data-set="mate:alone"]:focus-visible) .mate_preview_alone,
-#q2_pyeongmin:has(.choice[data-set="mate:together"]:focus-visible) .mate_preview_together {
+/* hover 가 안 되는 기기에서는 탭한 선택지(.is_picked)의 그림을 보여 줌 */
+#q2_yangban:has(.choice[data-set="mate:alone"]:is(:focus-visible, .is_picked)) .mate_preview_alone,
+#q2_yangban:has(.choice[data-set="mate:together"]:is(:focus-visible, .is_picked)) .mate_preview_together,
+#q2_pyeongmin:has(.choice[data-set="mate:alone"]:is(:focus-visible, .is_picked)) .mate_preview_alone,
+#q2_pyeongmin:has(.choice[data-set="mate:together"]:is(:focus-visible, .is_picked)) .mate_preview_together {
     opacity: 1;
 }
 
@@ -1170,6 +1173,14 @@ body {
     #q2_pyeongmin:has(.choice[data-set="mate:alone"]:hover) .mate_preview_alone,
     #q2_pyeongmin:has(.choice[data-set="mate:together"]:hover) .mate_preview_together {
         opacity: 1;
+    }
+}
+
+/* 탭한 뒤 나타나는 그림은 서서히 겹쳐 나타나게(디졸브) 조금 더 천천히, 고르게 띄움 */
+@media (hover: none) and (prefers-reduced-motion: no-preference) {
+    #q2_yangban>.mate_preview,
+    #q2_pyeongmin>.mate_preview {
+        transition: opacity 600ms ease;
     }
 }
 
@@ -1204,8 +1215,8 @@ body {
     transition: opacity 260ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-#q4_yangban .choice:focus-visible .food_preview,
-#q4_pyeongmin .choice:focus-visible .food_preview {
+#q4_yangban .choice:is(:focus-visible, .is_picked) .food_preview,
+#q4_pyeongmin .choice:is(:focus-visible, .is_picked) .food_preview {
     opacity: 1;
     transform: translate(-50%, 0) scale(1);
 }
@@ -1218,12 +1229,26 @@ body {
     }
 }
 
+/* hover 가 안 되는 기기에서 탭한 뒤 나타나는 그림은 아래에서 떠오르지 않고
+   제자리에서 서서히 나타남(디졸브). 자리 이동(transform)은 나타날 땐 바로, 사라질 땐 다 흐려진 뒤에 바뀜 */
+@media (hover: none) and (prefers-reduced-motion: no-preference) {
+    #q4_yangban .food_preview,
+    #q4_pyeongmin .food_preview {
+        transition: opacity 600ms ease, transform 0s linear 600ms;
+    }
+
+    #q4_yangban .choice.is_picked .food_preview,
+    #q4_pyeongmin .choice.is_picked .food_preview {
+        transition: opacity 600ms ease;
+    }
+}
+
 /* Yangban_4 미리보기는 버튼 위 공간에 맞게 원본 표시 크기의 66%로 조정 */
 #q4_yangban .choice[data-set="food:yes"] .food_preview {
     transform: translate(-50%, 16px) scale(0.6336);
 }
 
-#q4_yangban .choice[data-set="food:yes"]:focus-visible .food_preview {
+#q4_yangban .choice[data-set="food:yes"]:is(:focus-visible, .is_picked) .food_preview {
     transform: translate(-50%, 0) scale(0.66);
 }
 
@@ -1238,7 +1263,7 @@ body {
     transform: translate(-50%, 16px) scale(0.672);
 }
 
-#q4_pyeongmin .choice[data-set="food:yes"]:focus-visible .food_preview {
+#q4_pyeongmin .choice[data-set="food:yes"]:is(:focus-visible, .is_picked) .food_preview {
     transform: translate(-50%, 0) scale(0.7);
 }
 
@@ -1278,8 +1303,10 @@ body {
        첫 버튼의 그림이 묶음 아래가 아니라 둘째 버튼 위에 얹힘. 이 화면에서는 떠오르지 않게 둠 */
     #q4_yangban .choice:hover,
     #q4_yangban .choice:focus-visible,
+    #q4_yangban .choice.is_picked,
     #q4_pyeongmin .choice:hover,
-    #q4_pyeongmin .choice:focus-visible {
+    #q4_pyeongmin .choice:focus-visible,
+    #q4_pyeongmin .choice.is_picked {
         transform: none;
     }
 
@@ -1290,8 +1317,8 @@ body {
         transform: translate(-50%, 16px) scale(0.672);
     }
 
-    #q4_yangban .choice[data-set]:focus-visible .food_preview,
-    #q4_pyeongmin .choice[data-set]:focus-visible .food_preview {
+    #q4_yangban .choice[data-set]:is(:focus-visible, .is_picked) .food_preview,
+    #q4_pyeongmin .choice[data-set]:is(:focus-visible, .is_picked) .food_preview {
         transform: translate(-50%, 0) scale(0.7);
     }
 
