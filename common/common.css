@@ -419,6 +419,10 @@ html.lenis body {
     transform: none;
 }
 
+.nav_drawer_illust {
+    display: none;
+}
+
 .nav_drawer_panel ul {
     display: flex;
     flex-direction: column;
@@ -962,6 +966,98 @@ html.lenis body {
     }
 }
 
+/* ---------- tablet header / drawer (481px ~ 1024px) ---------- */
+/* 768 시안: 헤더 높이 100, 검색창이 항상 펼쳐져 있고 서랍은 헤더 아래로 내려오는 흰 패널 */
+
+@media (min-width: 30.0625rem) and (max-width: 64rem) {
+    .site_header:has(.nav_toggle) {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .site_header_inner {
+        width: calc(100% - 5rem);
+        height: 6.25rem;
+        padding: 0;
+    }
+
+    .site_header:has(.nav_toggle) .site_header_left {
+        gap: 1.625rem;
+    }
+
+    .nav_toggle {
+        width: 2rem;
+        height: 2rem;
+    }
+
+    .nav_toggle_bars {
+        left: 0.25rem;
+        width: 1.5rem;
+        top: calc(50% - 1px);
+    }
+}
+
+/* 서랍은 태블릿·모바일 공통: 헤더 아래로 내려오는 흰 패널 (모바일 치수는 아래 480px 블록에서 덮어씀) */
+@media (max-width: 64rem) {
+
+    /* 서랍이 열리면 헤더(햄버거·로고·검색)를 흰 패널 위로 올림 */
+    body:has(.nav_drawer.is_nav_open) .site_header {
+        z-index: 70;
+        background: transparent;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
+    .nav_drawer_panel {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: auto;
+        padding: 6.25rem 2.5rem 2.5rem 6rem;
+        justify-content: flex-start;
+        border-radius: 0 0 0.75rem 0.75rem;
+        background: #fff;
+        box-shadow: none;
+        transform: translateY(-100%);
+    }
+
+    .nav_drawer.is_nav_open .nav_drawer_panel {
+        transform: none;
+    }
+
+    .nav_drawer_panel ul {
+        gap: 0.5rem;
+    }
+
+    .nav_drawer_panel li {
+        display: flex;
+        align-items: center;
+        height: 2rem;
+        padding: 0 0.625rem;
+    }
+
+    .nav_drawer_panel a,
+    .nav_drawer_panel .is_disabled {
+        font-size: 1.25rem;
+        line-height: 1.7;
+        letter-spacing: 0;
+    }
+
+    .nav_drawer_panel .is_disabled {
+        font-weight: 400;
+    }
+
+    .nav_drawer_illust {
+        display: block;
+        position: absolute;
+        right: 2.5rem;
+        bottom: 2.5rem;
+        width: 11.1696rem;
+        height: auto;
+        pointer-events: none;
+    }
+}
+
 /* ---------- mobile (<= 480px) ---------- */
 /* 360px 시안. 로고가 가운데로 오고 푸터는 한 단으로 접힘 */
 
@@ -986,6 +1082,29 @@ html.lenis body {
     .nav_toggle {
         width: 1.75rem;
         height: 1.125rem;
+    }
+
+    /* 360 시안 서랍: 상단 60 여백, 좌우 16, 항목 16px, 일러스트는 오른쪽 아래 */
+    .nav_drawer_panel {
+        padding: 3.75rem 1rem 5.1875rem;
+    }
+
+    .nav_drawer_panel ul {
+        gap: 0.25rem;
+    }
+
+    .nav_drawer_panel li {
+        height: auto;
+    }
+
+    .nav_drawer_panel a,
+    .nav_drawer_panel .is_disabled {
+        font-size: 1rem;
+    }
+
+    .nav_drawer_illust {
+        right: 1rem;
+        bottom: 1.25rem;
     }
 
     .nav_toggle_bars::before {

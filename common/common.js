@@ -70,7 +70,7 @@
     });
 
     // 데스크톱 폭으로 돌아가면 서랍은 의미가 없으므로 정리해 둠
-    window.matchMedia('(min-width: 48.0625rem)').addEventListener?.('change', (event) => {
+    window.matchMedia('(min-width: 64.0625rem)').addEventListener?.('change', (event) => {
         if (event.matches && isOpen()) setOpen(false);
     });
 })();
