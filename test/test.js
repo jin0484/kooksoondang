@@ -297,7 +297,8 @@
             busy = false;
         }
 
-        /* dir 은 'ltr'(왼→오) 또는 'rtl'(오→왼). swap 은 다 덮인 순간에 부를 화면 교체 */
+        /* dir 은 'ltr'(왼→오) / 'rtl'(오→왼) / 'ttb'(위→아래) / 'btt'(아래→위) /
+           'pour'(물결치며 차오름) / 'drain'(그 반대). swap 은 다 덮인 순간에 부를 화면 교체 */
         function run(dir, swap, isBack) {
             if (!el || reduced) {
                 swap();
@@ -308,12 +309,14 @@
             if (busy) return;
             busy = true;
 
-            var cover = ms('--wipe-cover');
-            var reveal = ms('--wipe-reveal');
-
             el.setAttribute('data-dir', dir);
             el.classList.toggle('is_back_wipe', Boolean(isBack));
             test.setAttribute('data-wipe-dir', dir);
+
+            /* 방향에 따라 css 가 시간을 바꿔 끼우기도 해서(pour / drain) 방향을 적은 뒤에 읽음 */
+            var cover = ms('--wipe-cover');
+            var reveal = ms('--wipe-reveal');
+
             test.classList.add('is_wiping', 'is_wipe_cover');
             el.classList.add('is_cover');
 
@@ -398,6 +401,8 @@
         if (dir === 'rtl') return 'ltr';
         if (dir === 'ttb') return 'btt';
         if (dir === 'btt') return 'ttb';
+        if (dir === 'pour') return 'drain';
+        if (dir === 'drain') return 'pour';
         return null;
     }
 

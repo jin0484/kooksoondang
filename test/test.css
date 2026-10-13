@@ -37,6 +37,12 @@ body {
     --wipe-cover: 470ms;
     --wipe-reveal: 470ms;
     --wipe-ease: cubic-bezier(0.65, 0, 0.35, 1);
+    /* 결과로 넘어갈 때 쓰는 차오르는 전환. 결과 발표라 다른 쓸기보다 조금 느리게 잡음.
+       물결 한 굽이의 높이 / 폭도 여기서 정함 */
+    --pour-cover: 800ms;
+    --pour-reveal: 700ms;
+    --wave-h: clamp(28px, 5vw, 64px);
+    --wave-w: clamp(240px, 36vw, 520px);
     position: relative;
     width: 100%;
     min-height: 100vh;
@@ -163,6 +169,66 @@ body {
     animation: wipe_out_top var(--wipe-reveal) var(--wipe-ease) both;
 }
 
+/* pour = 잔에 술이 차오르듯 아래에서 물결치며 올라와 덮고, 그대로 위로 빠져나감 (Q4 -> 결과).
+   drain = 그 반대. 결과에서 BACK 으로 돌아갈 때 위에서 내려와 아래로 빠짐.
+   다른 쓸기보다 느리게 돌도록 이 전환 동안만 시간을 바꿔 끼움 (test.js 도 이 값을 읽어 감) */
+.test[data-wipe-dir="pour"],
+.test[data-wipe-dir="drain"] {
+    --wipe-cover: var(--pour-cover);
+    --wipe-reveal: var(--pour-reveal);
+}
+
+.wipe[data-dir="pour"].is_cover {
+    animation: wipe_pour_in var(--wipe-cover) var(--wipe-ease) both;
+}
+
+.wipe[data-dir="pour"].is_reveal {
+    animation: wipe_pour_out var(--wipe-reveal) var(--wipe-ease) both;
+}
+
+.wipe[data-dir="drain"].is_cover {
+    animation: wipe_drain_in var(--wipe-cover) var(--wipe-ease) both;
+}
+
+.wipe[data-dir="drain"].is_reveal {
+    animation: wipe_pour_in var(--wipe-reveal) var(--wipe-ease) reverse both;
+}
+
+/* 덮개 위·아래 끝에 붙는 물결. 덮개와 같은 색을 물결 모양으로 오려 낸 띠를
+   한 굽이만큼 더 길게 두고 옆으로 흘려보내 출렁이는 것처럼 보이게 함.
+   위쪽 띠는 차오를 때의 수면, 아래쪽 띠(위아래로 뒤집음)는 빠져나갈 때의 끝자락 */
+.wipe[data-dir="pour"].is_cover::before,
+.wipe[data-dir="pour"].is_reveal::before,
+.wipe[data-dir="pour"].is_cover::after,
+.wipe[data-dir="pour"].is_reveal::after,
+.wipe[data-dir="drain"].is_cover::before,
+.wipe[data-dir="drain"].is_reveal::before,
+.wipe[data-dir="drain"].is_cover::after,
+.wipe[data-dir="drain"].is_reveal::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: calc(100% + var(--wave-w));
+    height: var(--wave-h);
+    background: inherit;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 40' preserveAspectRatio='none'%3E%3Cpath d='M0 20Q100 0 200 20T400 20V40H0Z'/%3E%3C/svg%3E") 0 0 / var(--wave-w) 100% repeat-x;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 40' preserveAspectRatio='none'%3E%3Cpath d='M0 20Q100 0 200 20T400 20V40H0Z'/%3E%3C/svg%3E") 0 0 / var(--wave-w) 100% repeat-x;
+    animation: wipe_wave_flow 1300ms linear infinite;
+}
+
+/* 덮개와 띠 사이에 실금이 비치지 않게 2px 겹침 */
+.wipe[data-dir="pour"]::before,
+.wipe[data-dir="drain"]::before {
+    bottom: calc(100% - 2px);
+}
+
+.wipe[data-dir="pour"]::after,
+.wipe[data-dir="drain"]::after {
+    top: calc(100% - 2px);
+    scale: 1 -1;
+    animation-direction: reverse;
+}
+
 @keyframes wipe_in_left {
     from {
         transform: translateX(-100%);
@@ -243,6 +309,43 @@ body {
     }
 }
 
+/* 물결 띠까지 화면 밖으로 완전히 나가야 해서 띠 높이만큼 더 움직임 */
+@keyframes wipe_pour_in {
+    from {
+        transform: translateY(calc(100% + var(--wave-h)));
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes wipe_pour_out {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(calc(-100% - var(--wave-h)));
+    }
+}
+
+@keyframes wipe_drain_in {
+    from {
+        transform: translateY(calc(-100% - var(--wave-h)));
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes wipe_wave_flow {
+    to {
+        translate: calc(-1 * var(--wave-w)) 0;
+    }
+}
+
 /* 덮개가 도는 동안에는 화면끼리의 페이드를 끔 (덮개 뒤에서 조용히 갈아 끼워짐) */
 .test.is_wiping .screen {
     transition: none;
@@ -282,6 +385,23 @@ body {
 
 .test[data-wipe-dir="btt"].is_wipe_reveal .screen.is_on {
     animation: screen_pull_from_bottom var(--wipe-reveal) var(--wipe-ease) both;
+}
+
+/* 차오르는 전환도 덮개가 가는 방향대로 화면을 밀고 당김 */
+.test[data-wipe-dir="pour"].is_wipe_cover .screen.is_on {
+    animation: screen_push_up var(--wipe-cover) var(--wipe-ease) both;
+}
+
+.test[data-wipe-dir="pour"].is_wipe_reveal .screen.is_on {
+    animation: screen_pull_from_bottom var(--wipe-reveal) var(--wipe-ease) both;
+}
+
+.test[data-wipe-dir="drain"].is_wipe_cover .screen.is_on {
+    animation: screen_push_down var(--wipe-cover) var(--wipe-ease) both;
+}
+
+.test[data-wipe-dir="drain"].is_wipe_reveal .screen.is_on {
+    animation: screen_pull_from_top var(--wipe-reveal) var(--wipe-ease) both;
 }
 
 @keyframes screen_push_right {
@@ -1586,6 +1706,44 @@ body {
     height: 100%;
     border-radius: inherit;
     background: var(--test_ink);
+}
+
+/* 결과 화면이 켜질 때 막대가 0 에서 제 길이(--v)까지 차오름.
+   화면 페이드가 걷힌 뒤에 보이도록 그만큼 늦추고, 위에서부터 한 줄씩 이어서 채움.
+   .is_on 이 붙을 때만 걸리는 애니메이션이라 다시하기로 돌아와도 처음부터 재생됨 */
+.liquor_item:nth-child(2) {
+    --fill-item: 1;
+}
+
+.liquor_stat dd:nth-of-type(2) {
+    --fill-row: 1;
+}
+
+.liquor_stat dd:nth-of-type(3) {
+    --fill-row: 2;
+}
+
+.screen_result.is_on .liquor_stat i::before {
+    animation: liquor_fill 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--screen-fade) + var(--fill-item, 0) * 240ms + var(--fill-row, 0) * 120ms);
+}
+
+/* 차오르는 전환으로 들어온 경우엔 덮개 뒤에서 이미 켜져 있으므로,
+   덮개가 거의 다 빠져나간 뒤에 채우기 시작하도록 그 시간에 맞춤 */
+.screen_result.is_on.is_wiped_in .liquor_stat i::before {
+    animation-delay: calc(var(--pour-reveal) * 0.8 + var(--fill-item, 0) * 240ms + var(--fill-row, 0) * 120ms);
+}
+
+@keyframes liquor_fill {
+    from {
+        width: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .screen_result.is_on .liquor_stat i::before {
+        animation: none;
+    }
 }
 
 .btn_more {
