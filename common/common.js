@@ -92,6 +92,11 @@
         if (open) input.removeAttribute('tabindex');
         else input.setAttribute('tabindex', '-1');
 
+        // 햄버거 서랍이 열린 채로 검색이 열리면 두 패널이 겹치므로 서랍을 먼저 닫음
+        if (open && document.querySelector('[data-nav-drawer].is_nav_open')) {
+            document.querySelector('[data-nav-toggle]')?.click();
+        }
+
         if (open) input.focus();
         else input.blur();
     }
@@ -100,6 +105,8 @@
 
     document.addEventListener('click', (event) => {
         if (!isOpen() || search.contains(event.target)) return;
+        // 위에서 서랍을 닫으려고 보낸 클릭이 검색을 도로 닫지 않게 함
+        if (event.target instanceof Element && event.target.closest('[data-nav-toggle]')) return;
 
         setOpen(false);
     });

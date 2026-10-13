@@ -43,6 +43,7 @@
 <body class="pairing_page">
   <header class="site_header" id="site_header">
     <div class="site_header_inner">
+      <button class="search_back" type="button" aria-label="Close search" data-search-back><img src="../asset/icon/search_back_icon.svg" alt="" width="24" height="24"></button>
       <div class="site_header_left">
         <button class="nav_toggle" type="button" aria-label="Open menu" aria-expanded="false"
           aria-controls="pairing_nav_drawer" data-nav-toggle>
@@ -88,6 +89,17 @@
       </ul>
       <img class="nav_drawer_illust" src="../asset/icon/nav_drawer_illust.svg" alt="" aria-hidden="true">
     </nav>
+  </div>
+
+  <!-- 모바일 검색 화면의 인기 검색어. 검색이 열렸을 때만 css 가 보여줌 -->
+  <div class="search_panel" aria-label="Popular search terms">
+    <p class="search_panel_title">Popular search terms</p>
+    <ul>
+      <li><a href="../products/products.html">Bekseju</a></li>
+      <li><a href="../products/products.html">100 Billion Prebiotics Makgeolli</a></li>
+      <li><a href="../products/products.html">Kooksoondang Banana Makgeolli</a></li>
+      <li><a href="../products/products.html">Kooksoondang Draft Makgeolli</a></li>
+    </ul>
   </div>
 
 
@@ -183,7 +195,7 @@
           <li><button type="button" disabled>Customer Support</button></li>
           <li><button type="button" disabled>Directions</button></li>
         </ul>
-        <small>COPYRIGHT&copy; 2026 by KOOKSOONDANG BREWERY CO.LTD | ALL RIGHTS RESERVED</small>
+        <small><span class="footer_copy_line">COPYRIGHT&copy; 2026 by KOOKSOONDANG BREWERY CO.LTD</span><span class="footer_copy_sep"> | </span><span class="footer_copy_line">ALL RIGHTS RESERVED</span></small>
       </div>
       <div class="footer_right">
         <!-- 목록이 버튼 위로 열림. 버튼보다 앞에 두면 겹칠 때 목록이 위에 오고, 위치는 css 가 버튼 기준으로 잡음 -->
