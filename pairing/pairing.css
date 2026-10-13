@@ -6,8 +6,8 @@
     --pairing-heading-inset: clamp(0rem, 2.604vw, 3.125rem);
     --pairing-text: #232323;
     --pairing-copy: #5d504a;
-    --pairing-paper: #faf8f7;
-    --pairing-line: #c7b7ac;
+    --pairing-paper: #fbf8f3;
+    --pairing-line: #ded7ca;
     --pairing-orange: #f29556;
     --pairing-yellow: #fdda37;
     --pairing-lime: #d4e20f;
@@ -27,9 +27,17 @@
 
 .pairing_page .pairing_hero {
     position: relative;
-    min-height: clamp(26.25rem, 36.458vw, 43.75rem);
+    min-height: clamp(36rem, 45vw, 49rem);
     overflow: hidden;
-    background: #eee1cc url("./pairing_asset/img/hero_pairing.png") center top / cover no-repeat;
+    background: #eee1cc url("./pairing_asset/img/hero_pairing.png") center 48% / cover no-repeat;
+}
+
+.pairing_page .pairing_hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(251, 248, 239, 0.97), rgba(251, 248, 239, 0.85) 31%, rgba(251, 248, 239, 0) 68%);
+    pointer-events: none;
 }
 
 .pairing_page .pairing_hero_content {
@@ -37,8 +45,7 @@
     z-index: 1;
     width: min(100%, var(--pairing-content-width));
     margin: 0 auto;
-    padding-top: clamp(9rem, 10.781vw, 12.938rem);
-    padding-left: clamp(1.5rem, 10vw, 12rem);
+    padding: clamp(10rem, 12vw, 13rem) clamp(1.5rem, 7.5vw, 9rem) 4rem;
 }
 
 .pairing_page .pairing_hero_title {
@@ -46,9 +53,9 @@
     flex-direction: column;
     align-items: flex-start;
     margin: 0;
-    color: var(--pairing-text);
+    color: #173f2e;
     font-family: var(--font-Pretendard);
-    font-size: clamp(3.25rem, 4.479vw, 5.375rem);
+    font-size: clamp(2rem, 3vw, 3.5rem);
     line-height: 1.11;
     letter-spacing: -0.02em;
 }
@@ -58,8 +65,134 @@
 }
 
 .pairing_page .pairing_hero_title strong {
-    font-weight: 700;
+    font-size: clamp(5rem, 8.5vw, 10rem);
+    font-weight: 600;
+    letter-spacing: -0.065em;
+    line-height: 1.05;
 }
+
+.pairing_page .pairing_hero_dot { color: var(--pairing-orange); }
+
+.pairing_page .pairing_eyebrow,
+.pairing_page .pairing_section_heading .pairing_eyebrow {
+    margin: 0 0 1.125rem;
+    color: var(--pairing-green);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    line-height: 1.6;
+    text-transform: uppercase;
+}
+
+.pairing_page .pairing_hero_actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.pairing_page .pairing_primary_link {
+    display: inline-flex;
+    align-items: center;
+    gap: 2.5rem;
+    min-height: 3.5rem;
+    padding: 0.875rem 1.5rem;
+    border-radius: 0.25rem 0.25rem 1.5rem 0.25rem;
+    background: var(--pairing-green);
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background 180ms ease, transform 180ms ease;
+}
+.pairing_page .pairing_primary_link:hover { background: #164934; transform: translateY(-2px); }
+.pairing_page .pairing_primary_link span { font-size: 1.5rem; }
+.pairing_page .pairing_hero_note { color: var(--pairing-copy); font-size: 0.8125rem; line-height: 1.5; }
+
+.pairing_page .pairing_section_nav {
+    position: fixed;
+    z-index: 45;
+    top: 50%;
+    right: clamp(0.5rem, 1.3vw, 1.5rem);
+    transform: translateY(-50%);
+    display: grid;
+    justify-items: center;
+    gap: 0.625rem;
+}
+.pairing_page .pairing_section_nav_heading { color: var(--pairing-copy); font-size: 0.5625rem; font-weight: 600; letter-spacing: 0.08em; }
+.pairing_page .pairing_section_nav a {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    color: var(--pairing-copy);
+    text-decoration: none;
+    border-radius: 0.375rem;
+}
+.pairing_page .pairing_nav_cup {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    fill: var(--pairing-paper);
+    stroke: #8c7960;
+    stroke-width: 1.25px;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 2px 3px rgba(76, 59, 51, 0.1));
+    transition: fill 180ms ease, stroke 180ms ease;
+}
+.pairing_page .pairing_nav_number { position: relative; margin-top: -0.125rem; font-size: 0.875rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.pairing_page .pairing_section_nav a:hover .pairing_nav_cup { fill: #e5eee5; stroke: var(--pairing-green); }
+.pairing_page .pairing_section_nav a[aria-current="location"] { color: white; }
+.pairing_page .pairing_section_nav a[aria-current="location"] .pairing_nav_cup { fill: var(--pairing-green); stroke: var(--pairing-green); }
+.pairing_page .pairing_section_nav a[aria-current="location"]::after { content: ""; position: absolute; right: -0.1875rem; top: 50%; width: 0.25rem; height: 0.25rem; border-radius: 50%; background: var(--pairing-green); }
+.pairing_page .pairing_section_nav a:focus-visible { outline: 2px solid var(--pairing-green); outline-offset: 3px; }
+.pairing_page .pairing_nav_tooltip {
+    position: absolute;
+    right: calc(100% + 0.625rem);
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    background: var(--pairing-copy);
+    color: white;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    white-space: nowrap;
+    pointer-events: none;
+    visibility: hidden;
+}
+.pairing_page .pairing_section_nav a:focus-visible .pairing_nav_tooltip { visibility: visible; }
+@media (hover: hover) {
+    .pairing_page .pairing_section_nav a:hover .pairing_nav_tooltip { visibility: visible; }
+}
+.pairing_page.is_pairing_modal_open .pairing_section_nav,
+.pairing_page:has(.nav_drawer.is_nav_open) .pairing_section_nav,
+.pairing_page:has(.is_search_open) .pairing_section_nav { display: none; }
+@media (max-width: 900px) {
+    .pairing_page { padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px)); }
+    .pairing_page .pairing_section_nav {
+        top: auto;
+        right: auto;
+        bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+        left: max(1rem, env(safe-area-inset-left, 0px));
+        transform: none;
+        display: flex;
+        gap: 0.25rem;
+        padding: 0.25rem 0.375rem;
+        border: 1px solid var(--pairing-line);
+        border-radius: 0.875rem;
+        background: rgba(251, 248, 243, 0.96);
+        box-shadow: 0 3px 12px rgba(76, 59, 51, 0.08);
+    }
+    .pairing_page .pairing_section_nav_heading { display: none; }
+    .pairing_page .pairing_section_nav a { width: 2.75rem; height: 2.75rem; }
+    .pairing_page .pairing_nav_tooltip { top: auto; right: auto; bottom: calc(100% + 0.75rem); left: 0; transform: none; }
+    .pairing_page .site_top_button { bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); }
+}
+.pairing_page .pairing_section { scroll-margin-top: 6rem; }
+.pairing_page .pairing_drink_finder { background: var(--pairing-paper); }
 
 .pairing_page .pairing_hero_description {
     margin-top: clamp(1.25rem, 1.354vw, 1.625rem);
@@ -85,18 +218,18 @@
     margin: 0;
     color: var(--pairing-text);
     font-family: var(--font-Pretendard);
-    font-size: clamp(2.25rem, 3.333vw, 4rem);
+    font-size: clamp(2.25rem, 3.5vw, 4.25rem);
     font-weight: 700;
     line-height: 1.05;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.045em;
 }
 
 .pairing_page .pairing_section_heading p {
     margin: clamp(0.375rem, 0.521vw, 0.625rem) 0 0;
-    color: var(--pairing-text);
-    font-size: clamp(1.125rem, 1.667vw, 2rem);
+    color: var(--pairing-copy);
+    font-size: clamp(1rem, 1.25vw, 1.25rem);
     font-weight: 400;
-    line-height: 1.3;
+    line-height: 1.65;
 }
 
 .pairing_page .pairing_questionnaire {
@@ -108,9 +241,10 @@
     margin: clamp(2.5rem, 3.125vw, 3.75rem) auto 0;
     overflow: hidden;
     overflow-anchor: none;
-    border: 2px solid var(--pairing-line);
+    border: 1px solid var(--pairing-line);
     border-radius: clamp(1.75rem, 2.604vw, 3.125rem);
     background: var(--pairing-paper);
+    box-shadow: 0 1.5rem 4rem rgba(76, 59, 51, 0.05);
 }
 
 .pairing_page .pairing_question_panel {
@@ -136,15 +270,24 @@
     background: var(--pairing-question-color);
 }
 
+.pairing_page .pairing_question_panel.is_collapsed .pairing_question_content {
+    display: none;
+}
+
+.pairing_page .pairing_question_panel,
+.pairing_page #food_pairing {
+    scroll-margin-top: 6rem;
+}
+
 .pairing_page .pairing_question_content {
-    position: absolute;
-    inset: 0;
+    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
     min-width: 0;
+    min-height: 100%;
     padding: clamp(1.5rem, 2.083vw, 2.5rem) clamp(2.25rem, 10.417vw, 12.5rem);
-    overflow: hidden;
+    overflow: visible;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -175,7 +318,7 @@
 
 .pairing_page .pairing_question_number {
     display: block;
-    color: var(--pairing-question-color);
+    color: var(--pairing-question-selected-color, var(--pairing-question-color));
     font-size: clamp(1.5rem, 1.667vw, 2rem);
     font-weight: 700;
     line-height: 1.3;
@@ -205,7 +348,7 @@
     padding: clamp(0.875rem, 1.042vw, 1.25rem) clamp(1rem, 1.302vw, 1.563rem);
     overflow: hidden;
     border: 1px solid var(--makgeolli_light1);
-    border-radius: 0 0 1.25rem 1.25rem;
+    border-radius: 0.75rem;
     background: var(--makgeolli_White);
     color: var(--pairing-copy);
     text-align: left;
@@ -222,6 +365,19 @@
     box-shadow: inset 0 0 0 1px var(--pairing-question-color);
     background: var(--pairing-question-tint);
     color: var(--pairing-question-selected-color, var(--pairing-question-color));
+}
+
+.pairing_page .pairing_question_option::after {
+    content: "";
+    flex: 0 0 1.125rem;
+    height: 1.125rem;
+    margin-left: auto;
+    border: 1px solid var(--pairing-line);
+    border-radius: 50%;
+}
+.pairing_page .pairing_question_option.is_selected::after {
+    border: 0.3125rem solid var(--pairing-question-selected-color, var(--pairing-question-color));
+    background: white;
 }
 
 .pairing_page .pairing_question_icon {
@@ -254,7 +410,7 @@
     border: 1px solid var(--pairing-question-color);
     border-radius: 0.5rem 0.5rem 1.25rem 1.25rem;
     background: var(--makgeolli_White);
-    color: var(--pairing-question-color);
+    color: var(--pairing-question-selected-color, var(--pairing-question-color));
     font-size: clamp(0.875rem, 1.042vw, 1.125rem);
     font-weight: 700;
     line-height: 1.2;
@@ -267,13 +423,13 @@
 
 .pairing_page .pairing_question_next {
     background: var(--makgeolli_White);
-    color: var(--pairing-question-color);
+    color: var(--pairing-question-selected-color, var(--pairing-question-color));
 }
 
 .pairing_page .pairing_question_next:not(:disabled) {
     border-color: var(--pairing-orange);
     background: var(--pairing-orange);
-    color: var(--makgeolli_White);
+    color: #3c3028;
     box-shadow: 0 0.25rem 0.75rem rgba(242, 149, 86, 0.24);
 }
 
@@ -345,7 +501,7 @@
 .pairing_page .pairing_food_tab {
     padding: 1rem 1.5rem;
     border: 1px solid var(--pairing-line);
-    border-radius: 0.25rem 0.25rem 1.5rem 1.5rem;
+    border-radius: 999px;
     background: var(--pairing-paper);
     color: var(--pairing-copy);
     font-size: 0.875rem;
@@ -356,8 +512,8 @@
 
 .pairing_page .pairing_food_tab:hover,
 .pairing_page .pairing_food_tab.is_active {
-    border-color: var(--pairing-copy);
-    background: var(--pairing-copy);
+    border-color: var(--pairing-green);
+    background: var(--pairing-green);
     color: var(--makgeolli_White);
 }
 
@@ -367,7 +523,7 @@
 
 .pairing_page .pairing_food_carousel {
     display: grid;
-    grid-template-columns: 2.5rem minmax(0, 1fr) 2.5rem;
+    grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem;
     align-items: center;
     gap: 1.875rem;
     margin-top: 1.25rem;
@@ -386,11 +542,13 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2.75rem;
+    height: 2.75rem;
+    flex-shrink: 0;
     padding: 0;
     border-radius: 50%;
-    background: transparent;
+    background: var(--pairing-paper);
+    border: 1px solid var(--pairing-line);
     transition: background-color 160ms ease, transform 160ms ease;
 }
 
@@ -416,6 +574,7 @@
     overscroll-behavior-inline: contain;
     scroll-behavior: smooth;
     scroll-snap-type: inline proximity;
+    scroll-padding-inline: 0.25rem;
     scrollbar-width: none;
     cursor: grab;
 }
@@ -444,8 +603,8 @@
     padding: 1.25rem;
     overflow: hidden;
     border: 1px solid var(--pairing-line);
-    border-radius: 0.625rem;
-    background: var(--pairing-paper);
+    border-radius: 1.125rem;
+    background: white;
     scroll-snap-align: start;
 }
 
@@ -454,7 +613,7 @@
     flex: 0 0 auto;
     width: 100%;
     height: 11.25rem;
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
     object-fit: cover;
     object-position: var(--pairing-food-image-position, center);
 }
@@ -465,31 +624,66 @@
     font-family: var(--font-Pretendard);
     font-size: 1.25rem;
     font-weight: 600;
-    line-height: 1.7;
+    line-height: 1.4;
 }
 
 .pairing_page .pairing_food_card p {
     min-height: 0;
     margin: 0;
-    color: #8d7e77;
-    font-size: 1.125rem;
+    color: var(--pairing-copy);
+    font-size: 0.9375rem;
     font-weight: 400;
     line-height: 1.7;
-    white-space: nowrap;
+    white-space: normal;
 }
 
 .pairing_page .pairing_food_tag {
-    margin: 0;
-    padding: 0;
-    color: #8d7e77;
+    margin: auto 0 0;
+    padding: 0.625rem 0 0;
+    border-top: 1px solid var(--pairing-line);
+    color: var(--pairing-green);
     font-size: 0.875rem;
     font-weight: 300;
     line-height: 1.7;
 }
 
 .pairing_page .pairing_recipes_section {
-    --pairing-recipe-yellow: #ffdf7e;
+    --recipe-surface: #ede7da;
+    --recipe-ink: #403d33;
+    --recipe-accent: #62563b;
+    background: #f3f0e9;
     padding-bottom: calc(clamp(7.5rem, 10vw, 12rem) + 150px);
+}
+
+/* Share each drink's palette between its recipe card and selection ring. */
+.pairing_page [data-recipe-theme="makgeolli-highball"] {
+    --recipe-surface: #ede7da;
+    --recipe-ink: #403d33;
+    --recipe-accent: #62563b;
+}
+
+.pairing_page [data-recipe-theme="strawberry-makgeolli"] {
+    --recipe-surface: #e9b7be;
+    --recipe-ink: #4c2631;
+    --recipe-accent: #792e46;
+}
+
+.pairing_page [data-recipe-theme="honey-makgeolli"] {
+    --recipe-surface: #e9c66f;
+    --recipe-ink: #49360f;
+    --recipe-accent: #67460b;
+}
+
+.pairing_page [data-recipe-theme="matcha-makgeolli"] {
+    --recipe-surface: #b6c79d;
+    --recipe-ink: #293923;
+    --recipe-accent: #35542b;
+}
+
+.pairing_page [data-recipe-theme="baekseju-highball"] {
+    --recipe-surface: #cf9976;
+    --recipe-ink: #44291e;
+    --recipe-accent: #542817;
 }
 
 .pairing_page .pairing_recipes_heading {
@@ -541,25 +735,29 @@
 
 .pairing_page .pairing_recipe_picker.is_active {
     z-index: 1;
-    border-color: var(--pairing-copy);
-    box-shadow: 0 0 0 0.25rem rgba(93, 80, 74, 0.32);
+    border-color: var(--recipe-accent);
+    box-shadow: 0 0 0 0.25rem var(--recipe-surface);
 }
 
 .pairing_page .pairing_recipe_viewport {
+    touch-action: pan-y pinch-zoom;
     width: min(calc(100% - var(--pairing-heading-inset) - var(--pairing-heading-inset)), 101.25rem);
     margin: clamp(1rem, 1.875vw, 2.25rem) auto 0;
     container-type: inline-size;
 }
 
 .pairing_page .pairing_recipe_card {
+    --recipe-line: color-mix(in srgb, var(--recipe-accent) 25%, transparent);
+    box-sizing: border-box;
     display: grid;
     grid-template-columns: minmax(0, 1.09fr) minmax(17rem, 0.91fr);
     aspect-ratio: 1024 / 491;
     min-height: 0;
     overflow: hidden;
-    border-radius: 0.75rem;
-    background: var(--pairing-copy);
-    color: var(--makgeolli_White);
+    border: 1px solid var(--recipe-line);
+    border-radius: 1.5rem;
+    background: var(--recipe-surface);
+    color: var(--recipe-ink);
 }
 
 .pairing_page .pairing_recipe_content,
@@ -611,7 +809,7 @@
 
 .pairing_page .pairing_recipe_title {
     margin: 0;
-    color: var(--makgeolli_White);
+    color: var(--recipe-accent);
     font-family: var(--font-Albert_Sans);
     font-size: clamp(2rem, 2.97cqw, 3rem);
     font-weight: 400;
@@ -625,7 +823,7 @@
     flex-wrap: wrap;
     gap: clamp(0.5rem, 1.238cqw, 1.25rem);
     margin: 0;
-    color: var(--makgeolli_White);
+    color: var(--recipe-ink);
     font-size: clamp(0.875rem, 1.238cqw, 1.25rem);
     font-weight: 400;
     line-height: 1.7;
@@ -642,20 +840,25 @@
 
 .pairing_page .pairing_recipe_meta_item.is_feature {
     padding: clamp(0.313rem, 0.309cqw, 0.313rem) clamp(0.5rem, 0.619cqw, 0.625rem);
-    color: var(--pairing-recipe-yellow);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.28);
+    color: var(--recipe-accent);
 }
 
-.pairing_page .pairing_recipe_meta_item img {
+.pairing_page .pairing_recipe_icon {
     flex: 0 0 auto;
     width: clamp(1.125rem, 1.485cqw, 1.5rem);
     height: clamp(1.125rem, 1.485cqw, 1.5rem);
+    background: currentColor;
+    mask: var(--recipe-icon) center / contain no-repeat;
+    -webkit-mask: var(--recipe-icon) center / contain no-repeat;
 }
 
 .pairing_page .pairing_recipe_columns {
     display: grid;
-    grid-template-columns: minmax(0, 15.43cqw) clamp(1px, 0.124cqw, 2px) minmax(0, 17.28cqw);
+    grid-template-columns: minmax(0, 0.9fr) 1px minmax(0, 1.1fr);
     align-items: stretch;
-    column-gap: clamp(1rem, 3.094cqw, 3.125rem);
+    column-gap: clamp(1rem, 2cqw, 2rem);
     width: 100%;
 }
 
@@ -664,12 +867,12 @@
     width: 100%;
     height: 100%;
     min-height: 1px;
-    object-fit: fill;
+    background: var(--recipe-line);
 }
 
 .pairing_page .pairing_recipe_columns h4 {
     margin: 0 0 0.75rem;
-    color: var(--pairing-recipe-yellow);
+    color: var(--recipe-accent);
     font-size: clamp(1rem, 1.485cqw, 1.5rem);
     font-weight: 700;
     line-height: 1.3;
@@ -683,8 +886,8 @@
     display: grid;
     margin: 0;
     padding-inline-start: clamp(1.125rem, 1.485cqw, 1.5rem);
-    color: var(--makgeolli_light4);
-    font-size: clamp(0.75rem, 0.99cqw, 1rem);
+    color: var(--recipe-ink);
+    font-size: clamp(0.875rem, 0.99cqw, 1rem);
     font-weight: 300;
     line-height: 1.7;
 }
@@ -708,7 +911,7 @@
     gap: 0;
     margin: 0;
     padding-inline: clamp(0.5rem, 0.743cqw, 0.75rem);
-    color: var(--pairing-recipe-yellow);
+    color: var(--recipe-accent);
     font-family: var(--font-ROH_HOE-CHAN);
     font-size: clamp(0.875rem, 1.238cqw, 1.25rem);
     font-weight: 400;
@@ -741,180 +944,9 @@
     object-fit: cover;
 }
 
-.pairing_page .pairing_result_modal {
-    width: min(68rem, calc(100% - 3rem));
-    max-height: min(48rem, calc(100dvh - 3rem));
-    padding: 0;
-    overflow: auto;
-    border: 0;
-    border-radius: 1.5rem;
-    background: transparent;
-    color: var(--pairing-text);
-}
-
 .pairing_page .pairing_result_modal::backdrop {
     background: rgba(39, 38, 37, 0.62);
     backdrop-filter: blur(0.25rem);
-}
-
-.pairing_page .pairing_result_modal_surface {
-    position: relative;
-    padding: clamp(2rem, 4.167vw, 4rem);
-    overflow: hidden;
-    border-radius: inherit;
-    background: var(--pairing-paper);
-    animation: pairing_modal_in 260ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.pairing_page .pairing_modal_close {
-    position: absolute;
-    z-index: 2;
-    top: 1rem;
-    right: 1rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.75rem;
-    height: 2.75rem;
-    border-radius: 50%;
-    color: var(--pairing-copy);
-    font-size: 2rem;
-    font-weight: 300;
-    line-height: 1;
-}
-
-.pairing_page .pairing_modal_close:hover {
-    background: var(--makgeolli_light2);
-}
-
-.pairing_page .pairing_modal_eyebrow {
-    margin: 0;
-    color: var(--pairing-orange);
-    font-size: 0.875rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-}
-
-.pairing_page .pairing_modal_title {
-    margin: 0.5rem 0 0;
-    color: var(--pairing-text);
-    font-size: clamp(2rem, 3.333vw, 3.5rem);
-    font-weight: 700;
-    line-height: 1.1;
-    letter-spacing: -0.03em;
-}
-
-.pairing_page .pairing_modal_result_grid {
-    display: grid;
-    grid-template-columns: minmax(13rem, 0.75fr) minmax(0, 1.25fr);
-    align-items: center;
-    gap: clamp(1.5rem, 4.167vw, 4rem);
-    margin-top: clamp(1.75rem, 3.125vw, 3rem);
-}
-
-.pairing_page .pairing_modal_product_image {
-    width: 100%;
-    max-height: 22rem;
-    object-fit: contain;
-}
-
-.pairing_page .pairing_modal_product_name {
-    margin: 0;
-    color: var(--pairing-text);
-    font-family: var(--font-Albert_Sans);
-    font-size: clamp(1.75rem, 2.5vw, 2.75rem);
-    font-weight: 400;
-    line-height: 1.1;
-}
-
-.pairing_page .pairing_modal_product_description {
-    margin: 0.875rem 0 0;
-    color: var(--pairing-copy);
-    font-size: 1rem;
-    line-height: 1.65;
-}
-
-.pairing_page .pairing_modal_profile {
-    display: grid;
-    gap: 0.75rem;
-    margin-top: 1.5rem;
-}
-
-.pairing_page .pairing_modal_profile_item {
-    display: grid;
-    grid-template-columns: 5.5rem minmax(0, 1fr) 2.25rem;
-    align-items: center;
-    gap: 0.75rem;
-    color: var(--pairing-copy);
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-.pairing_page .pairing_modal_profile_bar {
-    height: 0.5rem;
-    overflow: hidden;
-    border-radius: 999px;
-    background: var(--makgeolli_light1);
-}
-
-.pairing_page .pairing_modal_profile_fill {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    background: var(--pairing-modal-accent, var(--pairing-orange));
-}
-
-.pairing_page .pairing_modal_similar {
-    margin-top: clamp(2rem, 3.125vw, 3rem);
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--makgeolli_light1);
-}
-
-.pairing_page .pairing_modal_similar h4 {
-    margin: 0;
-    color: var(--pairing-copy);
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-.pairing_page .pairing_modal_similar_list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 0.875rem;
-}
-
-.pairing_page .pairing_modal_similar_item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.75rem 0.5rem 0.5rem;
-    border: 1px solid var(--makgeolli_light1);
-    border-radius: 999px;
-    background: var(--makgeolli_White);
-    color: var(--pairing-copy);
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.pairing_page .pairing_modal_similar_item img {
-    width: 2rem;
-    height: 2rem;
-    object-fit: contain;
-}
-
-.pairing_page .pairing_modal_tip {
-    margin: 1.25rem 0 0;
-    padding: 1rem 1.125rem;
-    border-radius: 0.75rem;
-    background: var(--makgeolli_light2);
-    color: var(--pairing-copy);
-    font-size: 0.875rem;
-    line-height: 1.5;
-}
-
-.pairing_page .pairing_modal_tip strong {
-    color: var(--pairing-orange);
 }
 
 .pairing_page .pairing_sr_only {
@@ -1005,190 +1037,6 @@
     }
 }
 
-@media (max-width: 767px) {
-    .pairing_page {
-        --pairing-content-inset: 1.25rem;
-        --pairing-heading-inset: 0;
-    }
-
-    .pairing_page .pairing_hero {
-        min-height: 28rem;
-        background-position: 60% top;
-    }
-
-    .pairing_page .pairing_hero_content {
-        padding-top: 9.5rem;
-        padding-left: 1.5rem;
-    }
-
-    .pairing_page .pairing_hero_title {
-        font-size: clamp(2.75rem, 14vw, 4rem);
-    }
-
-    .pairing_page .pairing_hero_description {
-        font-size: 1rem;
-    }
-
-    .pairing_page .pairing_section {
-        padding-block: 5rem;
-    }
-
-    .pairing_page .pairing_section_heading h2 {
-        font-size: 2.25rem;
-    }
-
-    .pairing_page .pairing_section_heading p {
-        font-size: 1.125rem;
-    }
-
-    .pairing_page .pairing_questionnaire {
-        display: block;
-        width: 100%;
-        min-height: 0;
-        margin-top: 2rem;
-        border-radius: 1.75rem;
-    }
-
-    .pairing_page .pairing_question_panel {
-        display: block;
-        width: 100%;
-        min-height: 0;
-        border-left: 0;
-        transition: height 360ms cubic-bezier(0.22, 1, 0.36, 1), background-color 220ms ease;
-    }
-
-    .pairing_page .pairing_question_panel + .pairing_question_panel {
-        border-top: 1px solid var(--pairing-line);
-        border-left: 0;
-    }
-
-    .pairing_page .pairing_question_panel.is_open {
-        flex-basis: auto;
-        height: 34rem;
-        min-height: 0;
-    }
-
-    .pairing_page .pairing_question_panel.is_collapsed {
-        flex-basis: auto;
-        height: 3.875rem;
-    }
-
-    .pairing_page .pairing_question_content {
-        padding: 2rem 1.25rem;
-    }
-
-    .pairing_page .pairing_question_option {
-        min-height: 3.875rem;
-        gap: 1rem;
-        padding: 0.75rem 1rem;
-    }
-
-    .pairing_page .pairing_question_tab {
-        flex-direction: row;
-        justify-content: flex-start;
-        gap: 1rem;
-        padding: 0.875rem 1.25rem;
-        text-align: left;
-    }
-
-    .pairing_page .pairing_question_tab .pairing_question_prompt {
-        font-size: 1rem;
-        writing-mode: horizontal-tb;
-        transform: none;
-    }
-
-    .pairing_page .pairing_food_tabs {
-        gap: 0.5rem;
-    }
-
-    .pairing_page .pairing_food_tab {
-        padding: 0.75rem 0.875rem;
-        font-size: 0.75rem;
-    }
-
-    .pairing_page .pairing_food_carousel {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
-    }
-
-    .pairing_page .pairing_carousel_arrow {
-        display: none;
-    }
-
-    .pairing_page .pairing_food_track {
-        grid-auto-columns: min(79vw, 17rem);
-        gap: 1rem;
-        margin-right: calc(var(--pairing-content-inset) * -1);
-        padding-right: var(--pairing-content-inset);
-    }
-
-    .pairing_page .pairing_food_card {
-        min-height: 21.125rem;
-    }
-
-    .pairing_page .pairing_recipes_heading {
-        gap: 1.5rem;
-    }
-
-    .pairing_page .pairing_recipe_controls {
-        align-self: stretch;
-        justify-content: flex-end;
-    }
-
-    .pairing_page .pairing_recipe_picker_list {
-        overflow-x: auto;
-        padding: 0.25rem;
-        scrollbar-width: none;
-    }
-
-    .pairing_page .pairing_recipe_picker_list::-webkit-scrollbar {
-        display: none;
-    }
-
-    .pairing_page .pairing_recipe_viewport {
-        width: 100%;
-        margin-top: 2rem;
-    }
-
-    .pairing_page .pairing_recipe_content {
-        padding: 2rem 1.5rem;
-    }
-
-    .pairing_page .pairing_recipe_columns {
-        grid-template-columns: 1fr;
-        row-gap: 1.5rem;
-        column-gap: 0;
-    }
-
-    .pairing_page .pairing_recipe_divider {
-        display: none;
-    }
-
-    .pairing_page .pairing_recipe_step_section {
-        padding-top: 1.5rem;
-        padding-left: 0;
-        border-top: 1px solid rgba(234, 223, 216, 0.52);
-        border-left: 0;
-    }
-
-    .pairing_page .pairing_result_modal {
-        width: calc(100% - 2rem);
-        max-height: calc(100dvh - 2rem);
-    }
-
-    .pairing_page .pairing_result_modal_surface {
-        padding: 3.5rem 1.5rem 1.5rem;
-    }
-
-    .pairing_page .pairing_modal_result_grid {
-        grid-template-columns: 1fr;
-    }
-
-    .pairing_page .pairing_modal_product_image {
-        max-height: 13rem;
-    }
-}
-
 @media (prefers-reduced-motion: reduce) {
     .pairing_page *,
     .pairing_page *::before,
@@ -1212,39 +1060,50 @@
     overflow: auto;
     border: 0;
     border-radius: 2rem;
-    background: transparent;
+    background: var(--makgeolli_White);
+    color: var(--pairing-text);
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
 }
 
 .pairing_page .pairing_result_modal_surface {
     position: relative;
-    min-height: 100%;
-    padding: 5.313rem 5.313rem 4.375rem;
-    overflow: hidden;
-    border: 2px solid var(--pairing-line);
+    padding: 1.5rem clamp(1.5rem, 4vw, 4rem) 2.5rem;
+    overflow: visible;
+    border: 0;
     border-radius: 2rem;
     background: var(--makgeolli_White);
     animation: pairing_modal_in 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.pairing_page .pairing_modal_close {
-    position: absolute;
+.pairing_page .pairing_modal_toolbar {
+    position: sticky;
     z-index: 5;
-    top: 1rem;
-    right: 1rem;
-    width: 2.5rem;
-    height: 2.5rem;
-    padding: 0;
-    border-radius: 50%;
-    opacity: 0;
-    color: var(--pairing-copy);
-    font-size: 1.75rem;
-    line-height: 1;
-    transition: opacity 160ms ease, background-color 160ms ease;
+    top: 0;
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.625rem 1rem;
+    background: var(--makgeolli_White);
+    border-bottom: 1px solid var(--pairing-line);
 }
 
-.pairing_page .pairing_modal_close:focus-visible,
+.pairing_page .pairing_modal_close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 1px solid var(--pairing-line);
+    border-radius: 50%;
+    background: var(--pairing-paper);
+    color: var(--pairing-copy);
+    font-size: 2rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
 .pairing_page .pairing_modal_close:hover {
-    opacity: 1;
     background: var(--makgeolli_light2);
 }
 
@@ -1390,46 +1249,40 @@
 }
 
 .pairing_page .pairing_modal_similar_products {
-    position: relative;
-    width: 7.105rem;
-    height: 12.075rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(3.25rem, 1fr));
+    gap: 1rem;
+    width: 100%;
 }
 
-.pairing_page .pairing_modal_similar_bottle {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 3.85rem;
-    height: 12.075rem;
-    object-fit: cover;
+.pairing_page .pairing_modal_similar_item {
+    display: grid;
+    align-content: start;
+    justify-items: center;
+    gap: 0.625rem;
+    margin: 0;
+    text-align: center;
+    font-size: 0.8125rem;
+    line-height: 1.5;
 }
 
-.pairing_page .pairing_modal_similar_can {
-    position: absolute;
-    top: 5.705rem;
-    left: 2.555rem;
-    width: 5.695rem;
-    height: 5.74rem;
+.pairing_page .pairing_modal_similar_item img {
+    width: 100%;
+    height: 8rem;
     object-fit: contain;
 }
 
-.pairing_page .pairing_modal_similar_panel p {
-    margin: 0;
-    color: var(--bekseju_dark1);
-    font-size: 0.75rem;
-    font-weight: 400;
-    line-height: 1.3;
-}
-
 .pairing_page .pairing_modal_view_more {
+    min-height: 2.75rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.49rem 1.68rem;
+    padding: 0.625rem 0.75rem;
+    white-space: nowrap;
     border-radius: 0.14rem 0.14rem 1.12rem 1.12rem;
     background: var(--pairing-orange);
     color: var(--makgeolli_White);
-    font-size: 0.7rem;
+    font-size: 0.875rem;
     font-weight: 600;
     line-height: 1.2;
 }
@@ -1448,7 +1301,7 @@
     z-index: 1;
     top: auto;
     bottom: calc(100% - 3.75rem);
-    left: calc(50% + 80px);
+    left: 50%;
     width: 21rem;
     height: 13.938rem;
     transform: translateX(-50%);
@@ -1651,8 +1504,8 @@
     }
 
     .pairing_page .pairing_hero {
-        min-height: clamp(32rem, 50vw, 40rem);
-        background-position: 58% top;
+        min-height: clamp(36rem, 54vw, 44rem);
+        background-position: 58% center;
     }
 
     .pairing_page .pairing_hero_content {
@@ -1700,7 +1553,7 @@
     }
 
     .pairing_page .pairing_food_carousel {
-        grid-template-columns: 2.25rem minmax(0, 1fr) 2.25rem;
+        grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem;
         gap: 1rem;
     }
 
@@ -1762,603 +1615,399 @@
     }
 }
 
-@media (max-width: 640px) {
-    .pairing_page .pairing_result_modal {
-        width: calc(100% - 1rem);
-        max-height: calc(100dvh - 1rem);
-    }
+/* Shared feedback: progress, matches, and carousel position. */
+.pairing_page [hidden] { display: none !important; }
 
-    .pairing_page .pairing_result_modal_surface {
-        padding: 2.5rem 1.25rem 2rem;
-        border-radius: 1.5rem;
-    }
+.pairing_page .pairing_question_progress {
+    display: grid;
+    gap: 0.625rem;
+    box-sizing: border-box;
+    width: min(90%, 96.75rem);
+    margin: 1.5rem auto 0;
+    padding: 0;
+    color: var(--pairing-copy);
+    font-size: 0.8125rem;
+}
 
-    .pairing_page .pairing_modal_result_header h2 {
-        font-size: 2rem;
-    }
+.pairing_page .pairing_question_progress + .pairing_questionnaire { margin-top: clamp(1rem, 1.5vw, 1.5rem); }
+.pairing_page .pairing_question_progress p { margin: 0; }
+.pairing_page .pairing_question_hint { line-height: 1.6; }
+.pairing_page .pairing_progress_heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; }
+.pairing_page .pairing_progress_title { font-weight: 700; color: var(--pairing-green); }
+.pairing_page #pairing_question_status { font-weight: 600; font-variant-numeric: tabular-nums; }
+.pairing_page .pairing_progress_steps {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.pairing_page .pairing_progress_step {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 0;
+    padding-top: 0.375rem;
+    border-top: 3px solid var(--pairing-line);
+    line-height: 1.4;
+}
+.pairing_page .pairing_progress_step_label { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.5rem; align-items: center; font-weight: 700; }
+.pairing_page .pairing_progress_step_name { font-weight: 400; }
+.pairing_page .pairing_progress_step[aria-current="step"] { border-color: var(--pairing-green); color: var(--pairing-green); }
+.pairing_page .pairing_progress_step.is_answered { border-color: var(--pairing-green); color: var(--pairing-green); }
 
-    .pairing_page .pairing_modal_result_layout {
-        gap: 7rem;
-        margin-top: 2.25rem;
-    }
+.pairing_page .pairing_question_complete {
+    position: absolute;
+    bottom: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    font-size: 0;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.pairing_page .pairing_question_complete::after { content: "✓"; font-size: 1rem; }
 
-    .pairing_page .pairing_modal_recommendation_card {
-        padding: 1.5rem;
-    }
+.pairing_page .pairing_question_panel:not([data-question-id="explore"]) .pairing_question_tab {
+    color: #3c3028;
+}
 
-    .pairing_page .pairing_modal_recommendation_inner {
+.pairing_page .pairing_question_missing {
+    margin: 0.75rem 0 0;
+    color: var(--pairing-copy);
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.pairing_page .pairing_food_match {
+    margin: 1.5rem 0 0;
+    padding: 1rem 1.25rem;
+    border-left: 3px solid var(--pairing-green);
+    border-radius: 0.25rem 0.75rem 0.75rem 0.25rem;
+    background: #eef2e8;
+    color: var(--pairing-green);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+}
+.pairing_page .pairing_food_badge {
+    align-self: flex-start;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    background: #eef2e8;
+    color: var(--pairing-green);
+    font-size: 0.75rem;
+    line-height: 1.5;
+    font-weight: 600;
+}
+.pairing_page .pairing_carousel_status,
+.pairing_page .pairing_recipe_status {
+    margin: 1rem 0 0;
+    color: var(--pairing-copy);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+.pairing_page .pairing_carousel_arrow:disabled {
+    opacity: 0.3;
+    cursor: default;
+    transform: none;
+    background: transparent;
+}
+.pairing_page .pairing_recipe_status {
+    width: min(calc(100% - var(--pairing-heading-inset) - var(--pairing-heading-inset)), 101.25rem);
+    margin-inline: auto;
+}
+.pairing_page .pairing_carousel_arrow:disabled img { transform: none; }
+.pairing_page .pairing_recipe_picker_list {
+    overflow-x: auto;
+    padding: 0.375rem;
+    scrollbar-width: none;
+    overscroll-behavior-inline: contain;
+}
+.pairing_page .pairing_recipe_picker_list::-webkit-scrollbar { display: none; }
+
+@media (min-width: 768px) and (max-width: 1100px) {
+    .pairing_page .pairing_question_progress { width: min(92%, 58rem); }
+    .pairing_page .pairing_recipe_content {
+        --pairing-recipe-inline-padding: 1.5rem;
+    }
+    .pairing_page .pairing_recipe_columns {
         grid-template-columns: 1fr;
-        gap: 2rem;
+        row-gap: 1.25rem;
     }
-
-    .pairing_page .pairing_modal_product_overview {
-        grid-template-columns: 4.5rem minmax(0, 1fr);
-        gap: 1rem;
-    }
-
-    .pairing_page .pairing_modal_recommended_image {
-        width: 4.5rem;
-        height: 10rem;
-    }
-
-    .pairing_page .pairing_modal_product_copy {
-        padding-top: 0;
-    }
-
-    .pairing_page .pairing_modal_product_copy h3 {
-        font-size: 1.35rem;
-    }
-
-    .pairing_page .pairing_modal_similar_panel {
-        display: grid;
-        grid-template-columns: auto minmax(0, 1fr);
-        align-items: center;
-        column-gap: 1rem;
-        text-align: left;
-    }
-
-    .pairing_page .pairing_modal_similar_panel h3 {
-        grid-column: 1 / -1;
-    }
-
-    .pairing_page .pairing_modal_similar_products {
-        grid-row: 2 / span 2;
-        transform: scale(0.74);
-        transform-origin: left center;
-    }
-
-    .pairing_page .pairing_modal_similar_panel p {
-        align-self: end;
-    }
-
-    .pairing_page .pairing_modal_view_more {
-        justify-self: start;
-        align-self: start;
-    }
-
-    .pairing_page .pairing_modal_tip_card {
-        width: 100%;
-    }
-
-    .pairing_page .pairing_modal_tip_illustration {
-        transform: translateX(-50%) scale(0.78);
-        transform-origin: center bottom;
-    }
-
-    .pairing_page .pairing_modal_tip_list h4 {
-        font-size: 0.875rem;
-    }
-
-    .pairing_page .pairing_modal_tip_list p {
-        font-size: 0.75rem;
-    }
-
-    .pairing_page .pairing_modal_result_actions {
-        margin-top: 2.5rem;
-    }
-
-    .pairing_page .pairing_modal_food_cta {
-        padding-inline: 1.5rem;
-        font-size: 1rem;
+    .pairing_page .pairing_recipe_divider { display: none; }
+    .pairing_page .pairing_recipe_step_section {
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--recipe-line);
     }
 }
 
-/* Phone layout: compact vertical flow while preserving each section's controls. */
-@media (max-width: 47.9375rem) {
+/* One phone layout, 320–767px. Content determines height, including landscape. */
+@media (max-width: 767px) {
+    .pairing_page {
+        --pairing-content-inset: 1.25rem;
+        --pairing-heading-inset: 0;
+    }
     .pairing_page .site_header_inner {
         width: calc(100% - 2.5rem);
         padding-block: 0.75rem;
     }
-
-    .pairing_page .site_header:has(.nav_toggle) .site_header_left {
-        gap: 0.75rem;
-    }
-
-    .pairing_page .site_header:has(.nav_toggle) .nav_toggle {
-        display: block;
-    }
-
-    .pairing_page .site_logo_mark {
-        width: min(9.5rem, 43vw);
-    }
-
+    .pairing_page .site_header:has(.nav_toggle) .site_header_left { gap: 0.75rem; }
+    .pairing_page .site_header:has(.nav_toggle) .nav_toggle { display: block; }
+    .pairing_page .site_logo_mark { width: min(9.5rem, 43vw); }
     .pairing_page .pairing_hero {
-        min-height: clamp(23rem, 120vw, 28rem);
-        background-position: 58% top;
+        min-height: 40rem;
+        background-color: #fbf7ed;
+        background-size: auto 70%;
+        background-position: 68% bottom;
     }
-
+    .pairing_page .pairing_hero::before {
+        background: linear-gradient(180deg, #fbf7ed 0%, #fbf7ed 30%, rgba(251, 247, 237, 0.94) 43%, rgba(251, 247, 237, 0.25) 69%, transparent 100%);
+    }
     .pairing_page .pairing_hero_content {
-        padding-top: clamp(7rem, 29vw, 9.5rem);
-        padding-left: 1.25rem;
-        padding-right: 1.25rem;
+        padding: 7.5rem 1.25rem 13rem;
     }
-
     .pairing_page .pairing_hero_title {
-        font-size: clamp(2.5rem, 12vw, 3.5rem);
-        line-height: 1.02;
+        font-size: clamp(1.75rem, 7.5vw, 2.5rem);
+        line-height: 1.15;
     }
-
+    .pairing_page .pairing_hero_title strong { font-size: clamp(4.75rem, 21vw, 7rem); }
     .pairing_page .pairing_hero_description {
-        max-width: 17rem;
+        max-width: 21rem;
         font-size: 0.9375rem;
         line-height: 1.55;
     }
-
-    .pairing_page .pairing_section {
-        padding-block: clamp(3.75rem, 16vw, 5rem);
+    .pairing_page .pairing_hero_actions { margin-top: 1.5rem; gap: 0.75rem; }
+    .pairing_page .pairing_primary_link { min-height: 3.25rem; padding: 0.75rem 1.25rem; }
+    .pairing_page .pairing_hero_note { font-size: 0.75rem; }
+    .pairing_page .pairing_eyebrow,
+    .pairing_page .pairing_section_heading .pairing_eyebrow { font-size: 0.6875rem; margin-bottom: 0.875rem; }
+    .pairing_page .pairing_section { padding-block: clamp(3.75rem, 16vw, 5rem); }
+    .pairing_page .pairing_section_heading h2 { font-size: clamp(2rem, 10vw, 2.25rem); }
+    .pairing_page .pairing_section_heading p { font-size: 1rem; line-height: 1.6; }
+    .pairing_page .pairing_question_progress {
+        width: 100%;
+        gap: 0.5rem;
+        margin-top: 1.25rem;
+        font-size: 0.75rem;
     }
-
-    .pairing_page .pairing_section_heading h2 {
-        font-size: clamp(2rem, 10vw, 2.25rem);
-    }
-
-    .pairing_page .pairing_section_heading p {
-        font-size: 1rem;
-    }
-
+    .pairing_page .pairing_progress_steps { gap: 0.5rem; }
+    .pairing_page .pairing_progress_step_label { grid-template-columns: 1fr auto; gap: 0.25rem; }
+    .pairing_page .pairing_progress_step_name { grid-column: 1 / -1; grid-row: 2; font-size: 0.75rem; }
+    .pairing_page .pairing_progress_step_mark { grid-column: 2; grid-row: 1; }
     .pairing_page .pairing_questionnaire {
-        margin-top: 1.5rem;
+        display: block;
+        width: 100%;
+        min-height: 0;
+        margin-top: 1rem;
         border-radius: 1.25rem;
     }
-
-    .pairing_page .pairing_question_panel.is_open {
-        height: min(27rem, calc(100dvh - 6rem));
-        overflow-y: auto;
+    .pairing_page .pairing_question_panel {
+        display: block;
+        width: 100%;
+        min-height: 0;
+        height: auto;
+        border-left: 0;
+        transition: background-color 220ms ease;
     }
-
-    .pairing_page .pairing_question_panel.is_collapsed {
-        height: 3.25rem;
+    .pairing_page .pairing_question_panel + .pairing_question_panel {
+        border-top: 1px solid var(--pairing-line);
+        border-left: 0;
     }
-
-    .pairing_page .pairing_question_content {
-        padding: 1rem 0.875rem;
-    }
-
+    .pairing_page .pairing_question_panel.is_open,
+    .pairing_page .pairing_question_panel.is_collapsed { height: auto; }
+    .pairing_page .pairing_question_content { padding: 1.25rem 1rem; }
     .pairing_page .pairing_question_tab {
+        position: relative;
+        flex-direction: row;
+        justify-content: flex-start;
         gap: 0.625rem;
+        min-height: 3.5rem;
+        padding: 0.875rem 1rem;
+        text-align: left;
+    }
+    .pairing_page .pairing_question_panel.is_open .pairing_question_tab { display: none; }
+    .pairing_page .pairing_question_tab .pairing_question_prompt {
+        writing-mode: horizontal-tb;
+        transform: none;
+        font-size: 0.9375rem;
+    }
+    .pairing_page .pairing_question_number { font-size: 1.125rem; }
+    .pairing_page .pairing_question_prompt { font-size: 1.125rem; line-height: 1.45; }
+    .pairing_page .pairing_question_complete {
+        position: static;
+        transform: none;
+        margin-left: auto;
+    }
+    .pairing_page .pairing_question_options { gap: 0.5rem; margin-top: 1rem; }
+    .pairing_page .pairing_question_option {
         min-height: 3.25rem;
+        gap: 0.75rem;
         padding: 0.625rem 0.875rem;
     }
-
-    .pairing_page .pairing_question_number {
-        font-size: 1.125rem;
-    }
-
-    .pairing_page .pairing_question_prompt,
-    .pairing_page .pairing_question_tab .pairing_question_prompt {
-        font-size: 1rem;
-    }
-
-    .pairing_page .pairing_question_options {
-        gap: 0.375rem;
-        margin-top: 0.75rem;
-    }
-
-    .pairing_page .pairing_question_option {
-        min-height: 3rem;
-        gap: 0.625rem;
-        padding: 0.5rem 0.75rem;
-    }
-
-    .pairing_page .pairing_question_icon {
-        width: 1.25rem;
-        height: 1.25rem;
-    }
-
-    .pairing_page .pairing_question_option_text {
-        font-size: 0.875rem;
-    }
-
+    .pairing_page .pairing_question_icon { width: 1.5rem; height: 1.5rem; }
+    .pairing_page .pairing_question_option_text { font-size: 0.9375rem; }
+    .pairing_page .pairing_question_nav_button { min-height: 2.75rem; font-size: 0.9375rem; }
     .pairing_page .pairing_food_tabs {
-        width: calc(100% + 0.5rem);
-        margin-right: -0.5rem;
-        padding-bottom: 0.25rem;
+        gap: 0.375rem;
         overflow-x: auto;
         scrollbar-width: none;
+        padding: 0.375rem;
+        margin-inline: -0.375rem;
     }
-
-    .pairing_page .pairing_food_tabs::-webkit-scrollbar {
-        display: none;
-    }
-
     .pairing_page .pairing_food_tab {
         flex: 0 0 auto;
+        min-height: 2.75rem;
         padding: 0.625rem 0.875rem;
+        font-size: 0.875rem;
     }
-
+    .pairing_page .pairing_food_carousel {
+        grid-template-columns: 1fr 2.75rem 2.75rem;
+        gap: 1rem 0.625rem;
+    }
+    .pairing_page .pairing_food_previous { grid-column: 2; grid-row: 2; }
+    .pairing_page .pairing_food_next { grid-column: 3; grid-row: 2; }
     .pairing_page .pairing_food_track {
-        grid-auto-columns: min(82vw, 19rem);
-        gap: 0.875rem;
-    }
-
-    .pairing_page .pairing_food_card {
-        min-height: 19rem;
+        grid-column: 1 / -1;
+        grid-row: 1;
+        grid-auto-columns: min(82vw, 23rem);
         gap: 0.75rem;
+        padding: 0.25rem;
+        scroll-snap-type: x mandatory;
+    }
+    .pairing_page .pairing_food_carousel.is_all_visible { grid-template-columns: minmax(0, 1fr); }
+    .pairing_page .pairing_food_card {
+        min-height: 0;
+        gap: 0.625rem;
         padding: 1rem;
     }
-
-    .pairing_page .pairing_food_card_image {
-        height: clamp(9rem, 48vw, 10.5rem);
-    }
-
-    .pairing_page .pairing_food_card h3 {
-        font-size: 1.0625rem;
-        line-height: 1.4;
-    }
-
+    .pairing_page .pairing_food_card_image { height: clamp(11rem, 52vw, 16rem); }
+    .pairing_page .pairing_food_card h3 { font-size: 1.25rem; line-height: 1.4; }
     .pairing_page .pairing_food_card p {
-        font-size: 0.9375rem;
-        line-height: 1.45;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        white-space: normal;
+        overflow-wrap: break-word;
     }
-
-    .pairing_page .pairing_food_tag {
-        font-size: 0.75rem;
-        line-height: 1.4;
-    }
-
-    .pairing_page .pairing_recipes_heading {
-        gap: 1.25rem;
-    }
-
+    .pairing_page .pairing_food_tag { font-size: 0.8125rem; line-height: 1.5; }
+    .pairing_page .pairing_carousel_status { margin-top: 0.75rem; text-align: left; }
+    .pairing_page .pairing_recipes_heading { gap: 1.5rem; }
     .pairing_page .pairing_recipe_controls {
         display: grid;
-        grid-template-columns: 2rem minmax(0, 1fr) 2rem;
-        width: 100%;
+        grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem;
         gap: 0.375rem;
+        width: 100%;
+        align-self: stretch;
     }
-
-    .pairing_page .pairing_recipe_arrow {
-        width: 2rem;
-        height: 2rem;
-    }
-
     .pairing_page .pairing_recipe_picker_list {
-        --pairing-recipe-picker-size: 2.5rem;
-        gap: 0.5rem;
+        --pairing-recipe-picker-size: 2.75rem;
+        gap: 0.625rem;
         justify-content: flex-start;
     }
-
-    .pairing_page .pairing_recipe_viewport {
-        margin-top: 1.5rem;
+    .pairing_page .pairing_recipe_viewport { width: 100%; margin-top: 1rem; }
+    .pairing_page .pairing_recipe_card {
+        grid-template-columns: 1fr;
+        aspect-ratio: auto;
     }
-
-    .pairing_page .pairing_recipe_content {
-        padding: 1.75rem 1.25rem;
+    .pairing_page .pairing_recipe_media {
+        grid-row: 1;
+        height: clamp(15rem, 80vw, 23rem);
+        position: relative;
     }
-
+    .pairing_page .pairing_recipe_media::after {
+        content: "";
+        position: absolute;
+        inset: 65% 0 0;
+        background: linear-gradient(transparent, var(--recipe-surface));
+        pointer-events: none;
+    }
+    .pairing_page .pairing_recipe_image { object-position: center 65%; }
+    .pairing_page .pairing_recipe_content { padding: 0.5rem 1.25rem 1.75rem; }
     .pairing_page .pairing_recipe_inner,
-    .pairing_page .pairing_recipe_details {
-        gap: 1.5rem;
+    .pairing_page .pairing_recipe_details { gap: 1.5rem; }
+    .pairing_page .pairing_recipe_title { font-size: clamp(1.75rem, 7vw, 2.125rem); line-height: 1.25; }
+    .pairing_page .pairing_recipe_meta { gap: 0.375rem 0.75rem; font-size: 0.875rem; flex-wrap: wrap; }
+    .pairing_page .pairing_recipe_meta_item { gap: 0.375rem; padding: 0; white-space: normal; }
+    .pairing_page .pairing_recipe_icon { width: 1rem; height: 1rem; }
+    .pairing_page .pairing_recipe_columns { grid-template-columns: 1fr; gap: 1.5rem; }
+    .pairing_page .pairing_recipe_divider { display: none; }
+    .pairing_page .pairing_recipe_step_section {
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--recipe-line);
     }
-
-    .pairing_page .pairing_recipe_title {
-        font-size: clamp(1.75rem, 8.5vw, 2.25rem);
-    }
-
-    .pairing_page .pairing_recipe_meta {
-        gap: 0.375rem;
-        font-size: 0.8125rem;
-    }
-
-    .pairing_page .pairing_recipe_meta_item {
-        padding: 0.25rem;
-    }
-
-    .pairing_page .pairing_recipe_columns h4 {
-        margin-bottom: 0.5rem;
-        font-size: 1rem;
-    }
-
+    .pairing_page .pairing_recipe_columns h4 { font-size: 1rem; margin-bottom: 0.75rem; }
     .pairing_page .pairing_recipe_ingredient_list,
     .pairing_page .pairing_recipe_step_list {
-        font-size: 0.8125rem;
-        line-height: 1.6;
+        gap: 0.5rem;
+        padding-inline-start: 1.25rem;
+        font-size: 0.9375rem;
+        line-height: 1.65;
     }
-
-    .pairing_page .pairing_recipe_media {
-        height: clamp(13rem, 62vw, 18rem);
+    .pairing_page .pairing_recipe_tip { padding: 0; font-size: 0.9375rem; line-height: 1.65; }
+    .pairing_page .pairing_result_modal {
+        width: calc(100% - 1rem);
+        max-height: calc(100dvh - 1rem);
+        border-radius: 1.25rem;
     }
-
+    .pairing_page .pairing_result_modal_surface { padding: 1.25rem 1rem 2rem; }
+    .pairing_page .pairing_modal_result_header h2 { font-size: clamp(1.75rem, 7vw, 2.25rem); }
+    .pairing_page .pairing_modal_result_header p { font-size: 0.875rem; }
+    .pairing_page .pairing_modal_result_layout { gap: 7rem; margin-top: 1.5rem; }
+    .pairing_page .pairing_modal_recommendation_card { padding: 1.25rem; }
+    .pairing_page .pairing_modal_recommendation_inner { grid-template-columns: 1fr; gap: 1.75rem; }
+    .pairing_page .pairing_modal_product_overview { grid-template-columns: 1fr; gap: 1rem; }
+    .pairing_page .pairing_modal_recommended_image { width: 5rem; height: 10rem; justify-self: center; }
+    .pairing_page .pairing_modal_product_copy { padding: 0; }
+    .pairing_page .pairing_modal_product_copy h3 { font-size: 1.5rem; }
+    .pairing_page .pairing_modal_product_description { font-size: 0.9375rem; line-height: 1.6; }
+    .pairing_page .pairing_modal_taste_item dt { font-size: 0.8125rem; }
+    .pairing_page .pairing_modal_taste_item img { width: 1.125rem; height: 0.875rem; }
+    .pairing_page .pairing_modal_similar_panel {
+        border-top: 1px solid var(--pairing-line);
+        padding-top: 1.5rem;
+    }
+    .pairing_page .pairing_modal_similar_products { max-width: 18rem; }
+    .pairing_page .pairing_modal_tip_card { width: 100%; }
+    .pairing_page .pairing_modal_tip_illustration {
+        transform: translateX(-50%) scale(0.7);
+        transform-origin: center bottom;
+    }
+    .pairing_page .pairing_modal_tip_list h4,
+    .pairing_page .pairing_modal_tip_list p { font-size: 0.9375rem; line-height: 1.6; }
+    .pairing_page .pairing_modal_result_actions { margin-top: 1.75rem; }
+    .pairing_page .pairing_modal_food_cta {
+        width: 100%;
+        min-height: 3rem;
+        padding-inline: 0.75rem;
+        font-size: 0.9375rem;
+        line-height: 1.4;
+    }
+    .pairing_page .pairing_modal_continue { min-height: 2.75rem; font-size: 0.9375rem; }
     .pairing_page .site_footer_inner {
         display: grid;
         grid-template-columns: minmax(0, 1fr);
         gap: 2.5rem;
         width: calc(100% - 2.5rem);
     }
-
     .pairing_page .footer_left,
-    .pairing_page .footer_right {
-        align-items: flex-start;
-        gap: 1.25rem;
-    }
-
+    .pairing_page .footer_right { align-items: flex-start; gap: 1.25rem; }
     .pairing_page .footer_links {
         display: flex;
         flex-wrap: wrap;
         justify-content: flex-start;
         gap: 0.5rem 0.875rem;
     }
-
     .pairing_page .footer_left small,
-    .pairing_page .footer_right address {
-        max-width: 100%;
-        line-height: 1.6;
-    }
-
-    .pairing_page .family_site {
-        width: min(100%, 18rem);
-    }
-
-    .pairing_page .footer_sns {
-        justify-content: flex-start;
-    }
-}
-
-/* Keep the recipe copy and its photograph together within a compact phone card. */
-@media (max-width: 47.9375rem) {
-    .pairing_page .pairing_recipe_content {
-        padding: 1.25rem 1rem 1.125rem;
-    }
-
-    .pairing_page .pairing_recipe_inner,
-    .pairing_page .pairing_recipe_details {
-        gap: 0.875rem;
-    }
-
-    .pairing_page .pairing_recipe_intro {
-        gap: 0.25rem;
-    }
-
-    .pairing_page .pairing_recipe_title {
-        font-size: clamp(1.55rem, 8vw, 1.9rem);
-        line-height: 1.2;
-    }
-
-    .pairing_page .pairing_recipe_meta {
-        gap: 0.25rem 0.375rem;
-        font-size: 0.75rem;
-        line-height: 1.35;
-    }
-
-    .pairing_page .pairing_recipe_meta_item {
-        gap: 0.25rem;
-        padding: 0.125rem;
-    }
-
-    .pairing_page .pairing_recipe_meta_item img {
-        width: 0.9375rem;
-        height: 0.9375rem;
-    }
-
-    .pairing_page .pairing_recipe_columns {
-        row-gap: 0.875rem;
-    }
-
-    .pairing_page .pairing_recipe_step_section {
-        padding-top: 0.875rem;
-    }
-
-    .pairing_page .pairing_recipe_columns h4 {
-        margin-bottom: 0.375rem;
-        font-size: 0.875rem;
-    }
-
-    .pairing_page .pairing_recipe_ingredient_list,
-    .pairing_page .pairing_recipe_step_list {
-        gap: 0.25rem;
-        padding-inline-start: 1rem;
-        font-size: 0.75rem;
-        line-height: 1.45;
-    }
-
-    .pairing_page .pairing_recipe_tip {
-        padding-inline: 0;
-        font-size: 0.75rem;
-        line-height: 1.45;
-    }
-
-    .pairing_page .pairing_recipe_media {
-        height: clamp(9.5rem, 43vw, 11rem);
-    }
-}
-
-/* Center the recipe selector and make each drink easier to tap on phones. */
-@media (max-width: 47.9375rem) {
-    .pairing_page .pairing_recipe_controls {
-        align-items: center;
-        justify-content: center;
-    }
-
-    .pairing_page .pairing_recipe_picker_list {
-        --pairing-recipe-picker-size: clamp(2.25rem, 11vw, 2.75rem);
-        justify-content: center;
-        margin-inline: auto;
-        padding-inline: 0.25rem;
-    }
-}
-
-@media (max-width: 22.5rem) {
-    .pairing_page .pairing_recipe_picker_list {
-        --pairing-recipe-picker-size: 2.125rem;
-        gap: 0.375rem;
-    }
-}
-
-/* Compact phone cards let people compare several food pairings while swiping. */
-@media (max-width: 47.9375rem) {
-    .pairing_page .pairing_food_track {
-        grid-auto-columns: min(42vw, 10rem);
-        gap: 0.625rem;
-        scroll-snap-type: inline mandatory;
-        scroll-snap-stop: always;
-    }
-
-    .pairing_page .pairing_food_card {
-        min-height: 15.75rem;
-        gap: 0.5rem;
-        padding: 0.625rem;
-    }
-
-    .pairing_page .pairing_food_card_image {
-        height: clamp(6.25rem, 30vw, 7.25rem);
-    }
-
-    .pairing_page .pairing_food_card h3 {
-        font-size: 0.875rem;
-        line-height: 1.35;
-    }
-
-    .pairing_page .pairing_food_card p {
-        overflow-wrap: anywhere;
-        font-size: 0.75rem;
-        line-height: 1.4;
-        white-space: normal;
-    }
-
-    .pairing_page .pairing_food_tag {
-        font-size: 0.6875rem;
-        line-height: 1.35;
-    }
-}
-
-/* Mobile recipe card: photo-led composition matching the Figma strawberry reference. */
-@media (max-width: 47.9375rem) {
-    .pairing_page .pairing_recipe_card {
-        --pairing-recipe-mobile-media-height: clamp(17rem, 94vw, 22.5rem);
-        --pairing-recipe-mobile-overlay-height: clamp(10rem, 47vw, 11.5rem);
-        --pairing-recipe-mobile-copy-row: clamp(15.5rem, 64vw, 16.5rem);
-        display: grid;
-        grid-template-rows: var(--pairing-recipe-mobile-media-height) minmax(var(--pairing-recipe-mobile-copy-row), auto);
-        position: relative;
-        border-radius: 0.75rem;
-        background: var(--pairing-copy);
-    }
-
-    .pairing_page .pairing_recipe_card::before {
-        position: absolute;
-        z-index: 1;
-        top: calc(var(--pairing-recipe-mobile-media-height) - var(--pairing-recipe-mobile-overlay-height));
-        right: 0;
-        left: 0;
-        height: var(--pairing-recipe-mobile-overlay-height);
-        background: linear-gradient(180deg, rgba(93, 80, 74, 0) 0%, rgba(93, 80, 74, 0.12) 18%, rgba(93, 80, 74, 0.4) 42%, rgba(93, 80, 74, 0.78) 70%, var(--pairing-copy) 100%);
-        content: "";
-        pointer-events: none;
-    }
-
-    .pairing_page .pairing_recipe_media {
-        position: relative;
-        z-index: 0;
-        grid-row: 1;
-        height: var(--pairing-recipe-mobile-media-height);
-        background: var(--pairing-copy);
-        -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 58%, rgba(0, 0, 0, 0.72) 74%, rgba(0, 0, 0, 0.28) 88%, transparent 100%);
-        mask-image: linear-gradient(180deg, #000 0%, #000 58%, rgba(0, 0, 0, 0.72) 74%, rgba(0, 0, 0, 0.28) 88%, transparent 100%);
-    }
-
-    .pairing_page .pairing_recipe_image {
-        object-position: center;
-    }
-
-    .pairing_page .pairing_recipe_card--strawberry-makgeolli .pairing_recipe_image,
-    .pairing_page .pairing_recipe_card--honey-makgeolli .pairing_recipe_image,
-    .pairing_page .pairing_recipe_card--matcha-makgeolli .pairing_recipe_image {
-        object-position: center 70%;
-    }
-
-    .pairing_page .pairing_recipe_content {
-        z-index: 2;
-        grid-row: 2;
-        align-self: start;
-        margin-top: clamp(-6.5rem, -26vw, -5rem);
-        padding: clamp(4.5rem, 20vw, 5.5rem) 1.125rem 1.25rem;
-        background: transparent;
-    }
-
-    .pairing_page .pairing_recipe_inner {
-        gap: 0.875rem;
-    }
-
-    .pairing_page .pairing_recipe_title {
-        font-size: clamp(1.45rem, 7vw, 1.75rem);
-        line-height: 1.22;
-    }
-
-    .pairing_page .pairing_recipe_meta {
-        flex-wrap: nowrap;
-        gap: 0.125rem;
-        font-size: 0.6875rem;
-    }
-
-    .pairing_page .pairing_recipe_meta_item {
-        gap: 0.1875rem;
-        padding: 0.125rem 0;
-    }
-
-    .pairing_page .pairing_recipe_meta_item img {
-        width: 0.875rem;
-        height: 0.875rem;
-    }
-
-    .pairing_page .pairing_recipe_details {
-        gap: 0.75rem;
-    }
-
-    .pairing_page .pairing_recipe_columns {
-        grid-template-columns: minmax(0, 0.9fr) 1px minmax(0, 1.1fr);
-        column-gap: 0.75rem;
-        row-gap: 0;
-    }
-
-    .pairing_page .pairing_recipe_divider {
-        display: block;
-    }
-
-    .pairing_page .pairing_recipe_step_section {
-        padding-top: 0;
-        padding-left: 0;
-        border-top: 0;
-    }
-
-    .pairing_page .pairing_recipe_columns h4 {
-        margin-bottom: 0.3125rem;
-        font-size: 0.8125rem;
-    }
-
-    .pairing_page .pairing_recipe_ingredient_list,
-    .pairing_page .pairing_recipe_step_list {
-        gap: 0.1875rem;
-        padding-inline-start: 0.875rem;
-        font-size: 0.6875rem;
-        line-height: 1.45;
-    }
-
-    .pairing_page .pairing_recipe_tip {
-        gap: 0;
-        padding-inline: 0;
-        font-size: 0.6875rem;
-        line-height: 1.42;
-    }
+    .pairing_page .footer_right address { max-width: 100%; line-height: 1.6; }
+    .pairing_page .family_site { width: min(100%, 18rem); }
+    .pairing_page .footer_sns { justify-content: flex-start; }
 }
 
 /* Small, state-driven feedback for controls and content selection. */
@@ -2460,61 +2109,5 @@
     .pairing_page .pairing_food_tab:active,
     .pairing_page .pairing_recipe_picker:active {
         transform: scale(0.975);
-    }
-}
-
-/* Keep the two long-form pairing sections within a 1920 × 1080 desktop view. */
-@media (min-width: 118rem) and (max-width: 122rem) and (min-height: 64rem) and (max-height: 70rem) {
-    .pairing_page .pairing_drink_finder {
-        padding-block: 4rem;
-    }
-
-    .pairing_page .pairing_questionnaire {
-        min-height: 37.5rem;
-        margin-top: 2rem;
-    }
-
-    .pairing_page .pairing_question_content {
-        padding-block: 1.25rem;
-    }
-
-    .pairing_page .pairing_question_options {
-        gap: 0.375rem;
-        margin-top: 0.75rem;
-    }
-
-    .pairing_page .pairing_question_option {
-        min-height: 3.25rem;
-        padding-block: 0.5rem;
-    }
-
-    .pairing_page .pairing_question_navigation {
-        margin-top: 0.75rem;
-    }
-
-    .pairing_page .pairing_question_nav_button {
-        min-height: 2.75rem;
-    }
-
-    .pairing_page .pairing_recipes_section {
-        padding-top: 4rem;
-        padding-bottom: 4.5rem;
-    }
-
-    .pairing_page .pairing_recipe_viewport {
-        margin-top: 1.5rem;
-    }
-
-    .pairing_page .pairing_recipe_card {
-        aspect-ratio: 1024 / 430;
-    }
-
-    .pairing_page .pairing_recipe_content {
-        --pairing-recipe-block-padding: clamp(1.25rem, 2.5cqw, 2.5rem);
-    }
-
-    .pairing_page .pairing_recipe_inner,
-    .pairing_page .pairing_recipe_details {
-        gap: clamp(1.125rem, 1.5cqw, 1.5rem);
     }
 }

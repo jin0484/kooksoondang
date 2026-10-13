@@ -5,8 +5,10 @@
         {
             id: 'flavor',
             label: 'Q1',
+            shortLabel: 'Flavor',
             prompt: 'What flavor do you prefer?',
             color: '#f29556',
+            selectedColor: '#934719',
             tint: 'rgba(242, 149, 86, 0.30)',
             options: [
                 { id: 'spicy', label: 'Spicy', icon: 'icon/Spicy.png' },
@@ -19,8 +21,10 @@
         {
             id: 'style',
             label: 'Q2',
+            shortLabel: 'Style',
             prompt: 'What drink style do you prefer?',
             color: '#fdda37',
+            selectedColor: '#746000',
             tint: 'rgba(253, 218, 55, 0.27)',
             options: [
                 { id: 'smooth', label: 'Smooth', icon: 'icon/question/q2_smooth.png' },
@@ -33,9 +37,10 @@
         {
             id: 'occasion',
             label: 'Q3',
+            shortLabel: 'Occasion',
             prompt: "What's the occasion?",
             color: '#d4e20f',
-            selectedColor: '#708900',
+            selectedColor: '#4d6100',
             tint: 'rgba(212, 226, 15, 0.24)',
             options: [
                 { id: 'party', label: 'Party', icon: 'icon/question/q3_party.png' },
@@ -48,6 +53,7 @@
         {
             id: 'explore',
             label: 'Q4',
+            shortLabel: 'Explore',
             prompt: 'What would you like to explore?',
             color: '#0a663f',
             tint: 'rgba(10, 102, 63, 0.16)',
@@ -262,6 +268,19 @@
         }
     };
 
+    // Editorial pairing suggestions, using the existing food catalog.
+    const foodMatches = {
+        draft: ['Pajeon', 'Dakgalbi', 'Kimchi Jjigae', 'Buffalo Wings', 'Jeyuk Bokkeum'],
+        bekseju: ['Bulgogi', 'Bossam', 'Japanese Gyoza', 'Jamón with Melon'],
+        strawberry: ['Strawberry Cheesecake', 'Jamón with Melon', 'Margherita Pizza', 'Bulgogi'],
+        whitegrape: ['Dotori-muk Muchim', 'Fish and Chips', 'Spicy Beef Tacos', 'Jamón with Melon'],
+        chestnut: ['Pajeon', 'Japanese Gyoza', 'Bossam', 'Dotori-muk Muchim'],
+        banana: ['Buffalo Wings', 'Strawberry Cheesecake', 'Spicy Beef Tacos', 'Dakgalbi'],
+        prebiotics: ['Dakgalbi', 'Kimchi Jjigae', 'Buffalo Wings', 'Thai Green Curry'],
+        peach: ['Strawberry Cheesecake', 'Jamón with Melon', 'Dotori-muk Muchim', 'Margherita Pizza'],
+        yedamcheong: ['Bossam', 'Japanese Gyoza', 'Fish and Chips', 'Dotori-muk Muchim']
+    };
+
     const recommendationWeights = {
         flavor: {
             spicy: { draft: 4, prebiotics: 2, bekseju: 1 },
@@ -304,6 +323,7 @@
     let resultModalOpener = null;
     let shouldRestoreResultFocus = true;
     let foodCarouselResizeFrame = 0;
+    let recommendedProduct = null;
 
     const assetUrl = (path) => encodeURI(`./pairing_asset/${path}`);
     const escapeHtml = (value) => String(value)
@@ -366,6 +386,7 @@
                 <button class="pairing_question_tab" type="button" data-question-open="${questionIndex}" aria-expanded="${isOpen}" aria-controls="${contentId}" aria-hidden="${isOpen}" tabindex="${isOpen ? '-1' : '0'}">
                     <span class="pairing_question_number">${question.label}</span>
                     <span class="pairing_question_prompt">${escapeHtml(question.prompt)}</span>
+                    <span class="pairing_question_complete" hidden>✓ Answered</span>
                 </button>
                 <div class="pairing_question_content" id="${contentId}" role="region" aria-labelledby="${headingId}" aria-hidden="${!isOpen}"${isOpen ? '' : ' inert'}>
                     <h3 class="pairing_question_heading" id="${headingId}">
@@ -379,6 +400,7 @@
                         <button class="pairing_question_nav_button pairing_question_previous" type="button" data-question-previous="${questionIndex}"${isFirstQuestion ? ' disabled aria-disabled="true"' : ''}>Previous</button>
                         <button class="pairing_question_nav_button pairing_question_next" type="button" data-question-next="${questionIndex}"${canContinue ? '' : ' disabled aria-disabled="true"'}>${isLastQuestion ? 'View Result' : 'Next'}</button>
                     </div>
+                    <p class="pairing_question_missing" hidden></p>
                 </div>
             </section>`;
     }
@@ -391,6 +413,25 @@
         }
 
         const canShowResult = areAllQuestionsAnswered();
+        const completed = questions.filter((question) => state.answers[question.id]).length;
+        document.querySelector('#pairing_question_status').textContent = `${completed} of ${questions.length} answered`;
+        document.querySelector('#pairing_question_progress').value = completed;
+        document.querySelector('#pairing_progress_steps').innerHTML = questions.map((question, index) => {
+            const answered = Boolean(state.answers[question.id]);
+            const current = index === state.activeQuestionIndex;
+            return `<li class="pairing_progress_step${answered ? ' is_answered' : ''}"${current ? ' aria-current="step"' : ''}>
+                <span class="pairing_progress_step_label">
+                    <span>${question.label}</span>
+                    <span class="pairing_progress_step_name">${question.shortLabel}</span>
+                    <span class="pairing_progress_step_mark" aria-hidden="true">${answered ? '✓' : current ? '●' : ''}</span>
+                </span>
+                <span class="pairing_progress_step_state pairing_sr_only">${answered ? 'Done' : current ? 'Current' : 'To do'}</span>
+            </li>`;
+        }).join('');
+        const missing = questions.filter((question) => !state.answers[question.id]).map((question) => question.label);
+        document.querySelector('#pairing_question_hint').textContent = canShowResult
+            ? 'All set! Open Q4 and choose View Result to see your match.'
+            : `Answer all 4 questions to reveal your drink match. Still to answer: ${missing.join(', ')}.`;
         questions.forEach((question, questionIndex) => {
             const panel = questionnaire.querySelector(`#${getQuestionPanelId(question)}`);
             if (!panel) return;
@@ -404,14 +445,21 @@
             const isFirstQuestion = questionIndex === 0;
             const isLastQuestion = questionIndex === questions.length - 1;
             const canContinue = isLastQuestion ? canShowResult : Boolean(selectedAnswer);
+            const missingHint = panel.querySelector('.pairing_question_missing');
+            missingHint.hidden = !isLastQuestion || canShowResult;
+            missingHint.textContent = isLastQuestion && !canShowResult ? `Answer ${missing.join(', ')} to unlock your result.` : '';
 
             panel.classList.toggle('is_open', isOpen);
             panel.classList.toggle('is_collapsed', !isOpen);
+            panel.classList.toggle('is_answered', Boolean(selectedAnswer));
+            panel.querySelector('.pairing_question_complete').hidden = !selectedAnswer;
 
             if (tab) {
                 tab.setAttribute('aria-expanded', String(isOpen));
                 tab.setAttribute('aria-hidden', String(isOpen));
                 tab.tabIndex = isOpen ? -1 : 0;
+                const answerLabel = question.options.find((option) => option.id === selectedAnswer)?.label;
+                tab.setAttribute('aria-label', `${question.label}: ${question.prompt}${answerLabel ? ` Answered: ${answerLabel}` : ' Not answered'}`);
             }
 
             if (content) {
@@ -427,6 +475,7 @@
                 const isSelected = option.dataset.answerValue === selectedAnswer;
                 option.classList.toggle('is_selected', isSelected);
                 option.setAttribute('aria-checked', String(isSelected));
+                option.tabIndex = isSelected || (!selectedAnswer && option === panel.querySelector('[data-question-answer]')) ? 0 : -1;
             });
 
             if (previousButton) {
@@ -448,9 +497,17 @@
         if (!activeQuestion) return;
 
         const focusOption = () => {
-            const option = questionnaire
-                .querySelector(`#${getQuestionPanelId(activeQuestion)} [data-question-answer].is_selected, #${getQuestionPanelId(activeQuestion)} [data-question-answer]`);
+            const activePanel = questionnaire.querySelector(`#${getQuestionPanelId(activeQuestion)}`);
+            const option = activePanel?.querySelector('[data-question-answer].is_selected') || activePanel?.querySelector('[data-question-answer]');
             if (!option) return;
+            const panel = option.closest('.pairing_question_panel');
+            if (window.matchMedia('(max-width: 767px)').matches) {
+                if (window.siteLenis && !prefersReducedMotion()) {
+                    window.siteLenis.scrollTo(panel, { offset: -96 });
+                } else {
+                    panel.scrollIntoView({ behavior: prefersReducedMotion() ? 'instant' : 'smooth', block: 'start' });
+                }
+            }
 
             try {
                 option.focus({ preventScroll: true });
@@ -475,6 +532,10 @@
         if (answerButton) {
             const questionId = answerButton.dataset.questionAnswer;
             const answerValue = answerButton.dataset.answerValue;
+            if (state.answers[questionId] !== answerValue && recommendedProduct) {
+                recommendedProduct = null;
+                renderFoodCards();
+            }
             state.answers[questionId] = answerValue;
             renderQuestionnaire();
             return;
@@ -518,8 +579,23 @@
         }
     }
 
+    function getVisibleFoods() {
+        const matches = foodMatches[recommendedProduct?.id] || [];
+        if (recommendedProduct && state.foodCategory === 'popular') {
+            const catalog = [...foodData.korean, ...foodData.global];
+            return matches.map((title) => catalog.find((food) => food.title === title)).filter(Boolean);
+        }
+        return [...(foodData[state.foodCategory] || foodData.korean)].sort((a, b) =>
+            Number(matches.includes(b.title)) - Number(matches.includes(a.title)));
+    }
+
     function renderFoodCards() {
-        const foods = foodData[state.foodCategory] || foodData.korean;
+        const foods = getVisibleFoods();
+        const matches = foodMatches[recommendedProduct?.id] || [];
+        const matchNote = document.querySelector('#pairing_food_match');
+        matchNote.hidden = !recommendedProduct;
+        matchNote.textContent = recommendedProduct ? `Picked for your ${recommendedProduct.name}. Look for the “Suggested match” label.` : '';
+        document.querySelector('[data-food-category="popular"]').textContent = recommendedProduct ? 'For Your Match' : 'Popular Picks';
         foodTrack.innerHTML = foods.map((food) => {
             const imageStyles = food.imagePosition
                 ? `--pairing-food-image-position: ${escapeHtml(food.imagePosition)};`
@@ -528,12 +604,15 @@
             return `
             <article class="pairing_food_card">
                 <img class="pairing_food_card_image" src="${assetUrl(`img/food/${food.image}`)}" alt="${escapeHtml(food.title)}" loading="lazy"${imageStyles ? ` style="${imageStyles}"` : ''}>
+                ${matches.includes(food.title) ? '<span class="pairing_food_badge">Suggested match</span>' : ''}
                 <h3>${escapeHtml(food.title)}</h3>
                 <p>${escapeHtml(food.description)}</p>
                 <span class="pairing_food_tag">${escapeHtml(food.tag)}</span>
             </article>`;
         }).join('');
+        foodTrack.scrollTo({ left: 0, behavior: 'instant' });
         updateFoodCarouselControls();
+        scheduleFoodCarouselControlUpdate();
     }
 
     function setFoodCategory(category) {
@@ -544,15 +623,16 @@
             const isActive = tab.dataset.foodCategory === category;
             tab.classList.toggle('is_active', isActive);
             tab.setAttribute('aria-selected', String(isActive));
+            tab.tabIndex = isActive ? 0 : -1;
         });
+        document.querySelector('#pairing_food_panel').setAttribute('aria-labelledby', `food_tab_${category}`);
         renderFoodCards();
-        foodTrack.scrollTo({ left: 0, behavior: 'auto' });
     }
 
     function getFoodCardScrollStart(card) {
         const trackRect = foodTrack.getBoundingClientRect();
         const cardRect = card.getBoundingClientRect();
-        return foodTrack.scrollLeft + cardRect.left - trackRect.left;
+        return foodTrack.scrollLeft + cardRect.left - trackRect.left - parseFloat(getComputedStyle(foodTrack).paddingLeft || 0);
     }
 
     function updateFoodCarouselControls() {
@@ -566,9 +646,19 @@
         foodPreviousButton.hidden = areAllCardsVisible;
         foodNextButton.hidden = areAllCardsVisible;
         foodTrack.tabIndex = areAllCardsVisible ? -1 : 0;
+        const maxScroll = Math.max(0, foodTrack.scrollWidth - foodTrack.clientWidth);
+        foodPreviousButton.disabled = foodTrack.scrollLeft <= 2;
+        foodNextButton.disabled = foodTrack.scrollLeft >= maxScroll - 2;
+        const trackRect = foodTrack.getBoundingClientRect();
+        const cards = [...foodTrack.children];
+        const visible = cards.map((card, index) => ({ rect: card.getBoundingClientRect(), index }))
+            .filter(({ rect }) => rect.left < trackRect.right - 8 && rect.right > trackRect.left + 8);
+        const status = visible.length ? `${visible[0].index + 1}–${visible.at(-1).index + 1} of ${cards.length} pairings` : '';
+        const statusElement = document.querySelector('#pairing_food_status');
+        if (statusElement.textContent !== status) statusElement.textContent = status;
 
         if (areAllCardsVisible && foodTrack.scrollLeft !== 0) {
-            foodTrack.scrollTo({ left: 0, behavior: 'auto' });
+            foodTrack.scrollTo({ left: 0, behavior: 'instant' });
         }
     }
 
@@ -585,15 +675,15 @@
         const cards = [...foodTrack.querySelectorAll('.pairing_food_card')];
         if (!cards.length) return;
 
-        const starts = cards.map(getFoodCardScrollStart);
-        const currentIndex = starts.reduce((nearestIndex, start, index) => (
-            Math.abs(start - foodTrack.scrollLeft) < Math.abs(starts[nearestIndex] - foodTrack.scrollLeft)
-                ? index
-                : nearestIndex
-        ), 0);
-        const nextIndex = Math.max(0, Math.min(cards.length - 1, currentIndex + direction));
+        const maxScroll = Math.max(0, foodTrack.scrollWidth - foodTrack.clientWidth);
+        const starts = [...new Set([0, ...cards.map((card) => Math.min(maxScroll, Math.max(0, getFoodCardScrollStart(card)))), maxScroll])].sort((a, b) => a - b);
+        // Ignore subpixel differences at the final snap point, which otherwise
+        // make Previous appear to do nothing when several cards fit in a row.
+        const target = direction > 0
+            ? starts.find((start) => start > foodTrack.scrollLeft + 2) ?? maxScroll
+            : starts.findLast((start) => start < foodTrack.scrollLeft - 2) ?? 0;
 
-        foodTrack.scrollTo({ left: starts[nextIndex], behavior: 'smooth' });
+        foodTrack.scrollTo({ left: target, behavior: prefersReducedMotion() ? 'instant' : 'smooth' });
     }
 
     function createMouseDragScroller(element) {
@@ -668,7 +758,7 @@
 
         if (pickerButtons.length !== recipes.length) {
             recipePickerList.innerHTML = recipes.map((recipe, index) => `
-                <button class="pairing_recipe_picker" type="button" data-recipe-index="${index}" aria-pressed="false" aria-label="Show ${escapeHtml(recipe.title)} recipe">
+                <button class="pairing_recipe_picker" type="button" data-recipe-index="${index}" data-recipe-theme="${escapeHtml(recipe.id)}" aria-pressed="false" aria-label="Show ${escapeHtml(recipe.title)} recipe">
                     <img src="${assetUrl(`img/drink/${recipe.image}`)}" alt="" aria-hidden="true">
                     <span class="pairing_sr_only">${escapeHtml(recipe.title)}</span>
                 </button>`).join('');
@@ -679,6 +769,7 @@
             picker.classList.toggle('is_active', isActive);
             picker.setAttribute('aria-pressed', String(isActive));
         });
+        document.querySelector('#pairing_recipe_status').textContent = `${state.recipeIndex + 1} / ${recipes.length} · ${recipes[state.recipeIndex].title}`;
     }
 
     function getRecipeRenderData(recipe) {
@@ -698,17 +789,17 @@
             iconSet,
             tipMarkup,
             metaMarkup: `
-                <span class="pairing_recipe_meta_item is_feature"><img src="${assetUrl(iconSet.bookmark)}" alt="" aria-hidden="true"><span>${escapeHtml(recipe.feature)}</span></span>
-                <span class="pairing_recipe_meta_item"><img src="${assetUrl(iconSet.level)}" alt="" aria-hidden="true"><span>${escapeHtml(recipe.difficulty)}</span></span>
-                <span class="pairing_recipe_meta_item"><img src="${assetUrl(iconSet.clock)}" alt="" aria-hidden="true"><span>${escapeHtml(recipe.time)}</span></span>`
+                <span class="pairing_recipe_meta_item is_feature"><span class="pairing_recipe_icon" style="--recipe-icon: url('${assetUrl(iconSet.bookmark)}')" aria-hidden="true"></span><span>${escapeHtml(recipe.feature)}</span></span>
+                <span class="pairing_recipe_meta_item"><span class="pairing_recipe_icon" style="--recipe-icon: url('${assetUrl(iconSet.level)}')" aria-hidden="true"></span><span>${escapeHtml(recipe.difficulty)}</span></span>
+                <span class="pairing_recipe_meta_item"><span class="pairing_recipe_icon" style="--recipe-icon: url('${assetUrl(iconSet.clock)}')" aria-hidden="true"></span><span>${escapeHtml(recipe.time)}</span></span>`
         };
     }
 
     function getRecipeMarkup(recipe) {
-        const { ingredientMarkup, stepMarkup, iconSet, tipMarkup, metaMarkup } = getRecipeRenderData(recipe);
+        const { ingredientMarkup, stepMarkup, tipMarkup, metaMarkup } = getRecipeRenderData(recipe);
 
         return `
-            <article class="pairing_recipe_card pairing_recipe_card--${escapeHtml(recipe.id)}" aria-labelledby="pairing_recipe_title">
+            <article class="pairing_recipe_card pairing_recipe_card--${escapeHtml(recipe.id)}" data-recipe-theme="${escapeHtml(recipe.id)}" aria-labelledby="pairing_recipe_title">
                 <div class="pairing_recipe_content">
                     <div class="pairing_recipe_inner">
                         <div class="pairing_recipe_intro">
@@ -723,7 +814,7 @@
                                     <h4 id="pairing_ingredients_title">Ingredients</h4>
                                     <ul class="pairing_recipe_ingredient_list">${ingredientMarkup}</ul>
                                 </section>
-                                <img class="pairing_recipe_divider" src="${assetUrl(iconSet.divider)}" alt="" aria-hidden="true">
+                                <span class="pairing_recipe_divider" aria-hidden="true"></span>
                                 <section class="pairing_recipe_step_section" aria-labelledby="pairing_steps_title">
                                     <h4 id="pairing_steps_title">How to Make</h4>
                                     <ol class="pairing_recipe_step_list">${stepMarkup}</ol>
@@ -743,7 +834,8 @@
     }
 
     function updateRecipeCard(recipeCard, recipe) {
-        const { ingredientMarkup, stepMarkup, iconSet, tipMarkup, metaMarkup } = getRecipeRenderData(recipe);
+        const { ingredientMarkup, stepMarkup, tipMarkup, metaMarkup } = getRecipeRenderData(recipe);
+        recipeCard.dataset.recipeTheme = recipe.id;
         const recipeClass = `pairing_recipe_card--${recipe.id}`;
         const currentRecipeClass = Array.from(recipeCard.classList)
             .find((className) => className.startsWith('pairing_recipe_card--'));
@@ -757,7 +849,6 @@
         const title = recipeCard.querySelector('.pairing_recipe_title');
         const meta = recipeCard.querySelector('.pairing_recipe_meta');
         const ingredients = recipeCard.querySelector('.pairing_recipe_ingredient_list');
-        const divider = recipeCard.querySelector('.pairing_recipe_divider');
         const steps = recipeCard.querySelector('.pairing_recipe_step_list');
         const tipCopy = recipeCard.querySelector('.pairing_recipe_tip_copy');
         const recipeImage = recipeCard.querySelector('.pairing_recipe_image');
@@ -765,7 +856,6 @@
         if (title) title.textContent = recipe.title;
         if (meta) meta.innerHTML = metaMarkup;
         if (ingredients) ingredients.innerHTML = ingredientMarkup;
-        if (divider) divider.setAttribute('src', assetUrl(iconSet.divider));
         if (steps) steps.innerHTML = stepMarkup;
         if (tipCopy) tipCopy.innerHTML = tipMarkup;
         if (recipeImage) {
@@ -835,27 +925,38 @@
         scheduleRecipeRender();
 
         const selectedPicker = recipePickerList.querySelector('.is_active');
-        selectedPicker?.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'center' });
+        if (selectedPicker) {
+            recipePickerList.scrollTo({
+                left: recipePickerList.scrollLeft + selectedPicker.getBoundingClientRect().left - recipePickerList.getBoundingClientRect().left
+                    - (recipePickerList.clientWidth - selectedPicker.offsetWidth) / 2,
+                behavior: prefersReducedMotion() ? 'instant' : 'smooth'
+            });
+        }
     }
 
     function addSwipeNavigation(element, callback) {
-        let pointerStartX = null;
+        let gesture = null;
 
         element.addEventListener('pointerdown', (event) => {
-            pointerStartX = event.clientX;
+            if (!event.isPrimary || event.button !== 0 || event.target.closest('button, a, input, select, textarea')) return;
+            gesture = { id: event.pointerId, x: event.clientX, y: event.clientY, time: performance.now() };
+            element.setPointerCapture(event.pointerId);
         });
 
         element.addEventListener('pointerup', (event) => {
-            if (pointerStartX === null) return;
-            const horizontalDistance = event.clientX - pointerStartX;
-            pointerStartX = null;
-            if (Math.abs(horizontalDistance) < 48) return;
-            callback(horizontalDistance < 0 ? 1 : -1);
+            if (!gesture || event.pointerId !== gesture.id) return;
+            const dx = event.clientX - gesture.x;
+            const dy = event.clientY - gesture.y;
+            const elapsed = performance.now() - gesture.time;
+            gesture = null;
+            if (element.hasPointerCapture(event.pointerId)) element.releasePointerCapture(event.pointerId);
+            if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.5 || elapsed > 800) return;
+            if (event.pointerType === 'mouse' && window.getSelection()?.toString()) return;
+            callback(dx < 0 ? 1 : -1);
         });
 
-        element.addEventListener('pointercancel', () => {
-            pointerStartX = null;
-        });
+        element.addEventListener('pointercancel', () => { gesture = null; });
+        element.addEventListener('lostpointercapture', () => { gesture = null; });
     }
 
     function getRecommendedProduct() {
@@ -874,11 +975,18 @@
                 return firstProductId.localeCompare(secondProductId);
             })[0][0];
 
-        return products[recommendedProductId];
+        return { id: recommendedProductId, ...products[recommendedProductId] };
     }
 
     function renderResult() {
         const product = getRecommendedProduct();
+        recommendedProduct = product;
+        renderFoodCards();
+        const similarMarkup = product.similar.filter((id) => products[id]).map((id) => `
+            <figure class="pairing_modal_similar_item">
+                <img src="${assetUrl(`img/result/${products[id].image}`)}" alt="${escapeHtml(products[id].name)} bottle" loading="lazy">
+                <figcaption>${escapeHtml(products[id].name)}</figcaption>
+            </figure>`).join('');
         const profileMarkup = Object.entries(product.profile).map(([name, value]) => {
             const filledTasteIcons = Math.max(1, Math.min(5, Math.round(value / 20)));
             const tasteIcons = Array.from({ length: 5 }, (_, index) => `
@@ -886,13 +994,13 @@
             return `
                 <div class="pairing_modal_taste_item">
                     <dt>${escapeHtml(name)}</dt>
-                    <dd>${tasteIcons}</dd>
+                    <dd><span class="pairing_sr_only">${filledTasteIcons} out of 5</span>${tasteIcons}</dd>
                 </div>`;
         }).join('');
 
         resultModalContent.innerHTML = `
             <header class="pairing_modal_result_header">
-                <p>Try the clear top layer first before mixing!</p>
+                <p>A little discovery, made for your taste.</p>
                 <h2 id="pairing_result_modal_title">YOUR PERFECT MATCH</h2>
             </header>
             <div class="pairing_modal_result_layout">
@@ -909,12 +1017,8 @@
                         </div>
                         <aside class="pairing_modal_similar_panel" aria-labelledby="pairing_similar_title">
                             <h3 id="pairing_similar_title">Similar Products</h3>
-                            <div class="pairing_modal_similar_products" aria-hidden="true">
-                                <img class="pairing_modal_similar_bottle" src="${assetUrl('img/result/prebiotics_bottle.png')}" alt="">
-                                <img class="pairing_modal_similar_can" src="${assetUrl('img/result/prebiotics_can.png')}" alt="">
-                            </div>
-                            <p>Kooksoondang<br>Prebiotics Makgeolli</p>
-                            <a class="pairing_modal_view_more" href="../products/products.html">View More</a>
+                            <div class="pairing_modal_similar_products">${similarMarkup}</div>
+                            <a class="pairing_modal_view_more" href="../products/products.html">All Products</a>
                         </aside>
                     </div>
                 </section>
@@ -926,12 +1030,12 @@
                     <h3 id="pairing_tip_title">tip!</h3>
                     <div class="pairing_modal_tip_list">
                         <section>
-                            <h4>Taste the Clear Top First</h4>
-                            <p>Try the clear layer before mixing for a light and crisp flavor.</p>
+                            <h4>Enjoy Your ${escapeHtml(product.name)}</h4>
+                            <p>${escapeHtml(product.tip)}</p>
                         </section>
                         <section>
-                            <h4>Mix Before Drinking</h4>
-                            <p>Release the gas gently, then swirl to blend the rice sediment for a richer taste.</p>
+                            <h4>Bring Something to the Table</h4>
+                            <p>Try it with ${escapeHtml(foodMatches[product.id].slice(0, 2).join(' or '))}. Explore more suggestions below.</p>
                         </section>
                     </div>
                 </aside>
@@ -960,6 +1064,7 @@
 
     function handleResultModalClose() {
         document.body.classList.remove('is_pairing_modal_open');
+        window.siteLenis?.start();
         restoreResultModalFocus();
         shouldRestoreResultFocus = true;
     }
@@ -971,12 +1076,14 @@
         shouldRestoreResultFocus = true;
         renderResult();
         document.body.classList.add('is_pairing_modal_open');
+        window.siteLenis?.stop();
         if (typeof resultModal.showModal === 'function') {
             resultModal.showModal();
         } else {
             resultModal.setAttribute('open', '');
         }
-        resultModalContent.querySelector('[data-result-continue]')?.focus();
+        modalCloseButton.focus({ preventScroll: true });
+        resultModal.scrollTop = 0;
     }
 
     function closeResultModal(shouldRestoreFocus = true) {
@@ -991,7 +1098,18 @@
     }
 
     questionnaire.addEventListener('click', handleQuestionnaireClick);
-    modalCloseButton.addEventListener('click', closeResultModal);
+    modalCloseButton.addEventListener('click', () => closeResultModal());
+    questionnaire.addEventListener('keydown', (event) => {
+        const option = event.target.closest('[role="radio"]');
+        if (!option || !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        const options = [...option.closest('[role="radiogroup"]').querySelectorAll('[role="radio"]')];
+        const offset = ['ArrowLeft', 'ArrowUp'].includes(event.key) ? -1 : 1;
+        const index = event.key === 'Home' ? 0 : event.key === 'End' ? options.length - 1
+            : (options.indexOf(option) + offset + options.length) % options.length;
+        options[index].focus({ preventScroll: true });
+        options[index].click();
+    });
     resultModalContent.addEventListener('click', (event) => {
         const continueButton = event.target.closest('[data-result-continue]');
         const foodLink = event.target.closest('[data-result-food]');
@@ -1004,7 +1122,16 @@
         if (foodLink) {
             event.preventDefault();
             closeResultModal(false);
-            document.querySelector('#food_pairing')?.scrollIntoView({ behavior: 'smooth' });
+            setFoodCategory('popular');
+            const foodHeading = document.querySelector('#pairing_food_title');
+            foodHeading.tabIndex = -1;
+            foodHeading.focus({ preventScroll: true });
+            if (window.siteLenis && !prefersReducedMotion()) {
+                window.siteLenis.start();
+                window.siteLenis.scrollTo('#food_pairing', { offset: -90 });
+            } else {
+                document.querySelector('#food_pairing')?.scrollIntoView({ behavior: prefersReducedMotion() ? 'instant' : 'smooth' });
+            }
         }
     });
     resultModal.addEventListener('close', handleResultModalClose);
@@ -1014,6 +1141,15 @@
 
     foodTabs.forEach((tab) => {
         tab.addEventListener('click', () => setFoodCategory(tab.dataset.foodCategory));
+        tab.addEventListener('keydown', (event) => {
+            if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+            event.preventDefault();
+            const tabs = [...foodTabs];
+            const index = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1
+                : (tabs.indexOf(tab) + (event.key === 'ArrowLeft' ? -1 : 1) + tabs.length) % tabs.length;
+            setFoodCategory(tabs[index].dataset.foodCategory);
+            tabs[index].focus({ preventScroll: true });
+        });
     });
     foodPreviousButton?.addEventListener('click', () => scrollFoodCards(-1));
     foodNextButton?.addEventListener('click', () => scrollFoodCards(1));
@@ -1028,6 +1164,8 @@
         }
     });
     createMouseDragScroller(foodTrack);
+    foodTrack.addEventListener('scroll', scheduleFoodCarouselControlUpdate, { passive: true });
+    if ('ResizeObserver' in window) new ResizeObserver(scheduleFoodCarouselControlUpdate).observe(foodCarousel);
     window.addEventListener('resize', scheduleFoodCarouselControlUpdate, { passive: true });
 
     recipePickerList.addEventListener('click', (event) => {
@@ -1055,6 +1193,34 @@
         image.classList.add('has_error');
         image.alt = 'Image unavailable. Please refresh the page.';
     }, true);
+
+    // Keep the fixed shortcuts in sync with both manual scrolling and anchor navigation.
+    const sectionLinks = [...document.querySelectorAll('.pairing_section_nav a')];
+    const linkedSections = sectionLinks.map((link) => document.querySelector(link.getAttribute('href')));
+    let sectionNavFrame = null;
+    function updateSectionNavigation() {
+        sectionNavFrame = null;
+        const readingLine = Math.max(100, window.innerHeight * 0.3);
+        let activeIndex = -1;
+        linkedSections.forEach((section, index) => {
+            if (section && section.getBoundingClientRect().top <= readingLine) activeIndex = index;
+        });
+        sectionLinks.forEach((link, index) => {
+            if (index === activeIndex) link.setAttribute('aria-current', 'location');
+            else link.removeAttribute('aria-current');
+        });
+    }
+    function scheduleSectionNavigation() {
+        if (sectionNavFrame === null) sectionNavFrame = requestAnimationFrame(updateSectionNavigation);
+    }
+    window.addEventListener('scroll', scheduleSectionNavigation, { passive: true });
+    window.addEventListener('resize', scheduleSectionNavigation, { passive: true });
+    window.addEventListener('load', scheduleSectionNavigation, { once: true });
+    if ('ResizeObserver' in window) {
+        const sectionObserver = new ResizeObserver(scheduleSectionNavigation);
+        linkedSections.forEach((section) => { if (section) sectionObserver.observe(section); });
+    }
+    updateSectionNavigation();
 
     renderQuestionnaire();
     renderFoodCards();
