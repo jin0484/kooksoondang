@@ -383,11 +383,14 @@ html.lenis body {
     display: flex;
     visibility: hidden;
     pointer-events: none;
+    /* 닫힐 때는 패널이 다 올라간 뒤에 감춤 */
+    transition: visibility 0s linear 320ms;
 }
 
 .nav_drawer.is_nav_open {
     visibility: visible;
     pointer-events: auto;
+    transition-delay: 0s;
 }
 
 .nav_drawer_scrim {
@@ -419,6 +422,10 @@ html.lenis body {
     transform: none;
 }
 
+.nav_drawer_illust {
+    display: none;
+}
+
 .nav_drawer_panel ul {
     display: flex;
     flex-direction: column;
@@ -441,6 +448,7 @@ html.lenis body {
 
 @media (prefers-reduced-motion: reduce) {
 
+    .nav_drawer,
     .nav_drawer_scrim,
     .nav_drawer_panel,
     .nav_toggle_bars,
@@ -480,6 +488,12 @@ html.lenis body {
     width: clamp(6.667rem, 16vw, 14.667rem);
     padding: 0 0.25rem 0.2rem;
     opacity: 1;
+}
+
+/* 모바일 검색 화면 전용 요소: 다른 폭에서는 없는 것으로 둠 */
+.search_back,
+.search_panel {
+    display: none;
 }
 
 /* 검색 취소 버튼이 열림 전에 비쳐 보이지 않도록 */
@@ -761,12 +775,11 @@ html.lenis body {
    모서리는 버튼(아래가 둥근 모양)과 위아래 대칭이 되게 위쪽을 둥글게 둠 */
 .family_site_list {
     position: absolute;
-    /* 버튼 폭에 가두면 긴 이름이 넘쳐서 그 줄만 오른쪽으로 밀려 보임.
-       버튼 오른쪽 끝에 붙인 채 가장 긴 이름에 맞춰 넓어지게 두면 다섯 줄이 같은 중심에 놓임 */
+    /* 목록 폭은 아래 버튼 폭과 같게. 가장 긴 이름(Woorisool Areumteo)이 버튼 폭 안에 들어오도록
+       목록 버튼의 좌우 여백은 작게 둠 */
     right: 0;
     left: auto;
-    width: max-content;
-    min-width: 100%;
+    width: 100%;
     bottom: calc(100% + 0.5rem);
     display: flex;
     flex-direction: column;
@@ -795,7 +808,7 @@ html.lenis body {
 .family_site_list button {
     display: block;
     width: 100%;
-    padding: 0.5rem 1.75rem;
+    padding: 0.5rem 0.5rem;
     color: var(--makgeolli_light4);
     font-size: 1rem;
     text-align: center;
@@ -923,7 +936,8 @@ html.lenis body {
     }
 
     .footer_right {
-        flex: 0 0 auto;
+        flex: 0 1 auto;
+        min-width: 0;
         max-width: none;
         gap: 1.5rem;
     }
@@ -938,10 +952,23 @@ html.lenis body {
 
     .footer_links button {
         font-size: 0.9375rem;
+        /* 버튼 기본 가운데 정렬 + 줄바꿈 때문에 좁은 폭에서 글자가 가운데로 몰렸음 */
+        text-align: left;
+        white-space: nowrap;
     }
 
     .footer_left small {
-        font-size: 0.8125rem;
+        font-size: clamp(0.625rem, 1.95vw, 0.8125rem);
+    }
+
+    /* 저작권은 두 줄: 회사명까지 / ALL RIGHTS RESERVED. 한 줄일 때만 쓰는 | 는 감춤 */
+    .footer_copy_line {
+        display: block;
+        white-space: nowrap;
+    }
+
+    .footer_copy_sep {
+        display: none;
     }
 
     .family_site_button {
@@ -959,6 +986,108 @@ html.lenis body {
 
     .footer_sns img {
         width: 2.375rem;
+    }
+}
+
+/* ---------- tablet header / drawer (481px ~ 1024px) ---------- */
+/* 768 시안: 헤더 높이 100, 검색창이 항상 펼쳐져 있고 서랍은 헤더 아래로 내려오는 흰 패널 */
+
+@media (min-width: 30.0625rem) and (max-width: 64rem) {
+    .site_header:has(.nav_toggle) {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .site_header_inner {
+        width: calc(100% - 5rem);
+        height: 6.25rem;
+        padding: 0;
+    }
+
+    .site_header:has(.nav_toggle) .site_header_left {
+        gap: 1.625rem;
+    }
+
+    .nav_toggle {
+        width: 2rem;
+        height: 2rem;
+    }
+
+    .nav_toggle_bars {
+        left: 0.25rem;
+        width: 1.5rem;
+        top: calc(50% - 1px);
+    }
+}
+
+/* 서랍은 태블릿·모바일 공통: 헤더 아래로 내려오는 흰 패널 (모바일 치수는 아래 480px 블록에서 덮어씀) */
+@media (max-width: 64rem) {
+
+    /* 서랍이 올라가는 동안에도 헤더가 패널 위에 남도록, 올림 상태는 닫힌 뒤에야 풀림 */
+    .site_header {
+        transition: transform 360ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease, z-index 0s linear 320ms;
+    }
+
+    body:has(.nav_drawer.is_nav_open) .site_header,
+    body:has(.site_search.is_search_open) .site_header {
+        transition: transform 360ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease;
+    }
+
+    /* 서랍이 열리면 헤더(햄버거·로고·검색)를 흰 패널 위로 올림 */
+    body:has(.nav_drawer.is_nav_open) .site_header {
+        z-index: 70;
+        background: transparent;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
+    .nav_drawer_panel {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: auto;
+        padding: 6.25rem 2.5rem 2.5rem 6rem;
+        justify-content: flex-start;
+        border-radius: 0 0 0.75rem 0.75rem;
+        background: #fff;
+        box-shadow: none;
+        transform: translateY(-100%);
+    }
+
+    .nav_drawer.is_nav_open .nav_drawer_panel {
+        transform: none;
+    }
+
+    .nav_drawer_panel ul {
+        gap: 0.5rem;
+    }
+
+    .nav_drawer_panel li {
+        display: flex;
+        align-items: center;
+        height: 2rem;
+        padding: 0 0.625rem;
+    }
+
+    .nav_drawer_panel a,
+    .nav_drawer_panel .is_disabled {
+        font-size: 1.25rem;
+        line-height: 1.7;
+        letter-spacing: 0;
+    }
+
+    .nav_drawer_panel .is_disabled {
+        font-weight: 400;
+    }
+
+    .nav_drawer_illust {
+        display: block;
+        position: absolute;
+        right: 2.5rem;
+        bottom: 2.5rem;
+        width: 11.1696rem;
+        height: auto;
+        pointer-events: none;
     }
 }
 
@@ -986,6 +1115,135 @@ html.lenis body {
     .nav_toggle {
         width: 1.75rem;
         height: 1.125rem;
+    }
+
+    /* 360 시안 검색 화면: 검색 버튼을 누르면 헤더가 < [입력] 돋보기 로 바뀌고
+       그 아래에 인기 검색어 패널이 내려옴. 닫기는 < , 바깥 클릭, Esc */
+    .site_header:has(.is_search_open) .site_header_left {
+        display: none;
+    }
+
+    .site_header:has(.is_search_open) .search_back {
+        display: block;
+        box-sizing: border-box;
+        min-width: 2rem;
+        padding: 0;
+        flex: 0 0 auto;
+        width: 2rem;
+        margin: -0.25rem 0;
+        height: 2rem;
+    }
+
+    .search_back img {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
+    .site_search.is_search_open {
+        flex: 1 1 auto;
+        min-width: 0;
+        gap: 0;
+    }
+
+    .site_search.is_search_open .site_search_input {
+        flex: 1 1 auto;
+        width: auto;
+        height: 1.5rem;
+        padding: 0 1.25rem;
+        border-bottom: 0;
+        font-size: 1.125rem;
+        line-height: 1.5rem;
+    }
+
+    .site_search_input::placeholder {
+        color: var(--bekseju_dark3);
+        opacity: 1;
+    }
+
+    .site_search.is_search_open .search_button {
+        flex: 0 0 auto;
+    }
+
+    body:has(.site_search.is_search_open) .site_header {
+        z-index: 70;
+        background: transparent;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
+    .search_panel {
+        position: fixed;
+        z-index: 65;
+        top: 0;
+        left: 0;
+        right: 0;
+        display: block;
+        padding: 3.75rem 1rem 1.25rem;
+        border-radius: 0 0 0.75rem 0.75rem;
+        background: #fff;
+        visibility: hidden;
+        opacity: 0;
+        transform: translateY(-0.5rem);
+        transition: opacity 200ms ease, transform 280ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 280ms;
+    }
+
+    body:has(.site_search.is_search_open) .search_panel {
+        visibility: visible;
+        opacity: 1;
+        transform: none;
+        transition-delay: 0s;
+    }
+
+    .search_panel_title {
+        padding: 0 0.625rem;
+        font-weight: 600;
+        font-size: 1rem;
+        line-height: 1.7;
+        color: var(--bekseju_dark2);
+    }
+
+    .search_panel ul {
+        display: flex;
+        flex-direction: column;
+        gap: 0.625rem;
+        margin-top: 0.625rem;
+    }
+
+    .search_panel a {
+        display: block;
+        padding: 0 1.25rem;
+        font-size: 1rem;
+        line-height: 1.7;
+        color: var(--bekseju_dark3);
+        transition: color 150ms ease;
+    }
+
+    .search_panel a:hover {
+        color: var(--kooksoondang_orange);
+    }
+
+    /* 360 시안 서랍: 상단 60 여백, 좌우 16, 항목 16px, 일러스트는 오른쪽 아래 */
+    .nav_drawer_panel {
+        padding: 3.75rem 1rem 5.1875rem;
+    }
+
+    .nav_drawer_panel ul {
+        gap: 0.25rem;
+    }
+
+    .nav_drawer_panel li {
+        height: auto;
+    }
+
+    .nav_drawer_panel a,
+    .nav_drawer_panel .is_disabled {
+        font-size: 1rem;
+    }
+
+    .nav_drawer_illust {
+        right: 1rem;
+        bottom: 1.25rem;
     }
 
     .nav_toggle_bars::before {
