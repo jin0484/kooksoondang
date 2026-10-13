@@ -288,7 +288,7 @@
     var tapPreview = (function () {
         var noHover = window.matchMedia('(hover: none)');
         /* 그림을 보여 주는 시간 */
-        var HOLD = 2000;
+        var HOLD = 1500;
         var timer = 0;
         var picked = null;
         /* 시간이 다 되어 넘어가는 중. 이때는 다른 답을 눌러도 받지 않음 */
