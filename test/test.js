@@ -274,6 +274,60 @@
     })();
 
     /* ------------------------------------------------------------------
+       술 막대 채우기
+       결과 화면의 술 목록이 화면에 들어온 순간 .is_seen 을 붙여 막대를 차오르게 함.
+       좁은 화면에서는 목록이 스크롤 아래에 있어서, 결과 화면이 켜질 때 바로 채우면 못 보고 지나감.
+       채우는 움직임과 시간은 css 가 맡고 여기서는 시점(클래스)만 잡아 줌
+    ------------------------------------------------------------------ */
+    var liquorFill = (function () {
+        var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        /* 목록이 이만큼 보여야 들어온 것으로 침 (끝자락만 걸쳤을 때 채워 버리지 않게) */
+        var SEEN_RATIO = 0.4;
+        var observer = null;
+
+        function stop() {
+            if (observer) observer.disconnect();
+            observer = null;
+        }
+
+        function watch(screen) {
+            stop();
+
+            var list = screen.querySelector('.liquor');
+            if (!list) return;
+
+            /* 다시 들어온 결과 화면도 처음부터 채우도록 비워 둠 */
+            list.classList.remove('is_seen', 'is_scrolled');
+
+            if (reduced || !('IntersectionObserver' in window)) {
+                list.classList.add('is_seen');
+                return;
+            }
+
+            /* 첫 알림은 화면이 켜진 직후의 상태. 그때 이미 보이면 화면 등장에 맞춰 채우고,
+               나중에 스크롤로 들어오면 기다리지 않고 바로 채움 */
+            var first = true;
+
+            observer = new IntersectionObserver(function (entries) {
+                var entry = entries[entries.length - 1];
+                var seen = entry.intersectionRatio >= SEEN_RATIO;
+
+                if (seen) {
+                    if (!first) list.classList.add('is_scrolled');
+                    list.classList.add('is_seen');
+                    stop();
+                }
+
+                first = false;
+            }, { threshold: SEEN_RATIO });
+
+            observer.observe(list);
+        }
+
+        return { watch: watch, stop: stop };
+    })();
+
+    /* ------------------------------------------------------------------
        쓸고 지나가는 화면 전환
        덮개가 한쪽 끝에서 들어와 화면을 다 덮은 순간에 화면을 갈아 끼우고,
        방향을 되돌리지 않고 그대로 반대쪽으로 빠져나가며 새 화면을 드러냄.
@@ -368,6 +422,7 @@
         window.scrollTo(0, 0);
         /* 좁은 화면에서는 결과 화면이 안에서 스크롤되므로, 다시 들어올 때 맨 위에서 시작하게 함 */
         target.scrollTop = 0;
+        liquorFill.watch(target);
         updateHud(target);
 
         if (id === START) intro.play();
