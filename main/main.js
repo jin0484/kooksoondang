@@ -409,8 +409,6 @@
 
     const hoverQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    // 마우스가 달린 기기여도 모바일 폭에서는 커서 연출(따라 움직이기·던지기)을 돌리지 않음
-    const mobileQuery = window.matchMedia('(max-width: 47.9375rem)');
 
     // 커서 속도(px/s)를 요소의 초기 속도로 환산하는 배율
     const throwScale = 0.32;
@@ -451,7 +449,7 @@
     const tabletQuery = window.matchMedia('(max-width: 64rem)');
 
     const clamp = (value, limit) => Math.min(Math.max(value, -limit), limit);
-    const isEnabled = () => hoverQuery.matches && !reducedMotionQuery.matches && !mobileQuery.matches;
+    const isEnabled = () => hoverQuery.matches && !reducedMotionQuery.matches;
 
     // 기존 transform 을 지우지 않고 그 안쪽에 흔들림을 얹어야 제자리에서 회전함
     function captureBase(item) {
@@ -2153,8 +2151,6 @@
     if (!character || frames.length < 2) return;
 
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    // 캐릭터에 커서를 올리면 도는 연출이라 모바일 폭에서는 돌리지 않음
-    const mobileQuery = window.matchMedia('(max-width: 47.9375rem)');
     // 1 - 2 - 3 - 2 로 한 바퀴. 이어 붙으면 1-2-3-2-1-2-3-2… 가 되어 같은 장면이 겹치지 않음
     const order = [0, 1, 2, 1];
     const frameDuration = 200;
@@ -2179,7 +2175,7 @@
     }
 
     character.addEventListener('mouseenter', () => {
-        if (frameTimer || reducedMotionQuery.matches || mobileQuery.matches) return;
+        if (frameTimer || reducedMotionQuery.matches) return;
 
         showStep(0);
         frameTimer = window.setInterval(() => showStep(step + 1), frameDuration);
