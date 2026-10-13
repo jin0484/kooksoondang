@@ -112,9 +112,14 @@
 
   /* 페어링 카드 원본 크기(248x368)의 0.7배.
      결과 모달이 .pairing 바깥에 있어 상속되려면 :root 에 있어야 함 */
-  --pairing-card-w: 173.6px;
-  --pairing-card-h: 257.6px;
-  --pairing-row-gap: 28px;
+  --pairing-card-w: min(173.6px, 10.9vw);
+  --pairing-card-h: min(257.6px, 16.18vw);
+  --pairing-row-gap: min(28px, 1.4583vw);
+  /* 카드 줄의 왼쪽 오프셋(1920px 에서 125px, 1400px 이하에서는 0 으로 제목 왼쪽과 맞음)과 열 간격. 접시 묶음 위치도 이 값을 따라감 */
+  --pairing-row-left: max(0px, min(125px, 24vw - 336px));
+  --pairing-row-colgap: min(20px, 1.0417vw);
+  /* 위 세 값은 1920px 시안 크기이고, 그보다 좁아지면 vw 로 같이 줄어듦(1920px 에서 시안과 같음).
+     페어링 게임의 카드 줄 / 접시 묶음 간격도 같은 비율로 줄여 겹치지 않게 함 */
 
   /* ----- colors used only on this page ----- */
   --card-chestnut: #6D4C40;
@@ -318,7 +323,9 @@ section[id] {
   height: 100vh;
   overflow: hidden;
   background: var(--makgeolli_light4);
-  padding: clamp(7.5rem, 10vw, 9rem) 0 clamp(4rem, 6vw, 5rem) 180px;
+  /* 왼쪽 여백: 1920px 에서 시안의 180px, 1400px 이하에서는 헤더 로고 / Everyday Classics 제목이 서는 100px 선에 맞춤 */
+  --hero-pl: max(100px, min(180px, 15.38vw - 115.4px));
+  padding: clamp(7.5rem, 10vw, 9rem) 0 clamp(4rem, 6vw, 5rem) var(--hero-pl);
 }
 
 .hero_inner {
@@ -600,24 +607,31 @@ section[id] {
 }
 
 /* 배경 도형 아래에 깔리는 캐릭터. 쌓임 순서는 DOM 순서로 정해지므로 main.html 에서 먼저 선언함.
-   원본 PNG 상하좌우에 투명 여백이 있어 실제 그림보다 박스가 큼 */
-.hero_visual .hero_character {
-  /* 21.5% 자리에서 오른쪽으로 20px.
-     transform 은 main.js 의 흔들림 연출이 기준값으로 쓰고 있어 건드리지 않고 left 로 옮김 */
-  left: calc(21.5% + 20px);
-  right: auto;
-  bottom: -11%;
-  top: auto;
-  width: auto;
-  height: 90%;
-  transform: none;
+   원본 PNG 상하좌우에 투명 여백이 있어 실제 그림보다 박스가 큼.
+
+   크기는 높이(%)가 아니라 일러스트 틀의 폭으로 잼. 틀은 좌측 패딩(180px)과 .hero_left(27.125rem) 사이에
+   눌려 있어서 화면이 좁아지면 폭만 줄고, 높이 기준이면 캐릭터가 도형보다 커져 버렸음.
+   --hero-v 는 그 틀의 폭(100vw - 180px - 27.125rem - 2rem). 아래 비율은 1920px 시안
+   (틀 1274px, 캐릭터 PNG 824px, 프레임 823px)에서 뽑았음 */
+.hero_visual {
+  --hero-v: calc(100vw - var(--hero-pl) - 27.125rem - 2rem);
 }
 
-/* 프레임 SVG 는 2000x2000 정사각에 그림이 위로 몰려 있어(PNG 는 1588x1484),
-   그대로 두면 캐릭터가 작아지며 위로 튐. 높이 1.069배 + 아래로 6.18% 로 상쇄 */
+.hero_visual .hero_character {
+  left: calc(var(--hero-v) * 0.215 + 20px);
+  right: auto;
+  top: calc(50% + var(--hero-v) * 0.1075);
+  bottom: auto;
+  width: calc(var(--hero-v) * 0.647);
+  height: auto;
+  transform: translateY(-50%);
+}
+
+/* 프레임 SVG 는 2000x2000 정사각에 그림이 위로 몰려 있어 PNG 와 중심 높이가 조금 다름 */
 .hero_visual .hero_character_frame {
-  bottom: -17.2%;
-  height: 96.2%;
+  top: calc(50% + var(--hero-v) * 0.1283);
+  width: calc(var(--hero-v) * 0.646);
+  height: auto;
   opacity: 0;
   pointer-events: none;
 }
@@ -843,6 +857,9 @@ section[id] {
 
 .marquee {
   position: relative;
+  /* 아래 브랜드 스토리의 물방울 장식(.history_drip)이 위로 올라와 글자를 덮던 것을 막음.
+     .history 의 z-index(0)보다 높게 두면 글자가 항상 장식 위에 그려짐 */
+  z-index: 1;
   display: flex;
   align-items: center;
   overflow: hidden;
@@ -1355,10 +1372,10 @@ section[id] {
 
 .pairing_row {
   position: relative;
-  left: 125px;
+  left: var(--pairing-row-left);
   display: grid;
   grid-template-columns: repeat(5, var(--pairing-card-w));
-  column-gap: 20px;
+  column-gap: var(--pairing-row-colgap);
   width: max-content;
   align-self: flex-start;
   margin-inline: 0;
@@ -1688,14 +1705,16 @@ section[id] {
   .pairing_drag {
     position: absolute;
     /* 화면(섹션) 오른쪽 끝에서 225px 떨어지도록 좌우 패딩(gutter)을 상쇄 */
-    right: calc(225px - var(--gutter-x));
+    /* 카드 줄 오른쪽 끝에서 일정 간격(1920px 에서 84px)을 두고 시작. 카드 크기가 어떻게 변해도 겹치지 않음 */
+    left: calc(var(--pairing-row-left) + var(--pairing-card-w) * 5 + var(--pairing-row-colgap) * 4 + min(84px, 4.4vw));
+    right: auto;
     /* 카드 2줄 묶음은 .pairing_inner 바닥에 붙어 있으므로, 그 묶음의 세로 중심까지 끌어올린 뒤
        translateY(50%) 로 자기 높이의 절반만큼 내려 중심끼리 맞춤.
        scale 뒤에 오는 translate 라 축소된 높이(=실제 보이는 높이) 기준으로 계산됨 */
     bottom: calc(var(--pairing-cards-h) / 2);
     margin-top: 0;
     transform: scale(0.72) translateY(50%);
-    transform-origin: bottom right;
+    transform-origin: bottom left;
   }
 }
 
@@ -1915,6 +1934,66 @@ section[id] {
   text-align: center;
 }
 
+/* 데스크톱 접시 묶음: 1920px 에서 16px 기준이던 크기를 em 으로 바꿔 두고,
+   묶음의 글자 크기를 화면 폭에 비례해 줄임(1920px 에서 16px). 접시 / 버튼 / 문구가 같은 비율로 줄어
+   카드 줄과 겹치지 않음. 축소(scale 0.72)와 위치 계산은 그대로 */
+@media (min-width: 64.0625rem) {
+  .pairing_drag {
+    width: min(100%, 38em);
+    gap: 4.8em;
+    /* 글자는 작은 화면에서 읽히도록 바닥(10px)을 둠. 접시 폭은 같은 em 이라 같이 커짐 */
+    font-size: min(1rem, max(10px, 0.8333vw));
+  }
+
+  .pairing_drag_explain {
+    gap: 1.5em;
+    transform: translateY(1.25em);
+  }
+
+  .pairing_drag_explain p {
+    font-size: 1.7em;
+  }
+
+  .pairing_arrows {
+    width: 13.5em;
+  }
+
+  .pairing_arrows img {
+    width: 1.5em;
+  }
+
+  .pairing_plates {
+    gap: 1.4em;
+    margin-top: -1.25em;
+  }
+
+  .pairing_plate_slot {
+    flex: 0 0 18.75em;
+    width: 18.75em;
+    padding-top: 2.625em;
+  }
+
+  .pairing_plate_pick {
+    padding: 0.44em 0.825em;
+    font-size: 1.15em;
+  }
+
+  .pairing_actions {
+    gap: 1.1em;
+  }
+
+  .pairing_actions .btn_pill {
+    padding: 0.8em 2em;
+    font-size: 1.5em;
+    border-radius: 0 0 2em 2em;
+  }
+
+  .pairing_feedback {
+    margin-top: -1.5em;
+    font-size: 1.2em;
+  }
+}
+
 .pairing_result_modal[hidden] {
   display: none;
 }
@@ -2015,8 +2094,8 @@ section[id] {
 .pairing_result_score strong {
   /* 1 에서 최종 점수까지 세는 동안 자릿수가 늘어남. 이 줄은 가운데 정렬이라
      폭을 미리 잡아 두지 않으면 숫자가 바뀔 때마다 양옆 문구가 밀림 */
-  min-width: 3ch;
-  text-align: center;
+  min-width: 2ch;
+  text-align: right;
   font-variant-numeric: tabular-nums;
   color: var(--kooksoondang_orange);
   font-family: var(--font-Albert_Sans);
@@ -2026,6 +2105,7 @@ section[id] {
 }
 
 .pairing_result_score_total {
+  margin-left: -0.25rem;
   font-size: clamp(1.75rem, 4vw, 2.75rem);
   color: var(--bekseju_darker_cold);
 }
@@ -2050,8 +2130,8 @@ section[id] {
 
 .pairing_result_actions .btn_pill {
   padding: 0.65rem 2.25rem;
-  /* 버튼이 작아 반지름만 줄임. 위가 평평하고 아래가 둥근 방향은 그대로 */
-  border-radius: 0.25rem 0.25rem 0.75rem 0.75rem;
+  /* 메인 확인 버튼과 같은 모양: 위는 평평하고 아래는 끝까지 둥금 */
+  border-radius: 0.25rem 0.25rem 2rem 2rem;
   font-size: 1rem;
 }
 
@@ -2281,7 +2361,8 @@ section[id] {
   position: absolute;
   z-index: 1;
   bottom: 0.875rem;
-  left: max(0px, calc(var(--event-cup-x, 0%) - 1.75rem));
+  /* 오른쪽 끝의 병(3.375rem) 앞에서 멈춤. 막대가 짧아지면 90% 자리가 병과 겹치므로 병 왼쪽 + 여백 0.5rem 을 넘지 못하게 함 */
+  left: max(0px, min(calc(var(--event-cup-x, 0%) - 1.75rem), calc(100% - 3.375rem - 0.5rem - 3.5rem)));
   width: 3.5rem;
   transform: translate(0, 0);
   will-change: transform;
@@ -2337,7 +2418,8 @@ section[id] {
   min-height: 360vh;
   min-height: 360svh;
   padding: 0 var(--gutter-x);
-  margin-bottom: 0;
+  /* 마지막 장이 끝난 뒤 푸터 물결(위로 솟아 있음)과 떨어지도록 여백을 둠 */
+  margin-bottom: clamp(5rem, 10vw, 10rem);
 }
 
 .events.is_event_motion_ready .events_inner {
@@ -2354,6 +2436,8 @@ section[id] {
 
 .events.is_event_motion_ready .events_viewport {
   display: grid;
+  /* 열이 auto 면 카드 내용 폭(사진 637 + 본문)만큼 늘어나 틀 밖으로 넘침 */
+  grid-template-columns: minmax(0, 1fr);
   min-height: 0;
 }
 
@@ -2372,11 +2456,19 @@ section[id] {
 }
 
 .events.is_event_motion_ready .event_media {
-  flex: 0 0 637px;
+  /* 1920 시안은 637 x 424. 폭이 줄면 사진이 먼저 줄어들어 본문이 최소 폭(22rem)을 지키게 함.
+     (고정 폭이면 1000px 대에서 본문 칸이 200px 대로 눌려 글자가 한 글자씩 접혔음) */
+  flex: 0 1 637px;
   width: 637px;
-  height: 424px;
+  min-width: 0;
+  height: auto;
+  aspect-ratio: 637 / 424;
   min-height: 0;
   align-self: center;
+}
+
+.events.is_event_motion_ready .event_copy {
+  flex: 1 0 22rem;
 }
 
 .events.is_event_motion_ready .event_media img {
@@ -2384,6 +2476,7 @@ section[id] {
 }
 
 .events.is_event_motion_ready .event_media,
+.events.is_event_motion_ready .event_copy_head,
 .events.is_event_motion_ready .event_number,
 .events.is_event_motion_ready .event_copy h3,
 .events.is_event_motion_ready .event_copy ul {
@@ -2568,6 +2661,59 @@ section[id] {
   }
 }
 
+/* 태블릿 시안(768px)의 배경 벡터 네 개(컵·병·페트·그릇) 위치와 크기.
+   시안은 도형을 회전·기울임 상태로 두고 있어 데스크톱용 도형(이미 회전된 모양)을 늘려서는 맞지 않음.
+   그래서 시안 원본 도형(.hero_shape_tablet)을 따로 두고 이 폭에서만 보이게 함.
+   네 도형은 같은 viewBox(1354 x 1708)를 공유하므로, svg 를 1유닛 = 0.5px(768px 기준) 로 두고
+   왼쪽 위를 일러스트 틀(.hero_visual) 왼쪽 위에 맞춘 뒤, 도형마다 시안의 중심 / 회전 / 기울임을 줌.
+   transform 은 오른쪽부터 읽음: 도형 중심을 원점으로 -> 기울임 -> 회전 -> 2배(0.5px 단위 보정) -> 중심으로 이동.
+   폭은 vw 로 잡아 768 -> 1024px 에서 같이 커짐 */
+.hero_shape_tablet {
+  display: none;
+}
+
+@media (min-width: 48rem) and (max-width: 64rem) {
+  .hero_visual .hero_shape {
+    left: 0;
+    right: auto;
+    top: 0;
+    width: 88.15vw;
+    transform: none;
+  }
+}
+
+/* 태블릿과 모바일이 같은 시안 도형을 씀 */
+@media (max-width: 64rem) {
+  #banner_cup2,
+  #banner_bottle,
+  #banner_pet,
+  #banner_bowl {
+    display: none;
+  }
+
+  .hero_shape_tablet {
+    display: inline;
+    transform-box: view-box;
+    transform-origin: 0 0;
+  }
+
+  #banner_cup2_tablet {
+    transform: translate(93.7px, 511.6px) scale(2) rotate(-14.58deg) skewX(1.17deg) translate(-63.78px, -59.18px);
+  }
+
+  #banner_bottle_tablet {
+    transform: translate(383.8px, -33.3px) scale(2) rotate(-133.81deg) skewX(-2.31deg) translate(-97.76px, -174.85px);
+  }
+
+  #banner_pet_tablet {
+    transform: translate(543.3px, 657.9px) scale(2) rotate(32.4deg) translate(-95.95px, -321.63px);
+  }
+
+  #banner_bowl_tablet {
+    transform: translate(667.1px, 872.9px) scale(2) rotate(26.7deg) skewX(-1.52deg) translate(-176.82px, -70.4px);
+  }
+}
+
 /* ---------- tablet (768~1024px) ---------- */
 /* 768px 태블릿 시안 배치. 데스크톱에서만 도는 연출(브랜드 스토리 고정,
    이벤트 스크롤 스토리텔링, 카드 드래그)은 js 가 이미 이 폭에서 꺼 두므로
@@ -2585,8 +2731,15 @@ section[id] {
     /* 태블릿 카드는 768px 에서 원본 크기(248x368), 1024px 에서 310x460.
        두 변수의 vw 계수 비가 원본 비(248:368)와 같아야 카드가 안 찌그러짐.
        결과 모달 복제본도 이 값을 씀 */
-    --pairing-card-w: clamp(248px, 30.27vw, 310px);
-    --pairing-card-h: clamp(368px, 44.92vw, 460px);
+    /* 잠긴 한 화면(100svh)에 제목 ~ 확인 버튼이 다 들어오도록 카드를 높이에서도 잼.
+       --pairing-chrome 는 카드 말고 세로를 먹는 것들(제목 + 교체 버튼 + 확인 버튼 + 고정 헤더가 가리는 만큼의 여유 20rem, 제목 아래 간격)의 합.
+       화면이 충분히 높으면 기존 값(768px 에서 248px)이 그대로이고, 낮으면 카드가 줄어듦 */
+    --pairing-head-gap: clamp(1rem, 6svh, 6.4375rem);
+    --pairing-chrome: calc(20rem + var(--pairing-head-gap));
+    --pairing-card-w: clamp(7.5rem,
+        min(clamp(248px, 30.27vw, 310px), calc((100svh - var(--pairing-chrome)) * 248 / 368)),
+        310px);
+    --pairing-card-h: calc(var(--pairing-card-w) * 368 / 248);
     /* 카드 안쪽 여백. 술 카드 사진이 이 값만큼 음수 마진으로 카드 밖까지 나가야 해서
        (아래 .pairing_card_drink .pairing_card_media) 양쪽이 같은 값을 봐야 함 */
     --pairing-card-pad: clamp(10px, 1.17vw, 12px);
@@ -2684,7 +2837,8 @@ section[id] {
        기준점은 분리선 하단이므로 "분리선 높이(약 21vw) + 물방울 절반" 으로 잡아
        폭이 변해도 물방울 아래끝이 잔 윗면에 살짝 걸치게 함(데스크톱과 같은 겹침 비율) */
     --history-drip-rise: calc(21vw + 53px);
-    padding: var(--history-intro-rise) var(--gutter-x) 5rem;
+    /* 아래 5rem 은 그림 아래 여백. 페어링 섹션이 겹쳐 올라오는 만큼(기본 겹침 + 추가 120px)을 더해 그림이 가려지지 않게 함 */
+    padding: var(--history-intro-rise) var(--gutter-x) calc(5rem + var(--history-pairing-overlap) + 120px);
   }
 
   /* 항목 사이 여백. 프레임 간 스크롤 거리는 여기에 항목 높이(사진 한 줄)가 더해진 값이라
@@ -2791,16 +2945,18 @@ section[id] {
 
   .pairing_head {
     grid-area: head;
-    margin-bottom: 6.4375rem;
+    margin-bottom: var(--pairing-head-gap);
     transform: none;
   }
 
+  /* 글자는 카드 폭(--pairing-card-w)에도 걸어 둠. 화면이 낮아 카드가 줄어도 카드 안 라벨 / 버튼 글자가 넘치지 않게 하며,
+     카드가 248px(768px 시안) 이상이면 기존 값이 그대로 나옴 */
   .pairing_head h2 {
-    font-size: clamp(2.125rem, 4.1vw, 2.625rem);
+    font-size: max(1.5rem, min(clamp(2.125rem, 4.1vw, 2.625rem), calc(var(--pairing-card-w) * 0.19)));
   }
 
   .pairing_head p {
-    font-size: clamp(1.1875rem, 2.15vw, 1.375rem);
+    font-size: max(0.9375rem, min(clamp(1.1875rem, 2.15vw, 1.375rem), calc(var(--pairing-card-w) * 0.108)));
   }
 
   .pairing_lead_drag {
@@ -2853,7 +3009,7 @@ section[id] {
   }
 
   .pairing_card_label {
-    font-size: clamp(1.1875rem, 2.15vw, 1.375rem);
+    font-size: max(0.75rem, min(clamp(1.1875rem, 2.15vw, 1.375rem), calc(var(--pairing-card-w) * 19 / 248)));
     line-height: 1.25;
   }
 
@@ -2866,7 +3022,7 @@ section[id] {
   /* 목록이 이 칸을 기준으로 위쪽에 뜨므로 자리 잡기(grid-area)는 버튼이 아니라 여기서 함 */
   .pairing_swap_field {
     position: relative;
-    margin: 1.3125rem 1rem 0;
+    margin: 1.3125rem 0.25rem 0;
   }
 
   .pairing_swap_field[data-pairing-swap-field="food"] {
@@ -2889,7 +3045,8 @@ section[id] {
     border-radius: 0.25rem 0.25rem 2rem 2rem;
     background: none;
     color: var(--makgeolli_light4);
-    font-size: clamp(1.0625rem, 1.86vw, 1.1875rem);
+    white-space: nowrap;
+    font-size: max(0.8125rem, min(clamp(1.0625rem, 1.86vw, 1.1875rem), calc(var(--pairing-card-w) * 17 / 248)));
     font-weight: 500;
     transition: background-color 180ms ease;
   }
@@ -3006,7 +3163,7 @@ section[id] {
       "number title"
       ".      list"
       "progress progress";
-    column-gap: clamp(5.5rem, 11.45vw, 7.5rem);
+    column-gap: clamp(4.5rem, 9.5vw, 6.5rem);
     row-gap: 2rem;
   }
 
@@ -3017,7 +3174,7 @@ section[id] {
   /* 컵을 기본 위치에서 20px 더 왼쪽으로. 태블릿은 막대가 짧아 여정 끝에서 병과 겹쳐 보임.
      기준식은 데스크톱과 같고 빼는 값만 20px 늘림(막대 왼쪽 끝을 넘지 않도록 max 는 그대로) */
   .event_icon_cup {
-    left: max(0px, calc(var(--event-cup-x, 0%) - 1.75rem - 20px));
+    left: max(0px, min(calc(var(--event-cup-x, 0%) - 1.75rem - 20px), calc(100% - 3.375rem - 0.5rem - 3.5rem)));
   }
 
   .event_number {
@@ -3034,7 +3191,7 @@ section[id] {
 
   .event_copy ul {
     grid-area: list;
-    padding-left: 2.5rem;
+    padding-left: 1rem;
     gap: 0.5rem;
   }
 
@@ -3070,7 +3227,22 @@ section[id] {
      위 정적 배치 규칙들은 선택자가 한 단계 짧아서 데스크톱 연출 규칙에 밀리므로
      같은 선택자 형태(.events.is_event_motion_ready ...)로 다시 적어야 함 */
 
+  /* 고정되는 한 화면을 정확히 100svh 로 맞춤. min-height 만 두면 사진·본문이 화면보다 클 때
+     박스가 화면 밑으로 자라 overflow 에 잘려서 맨 아래 막대와 술잔이 안 보였음.
+     높이를 못박고 칸·카드가 줄어들 수 있게 해서 모자란 만큼 사진이 줄어들게 함 */
+  .events.is_event_motion_ready .events_inner {
+    height: 100vh;
+    height: 100svh;
+    min-height: 0;
+    padding: clamp(3rem, 6vw, 4rem) 0;
+  }
+
+  .events.is_event_motion_ready .events_viewport {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
   .events.is_event_motion_ready .event_card {
+    min-height: 0;
     /* 사진이 남는 높이를 흡수할 수 있게 카드가 칸 높이를 다 씀 */
     align-self: stretch;
     align-items: stretch;
@@ -3106,7 +3278,7 @@ section[id] {
       ".      list"
       "progress progress";
     grid-template-rows: auto auto minmax(0, 1fr);
-    column-gap: clamp(5.5rem, 11.45vw, 7.5rem);
+    column-gap: clamp(4.5rem, 9.5vw, 6.5rem);
     row-gap: 1.5rem;
     align-content: stretch;
   }
@@ -3210,6 +3382,18 @@ section[id] {
   .hero_visual .hero_character_frame {
     width: clamp(21.72rem, calc(14.33rem + 28.62vw), 28.04rem);
     transform: translateY(clamp(-192.3px, calc(-1.9rem - 21.1vw), -117.6px));
+  }
+
+  /* 배경 도형: 태블릿 시안 배치(.hero_shape_tablet)를 캐릭터와 같은 배율로 줄여 씀.
+     태블릿에서 도형 svg 폭(677px)은 캐릭터 폭(450px)의 1.5057배이고 둘 다 일러스트 틀 왼쪽 위 근처에서 시작하므로,
+     폭은 캐릭터 폭의 1.5057배, 왼쪽은 캐릭터와 같은 값, 세로는 캐릭터와 같은 기준(50% + translateY)으로 둠.
+     767px 에서는 태블릿 768px 과 같은 크기가 되어 경계에서 튀지 않음 */
+  .hero_visual .hero_shape {
+    left: min(0px, calc(-2.6375rem + 5.5vw));
+    right: auto;
+    top: 50%;
+    width: calc(clamp(21.73rem, calc(14.34rem + 28.64vw), 28.07rem) * 1.5057);
+    transform: translateY(clamp(-186.9px, calc(-2.12rem - 19.94vw), -116.3px));
   }
 
   /* ----- best ----- */
@@ -3425,7 +3609,8 @@ section[id] {
      위아래 여백은 기본 2.5rem(40px)에서 50px 씩 더 벌린 값(90px).
      늘린 만큼은 --pairing-chrome 에도 더해 두어 카드가 그만큼 줄고 한 화면이 유지됨 */
   .pairing {
-    min-height: auto;
+    /* 한 화면(+ 윗변 아치 2rem)은 항상 어두운 배경이 채우게 함. 남는 높이는 가운데 정렬로 위아래 여백이 됨 */
+    min-height: calc(100vh + 2rem);
     padding: 5.625rem var(--pairing-gutter);
   }
 
@@ -3435,6 +3620,11 @@ section[id] {
      윗변의 완만한 아치와 그림자는 섹션 생김새라 그대로 둠 */
   .pairing--history-overlay {
     margin-top: 0;
+  }
+
+  /* 아치 양끝 모서리 뒤로 body 의 흰 배경이 비치지 않게, 뒤를 앞 섹션 아래끝 색(상아색)으로 채움 */
+  .scroll_stack {
+    background: var(--makgeolli_light3);
   }
 
   /* 열 폭은 --pairing-card-w 를 쓰되, % 로 한 번 더 눌러 둠.
@@ -3483,7 +3673,7 @@ section[id] {
   .pairing_swap {
     gap: 0.375rem;
     min-height: 2.5rem;
-    padding: 0.375rem 0.75rem;
+    padding: 0.375rem 1.25rem;
     font-size: clamp(0.8125rem, calc(0.62rem + 0.98vw), 1.0625rem);
   }
 
