@@ -366,6 +366,8 @@
         flipbook.start(target);
         /* 애니메이션을 다시 태우려면 클래스가 한 번 빠졌다 붙어야 해서 순서상 여기서 초기화 */
         window.scrollTo(0, 0);
+        /* 좁은 화면에서는 결과 화면이 안에서 스크롤되므로, 다시 들어올 때 맨 위에서 시작하게 함 */
+        target.scrollTop = 0;
         updateHud(target);
 
         if (id === START) intro.play();

@@ -515,9 +515,15 @@ body {
     /* 왼쪽 글과 오른쪽 할머니가 같이 쓰는 좌우 여백 */
     --intro-gutter: 180px;
 
-    /* 투명 여백을 보정해 보이는 캐릭터의 오른쪽 끝을 여백선에 맞춤 */
-    --walker-shift: calc(50vw - var(--intro-gutter) - var(--walker-size) * 0.255);
-    /* 현재 보이는 오른쪽 자리에서 출발해 왼쪽으로 200px 이동 */
+    /* 할머니가 다 걸어와 서는 자리를 오른쪽 여백선에서 얼마나 안쪽으로 들일지.
+       1440px 이상에서는 200px 이고, 창이 좁아지면 같이 줄어듦
+       (고정 200px 이면 1025~1439px 창에서 할머니와 말풍선이 왼쪽 글 위에 얹힘) */
+    --walker-inset: clamp(0px, calc(41vw - 390px), 200px);
+
+    /* 투명 여백을 보정해 보이는 캐릭터의 오른쪽 끝을 여백선에 맞추고,
+       거기서 걷는 거리만큼 오른쪽으로 물러난 자리를 출발점으로 삼음 */
+    --walker-shift: calc(50vw - var(--intro-gutter) - var(--walker-size) * 0.255 + var(--walker-travel) - var(--walker-inset));
+    /* 출발점에서 왼쪽으로 200px 이동 */
     --walker-start: calc(-50% + var(--walker-shift));
     --walker-end: calc(var(--walker-start) - var(--walker-travel));
 
@@ -901,9 +907,10 @@ body {
    .screen_pick 은 인물 그림(.picks), .stage 를 가진 화면은 술 그림(Q3)이 있어 제외.
    margin 대신 transform 을 쓰는 건, 이 화면이 세로 가운데 정렬이라
    margin 을 주면 묶음 전체가 다시 가운데로 맞춰지면서 질문 글까지 같이 올라가기 때문.
-   transform 은 자리 계산에 끼어들지 않아 질문은 그대로 두고 버튼만 정확히 150px 내려감 */
+   transform 은 자리 계산에 끼어들지 않아 질문은 그대로 두고 버튼만 정확히 150px 내려감.
+   창이 낮으면(900px 미만) 높이에 비례해 덜 내림. 고정값이면 낮은 노트북 화면에서 버튼이 아래로 잘림 */
 .screen_question:not(.screen_pick):not(:has(.stage)) .choices {
-    transform: translateY(150px);
+    transform: translateY(min(150px, calc(18.9vh - 20px)));
 }
 
 .choice {
@@ -1001,13 +1008,19 @@ body {
 }
 
 /* 두 무리를 바깥쪽으로 벌려 가운데를 비워 둠.
-   transform 대신 translate 를 쓴 건 hover 때 .choice 가 쓰는 transform 과 안 겹치게 하기 위함 */
+   transform 대신 translate 를 쓴 건 hover 때 .choice 가 쓰는 transform 과 안 겹치게 하기 위함.
+   벌리는 폭은 1436px 이상에서 200px 이고, 창이 좁아지면 같이 줄어 880px 에서 0 이 됨
+   (고정 200px 이면 좁은 창에서 인물과 답 상자가 화면 밖으로 잘려 나감) */
+.picks {
+    --pick-spread: clamp(0px, calc((100vw - 880px) * 0.36), 200px);
+}
+
 .picks>.pick:first-child {
-    translate: -200px 0;
+    translate: calc(-1 * var(--pick-spread)) 0;
 }
 
 .picks>.pick:last-child {
-    translate: 200px 0;
+    translate: var(--pick-spread) 0;
 }
 
 /* ---------- 배경 일러스트가 깔린 화면 ---------- */
@@ -1072,7 +1085,7 @@ body {
 /* Q2 동행 선택 박스만 기본 위치보다 60px 아래로 배치 */
 #q2_yangban .choices,
 #q2_pyeongmin .choices {
-    translate: 0 140px;
+    translate: 0 min(140px, calc(17.6vh - 18px));
 }
 
 /* 평민 갈래는 주막 마당. 평민 질문 화면에서 같은 배경을 씀. */
@@ -1235,13 +1248,59 @@ body {
     }
 }
 
+/* 모바일에서만: 버튼은 질문 띠 바로 밑(10px)으로 올리고, 미리보기 그림은 버튼 묶음 아래에 띄움.
+   PC 처럼 버튼 위에 띄우면 세로로 쌓인 버튼 위쪽에 자리가 없어 그림이 질문 글을 덮음 */
 @media (max-width: 767px) {
-    #q4_yangban .food_preview,
-    #q4_pyeongmin .food_preview {
-        width: min(78vw, 360px);
+    #q4_yangban,
+    #q4_pyeongmin {
+        justify-content: flex-start;
+        padding-top: calc(var(--top-shade) + 10px);
     }
 
-    /* 세로로 쌓이는 Whiskey / Wine 버튼의 가운데에 와인잔을 맞춤 */
+    /* 그림의 기준을 각 버튼에서 버튼 묶음(.choices)으로 옮겨야
+       어느 버튼의 그림이든 묶음 전체의 아래쪽 같은 자리에 뜸 */
+    #q4_yangban .choice,
+    #q4_pyeongmin .choice {
+        position: static;
+    }
+
+    #q4_yangban .food_preview,
+    #q4_pyeongmin .food_preview {
+        top: calc(100% + 12px);
+        bottom: auto;
+        /* 낮은 화면에서도 버튼 아래 남는 높이 안에 들어오도록 높이로도 한 번 더 묶음 */
+        width: min(78vw, 360px, calc(100dvh - var(--top-shade) - 200px));
+        /* 작게 줄여 쓰는 그림(scale)도 버튼 바로 밑에 붙도록 위쪽을 기준으로 줄임 */
+        transform-origin: center top;
+    }
+
+    /* 버튼이 hover 때 살짝 떠오르면(transform) 그 버튼이 그림의 기준이 되어 버려서,
+       첫 버튼의 그림이 묶음 아래가 아니라 둘째 버튼 위에 얹힘. 이 화면에서는 떠오르지 않게 둠 */
+    #q4_yangban .choice:hover,
+    #q4_yangban .choice:focus-visible,
+    #q4_pyeongmin .choice:hover,
+    #q4_pyeongmin .choice:focus-visible {
+        transform: none;
+    }
+
+    /* 같은 자리에 번갈아 뜨는 두 그림의 크기를 맞춤.
+       PC 는 버튼마다 그림 자리가 달라 크기를 다르게 쓰지만(100% / 66~70%), 여기서는 모두 70% */
+    #q4_yangban .choice[data-set] .food_preview,
+    #q4_pyeongmin .choice[data-set] .food_preview {
+        transform: translate(-50%, 16px) scale(0.672);
+    }
+
+    #q4_yangban .choice[data-set]:focus-visible .food_preview,
+    #q4_pyeongmin .choice[data-set]:focus-visible .food_preview {
+        transform: translate(-50%, 0) scale(0.7);
+    }
+
+    @media (hover: hover) {
+        #q4_yangban .choice[data-set]:hover .food_preview,
+        #q4_pyeongmin .choice[data-set]:hover .food_preview {
+            transform: translate(-50%, 0) scale(0.7);
+        }
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1355,23 +1414,12 @@ body {
 }
 
 @media (max-width: 767px) {
-    /* 세로로 쌓이는 버튼 아래에서는 두 잔을 화면 중앙에 배치 */
-    #q3_yangban .stage,
-    #q3_pyeongmin .stage {
-        margin-left: 0;
-    }
-
-    #q3_yangban .drink_wine,
-    #q3_pyeongmin .drink_wine {
-        --x: 50%;
-        margin-left: 0;
-    }
-
-    #q3_yangban .drink_cocktail,
-    #q3_pyeongmin .drink_cocktail {
-        --x: 50%;
-        --w: 11.52%;
-        margin-left: 0;
+    /* 세로 화면에서도 배경은 높이에 맞춰 채워지므로 술 세 잔은 PC 와 같은 자리(탁자 위)에 그대로 놓임.
+       버튼만 세로로 쌓이는데, 가운데에 두면 낮은 화면에서 술과 겹쳐서 질문 띠 바로 아래로 올림 */
+    #q3_yangban,
+    #q3_pyeongmin {
+        justify-content: flex-start;
+        padding-top: calc(var(--top-shade) + 24px);
     }
 }
 
@@ -1426,6 +1474,13 @@ body {
    그래서 판 밖에 있는 글자(유형 이름·다시 하기)는 어두운 색으로 뒤집어 둠 */
 .screen_result {
     background: var(--makgeolli_White, #FFF);
+    /* 창이 낮아 카드가 다 안 들어가면 이 화면 안에서 세로로 스크롤됨.
+       가운데 정렬은 카드의 margin auto 가 맡음 (justify-content 로 가운데 두면
+       넘칠 때 윗부분이 잘려 스크롤로도 못 올라감).
+       위아래 여백은 낮은 창에서 줄여, 웬만한 노트북 높이에서는 스크롤 없이 한 화면에 들어오게 함 */
+    justify-content: flex-start;
+    overflow-y: auto;
+    padding-block: min(80px, 4vh);
 }
 
 /* 결과 6개가 모두 같은 틀을 씀.
@@ -1437,6 +1492,7 @@ body {
     align-items: flex-end;
     gap: clamp(24px, 4vw, 72px);
     width: min(1400px, 100%);
+    margin-block: auto;
     text-align: left;
 }
 
@@ -1616,7 +1672,7 @@ body {
 }
 
 /* margin-top:auto 로 칸 바닥에 붙이고, 그래도 앞 글과 붙지 않게 padding 으로 사이를 벌림 */
-/* 태그 셋은 줄을 바꾸지 않고 한 줄에 나란히 둠 */
+/* 태그 셋은 줄을 바꾸지 않고 한 줄에 나란히 둠 (좁은 창에서는 아래 반응형에서 줄바꿈을 풂) */
 .result_tags {
     display: flex;
     flex-wrap: nowrap;
@@ -1817,6 +1873,15 @@ body {
 
 /* ===================== 반응형 ===================== */
 
+/* 작은 노트북부터: 상세 판 왼쪽 칸이 좁아 태그 셋이 한 줄에 안 들어가므로 다음 줄로 넘김
+   (안 넘기면 옆 칸의 VIEW MORE 위로 삐져나감) */
+@media (max-width: 1200px) {
+    .result_tags {
+        flex-wrap: wrap;
+        gap: 8px 20px;
+    }
+}
+
 /* 태블릿 */
 @media (max-width: 1024px) {
     .screen {
@@ -1824,12 +1889,14 @@ body {
         padding: 72px 32px;
     }
 
-    /* 할머니 기준 여백은 유지하고, 인트로 글 묶음만 별도로 들여씀 */
+    /* 왼쪽 글 묶음과 오른쪽 할머니가 화면 양끝에서 같은 여백을 두고 마주 봄.
+       여백은 768px 에서 56px, 1024px 에서 152px 이고 그 사이는 폭에 비례함.
+       이렇게 잡으면 글 묶음(20rem)과 말풍선 사이가 어느 폭에서든 40px 넘게 떨어져 서로 겹치지 않음 */
     .screen_intro {
-        --intro-gutter: var(--gutter-x);
+        --intro-gutter: clamp(56px, calc(37.5vw - 232px), 152px);
+        /* 할머니는 여백선에 딱 붙여 세움 (출발점은 그만큼 오른쪽 화면 밖) */
+        --walker-inset: 0px;
         padding: 8.75rem 0 5.5rem var(--intro-gutter);
-        /* 제목·본문·버튼 묶음만 240px에서 시작하고, 할머니 위치는 유지 */
-        padding-left: 240px;
     }
 
     .intro_title {
@@ -1860,12 +1927,89 @@ body {
         letter-spacing: var(--PC-Heading1_24R-letter-spacing);
     }
 
+    /* Q2: 화면이 좁거나 세로로 길면 동행 미리보기 인물이 버튼 자리까지 올라와 버튼에 가려짐.
+       그래서 버튼을 아래로 내리지 않고 질문 띠 바로 밑(10px)에 붙임 */
+    #q2_yangban,
+    #q2_pyeongmin {
+        justify-content: flex-start;
+        padding-top: calc(var(--top-shade) + 10px);
+    }
+
+    #q2_yangban .choices,
+    #q2_pyeongmin .choices {
+        translate: none;
+        transform: none;
+    }
+
+    /* BACK / SKIP 을 화면 좌우 여백(32px)과 같은 줄에 세움 */
+    .btn_back {
+        left: 32px;
+    }
+
+    .btn_skip {
+        right: 32px;
+    }
+
+    /* ---------- 결과 ---------- */
+
+    /* 좌우 두 칸으로는 상세 판이 너무 좁아져서 위아래로 다시 짬.
+       윗줄: 인물 | 유형 이름 · 버튼 · 다시 하기 / 아랫줄: 상세 판(폭 전체) */
+
+    /* 인물·버튼 묶음(.result_side)과 이름·판 묶음(.result_main)의 껍데기를 풀어
+       안쪽 요소들을 카드 격자에 바로 올림 */
+    .result_side,
+    .result_main {
+        display: contents;
+    }
+
     .result_card {
-        padding: 36px;
+        display: grid;
+        grid-template-columns: clamp(200px, 30vw, 280px) minmax(0, 1fr);
+        /* 위아래 1fr 두 줄이 남는 높이를 나눠 가져 이름·버튼 묶음이 인물 옆 세로 가운데에 놓임 */
+        grid-template-rows: 1fr auto auto 1fr auto;
+        grid-template-areas:
+            "char label"
+            "char title"
+            "char actions"
+            "char restart"
+            "panel panel";
+        column-gap: clamp(24px, 4vw, 48px);
+        row-gap: 0;
+        align-items: start;
+    }
+
+    .result_char {
+        grid-area: char;
+    }
+
+    .result_label {
+        grid-area: label;
+        align-self: end;
     }
 
     .result_title {
+        grid-area: title;
         font-size: 36px;
+    }
+
+    .result_actions {
+        grid-area: actions;
+        margin-top: 20px;
+    }
+
+    .btn_restart {
+        grid-area: restart;
+        justify-self: start;
+        margin-top: 16px;
+    }
+
+    .result_panel {
+        grid-area: panel;
+    }
+
+    /* 스크롤하면 내용이 BACK 밑으로 지나가므로 버튼에 바탕을 깔아 글자가 겹쳐 보이지 않게 함 */
+    .test:has(.screen_result.is_on) .btn_back {
+        background: rgba(255, 255, 255, 0.92);
     }
 }
 
@@ -1930,6 +2074,24 @@ body {
         display: none;
     }
 
+    /* 말풍선: PC 처럼 머리 왼쪽에 두면 좁은 화면에서는 설명 글 위에 얹힘.
+       그래서 글이 없는 오른쪽 위(할머니 머리 위)로 올리고 오른쪽 여백선에 붙임.
+       폭은 꼬리 끝이 머리 왼쪽 위에 닿는 값이고, 꼬리가 머리를 향하도록 테두리만 좌우로 뒤집음
+       (글자는 뒤집히면 안 되므로 svg 전체가 아니라 path 만 뒤집음) */
+    .intro_bubble {
+        left: auto;
+        right: var(--intro-gutter);
+        bottom: calc(var(--walker-bottom, 0px) + var(--walker-size) * 0.81);
+        width: calc(var(--walker-size) * 0.34 + var(--walker-travel) * 1.1);
+        transform: none;
+    }
+
+    .intro_bubble path {
+        transform: scaleX(-1);
+        transform-box: fill-box;
+        transform-origin: center;
+    }
+
     .question {
         font-size: 20px;
     }
@@ -1962,8 +2124,11 @@ body {
         translate: none;
     }
 
+    /* 두 칸의 높이를 같게 맞춰 두면(stretch) 답 상자가 남는 높이를 채워
+       한쪽 글만 두 줄이 되어도 인물 두 명이 같은 높이에 섬 */
     .picks {
         gap: 12px;
+        align-items: stretch;
     }
 
     .pick {
@@ -1984,6 +2149,7 @@ body {
     /* 두 답의 글줄 수가 달라도(한쪽만 두 줄) 인물 두 명이 같은 높이에 서게 두 줄 자리를 미리 잡아 둠 */
     .pick .choice {
         display: flex;
+        flex: 1 1 auto;
         align-items: center;
         justify-content: center;
         min-height: 4.1em;
@@ -2010,11 +2176,51 @@ body {
         right: auto;
     }
 
+    /* ---------- 결과 ---------- */
+
+    /* 한 줄로 세움: 유형 이름 -> 인물 -> 상세 판 -> 버튼 -> 다시 하기 */
     .result_card {
-        padding: 28px 20px;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: none;
+        grid-template-areas:
+            "label"
+            "title"
+            "char"
+            "panel"
+            "actions"
+            "restart";
+        justify-items: center;
+        text-align: center;
+    }
+
+    .result_label {
+        align-self: auto;
     }
 
     .result_title {
         font-size: 28px;
+    }
+
+    .result_char {
+        width: min(68%, 260px);
+        margin-top: 8px;
+    }
+
+    /* 상세 판도 두 칸을 위아래로 쌓음. 판 안의 글은 왼쪽 정렬 그대로 */
+    .result_panel {
+        justify-self: stretch;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 36px;
+        margin-top: 16px;
+        padding: 24px 20px;
+        text-align: left;
+    }
+
+    .result_actions {
+        margin-top: 28px;
+    }
+
+    .btn_restart {
+        justify-self: center;
     }
 }
