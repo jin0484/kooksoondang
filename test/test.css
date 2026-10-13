@@ -37,7 +37,7 @@ body {
     --wipe-cover: 470ms;
     --wipe-reveal: 470ms;
     --wipe-ease: cubic-bezier(0.65, 0, 0.35, 1);
-    /* 결과로 넘어갈 때 쓰는 차오르는 전환. 결과 발표라 다른 쓸기보다 조금 느리게 잡음.
+    /* Q2 부터 결과까지 쓰는 차오르는 전환. 물결이 보이도록 좌우 쓸기보다 조금 느리게 잡음.
        물결 한 굽이의 높이 / 폭도 여기서 정함 */
     --pour-cover: 800ms;
     --pour-reveal: 700ms;
@@ -169,8 +169,8 @@ body {
     animation: wipe_out_top var(--wipe-reveal) var(--wipe-ease) both;
 }
 
-/* pour = 잔에 술이 차오르듯 아래에서 물결치며 올라와 덮고, 그대로 위로 빠져나감 (Q4 -> 결과).
-   drain = 그 반대. 결과에서 BACK 으로 돌아갈 때 위에서 내려와 아래로 빠짐.
+/* pour = 잔에 술이 차오르듯 아래에서 물결치며 올라와 덮고, 그대로 위로 빠져나감 (Q2 ~ 결과).
+   drain = 그 반대. BACK 으로 돌아갈 때 위에서 내려와 아래로 빠짐.
    다른 쓸기보다 느리게 돌도록 이 전환 동안만 시간을 바꿔 끼움 (test.js 도 이 값을 읽어 감) */
 .test[data-wipe-dir="pour"],
 .test[data-wipe-dir="drain"] {
