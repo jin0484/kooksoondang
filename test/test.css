@@ -514,15 +514,13 @@ body {
 
     /* 왼쪽 글과 오른쪽 할머니가 같이 쓰는 좌우 여백 */
     --intro-gutter: 180px;
-
-    /* 할머니가 다 걸어와 서는 자리를 오른쪽 여백선에서 얼마나 안쪽으로 들일지.
-       1440px 이상에서는 200px 이고, 창이 좁아지면 같이 줄어듦
-       (고정 200px 이면 1025~1439px 창에서 할머니와 말풍선이 왼쪽 글 위에 얹힘) */
-    --walker-inset: clamp(0px, calc(41vw - 390px), 200px);
+    /* 왼쪽 글 묶음 폭. 말풍선이 이 글에 닿지 않게 크기를 잴 때도 씀 */
+    --intro-text-w: 27.125rem;
 
     /* 투명 여백을 보정해 보이는 캐릭터의 오른쪽 끝을 여백선에 맞추고,
-       거기서 걷는 거리만큼 오른쪽으로 물러난 자리를 출발점으로 삼음 */
-    --walker-shift: calc(50vw - var(--intro-gutter) - var(--walker-size) * 0.255 + var(--walker-travel) - var(--walker-inset));
+       거기서 걷는 거리만큼 오른쪽으로 물러난 자리를 출발점으로 삼음.
+       다 걸어온 할머니·말풍선 묶음의 오른쪽 여백이 왼쪽 글의 여백(--intro-gutter)과 같아짐 */
+    --walker-shift: calc(50vw - var(--intro-gutter) - var(--walker-size) * 0.255 + var(--walker-travel));
     /* 출발점에서 왼쪽으로 200px 이동 */
     --walker-start: calc(-50% + var(--walker-shift));
     --walker-end: calc(var(--walker-start) - var(--walker-travel));
@@ -544,7 +542,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    width: min(100%, 27.125rem);
+    width: min(100%, var(--intro-text-w));
     flex-shrink: 0;
 }
 
@@ -601,16 +599,22 @@ body {
    할머니 폭(--walker-size)의 비율만큼 왼쪽·위로 밀어 머리 옆에 붙인다.
    창 크기가 바뀌어도 할머니와 같은 비율로 따라감 */
 .intro_bubble {
+    /* 꼬리 끝(그림 가로 89% 자리)과 왼쪽 글 묶음 사이에 40px 을 남기고 쓸 수 있는 폭.
+       할머니 폭의 0.79배까지 키우되, 자리가 모자란 창에서는 그만큼 줄임(0.62배 아래로는 안 줄임) */
+    --bubble-room: calc(100vw - var(--intro-gutter) * 2 - var(--intro-text-w) - var(--walker-size) * 0.563 - 40px);
+    --bubble-width: clamp(var(--walker-size) * 0.62, var(--bubble-room) / 0.89, var(--walker-size) * 0.79);
+
     position: absolute;
     left: 50%;
     bottom: calc(var(--walker-bottom, 0px) + var(--walker-size) * 0.652);
     z-index: 2;
-    width: calc(var(--walker-size) * 0.62);
+    width: var(--bubble-width);
     height: auto;
     overflow: visible;
     pointer-events: none;
+    /* 크기가 바뀌어도 꼬리 끝은 할머니 머리 옆 같은 자리에 머물고, 풍선은 위·왼쪽으로 커짐 */
     transform:
-        translateX(calc(var(--walker-end) - var(--walker-size) * 0.55));
+        translateX(calc(var(--walker-end) - var(--walker-size) * 0.308 - var(--bubble-width) * 0.39));
 }
 
 /* 대기 상태에서는 획이 지워진 채로 있다가 js 가 재생 클래스를 붙이면 그려짐 */
@@ -1936,8 +1940,7 @@ body {
        이렇게 잡으면 글 묶음(20rem)과 말풍선 사이가 어느 폭에서든 40px 넘게 떨어져 서로 겹치지 않음 */
     .screen_intro {
         --intro-gutter: clamp(56px, calc(37.5vw - 232px), 152px);
-        /* 할머니는 여백선에 딱 붙여 세움 (출발점은 그만큼 오른쪽 화면 밖) */
-        --walker-inset: 0px;
+        --intro-text-w: 20rem;
         padding: 8.75rem 0 5.5rem var(--intro-gutter);
     }
 
@@ -1947,7 +1950,7 @@ body {
     }
 
     .intro_text {
-        width: 20rem;
+        width: var(--intro-text-w);
     }
 
     .intro_title .line {
