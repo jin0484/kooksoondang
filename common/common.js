@@ -271,9 +271,31 @@
     const revealPoint = 400;
     let scrollFrame = 0;
 
+    // 푸터 파도 위까지만 내려오게 함. 푸터 윗선에서 이만큼(화면 폭의 5.75%, 2000px 에서 약 115px) 위가 한계선.
+    // 파도 이미지는 폭에 비례해 커지므로 한계선도 폭에 비례시킴
+    const footer = document.querySelector('.site_footer');
+    const footerClearance = 0.0575;
+
+    function updateLift() {
+        if (!footer) return;
+
+        const root = document.documentElement;
+        const currentLift = parseFloat(topButton.style.getPropertyValue('--top-button-lift')) || 0;
+        const buttonHeight = topButton.offsetHeight;
+        // 올림이 없을 때 버튼 아랫변의 화면상 y 좌표
+        const restingBottom = window.innerHeight - (parseFloat(window.getComputedStyle(topButton).bottom) - currentLift);
+        const limit = footer.getBoundingClientRect().top - window.innerWidth * footerClearance;
+        const lift = Math.max(0, restingBottom - limit);
+
+        // 아래 변이 한계선에 닿기까지만 올림. 버튼이 화면 위로 밀려 나갈 만큼 올릴 필요는 없음
+        topButton.style.setProperty('--top-button-lift', `${Math.min(lift, window.innerHeight - buttonHeight)}px`);
+        void root;
+    }
+
     function updateTopButton() {
         scrollFrame = 0;
         topButton.classList.toggle('is_visible', window.scrollY > revealPoint);
+        updateLift();
     }
 
     // 스크롤마다 계산하지 않고 한 프레임에 한 번만
@@ -293,6 +315,7 @@
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll);
     topButton.addEventListener('click', handleTopClick);
 
     updateTopButton();

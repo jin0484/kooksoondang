@@ -1823,6 +1823,7 @@
         '--event-cup-y',
         '--event-cup-x',
         '--event-bottle-color',
+        '--event-bottle-fill',
         '--event-line-progress'
     ];
 
@@ -1908,6 +1909,8 @@
                 ? 'var(--kooksoondang_orange)'
                 : 'var(--makgeolli_light1)'
         );
+        // 병이 물들어 차오르는 정도(0 비어 있음 / 1 가득). 값이 바뀌면 css 전환이 수면을 올림
+        slide.element.style.setProperty('--event-bottle-fill', cupProgress >= cupStopProgress ? '1' : '0');
         slide.element.style.setProperty('--event-line-progress', journeyProgress.toFixed(3));
 
         slide.characters.forEach((character, characterIndex) => {
