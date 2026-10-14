@@ -1438,3 +1438,19 @@ html.lenis body {
         transition: none !important;
     }
 }
+
+/* ---------- 햄버거 서랍: 좁은 폭에서 일러스트가 메뉴 글자와 겹치지 않게 ---------- */
+/* 오른쪽 아래에 띄워 둔 술병 일러스트(179px)는 폭이 576px 아래로 내려가면 EVENT/PROMOTION 줄과 겹침.
+   그 폭부터는 띄우지 않고 메뉴 목록 아래, 오른쪽 끝에 놓아 서랍이 그만큼 길어지게 함 */
+
+@media (max-width: 36rem) {
+    .nav_drawer_panel {
+        padding-bottom: 1.25rem;
+    }
+
+    .nav_drawer_illust {
+        position: static;
+        align-self: flex-end;
+        margin-top: 1.25rem;
+    }
+}

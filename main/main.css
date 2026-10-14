@@ -2015,6 +2015,8 @@ section[id] {
   /* 34rem + 100px. 점수 줄("Pairing Score: 50 /100")이 한 줄에 들어가도록 넓힘 */
   width: min(100%, 40.25rem);
   padding: clamp(2rem, 5vw, 3.5rem);
+  /* 오른쪽 위 닫기 버튼(0.85rem + 2.25rem)이 카드 위로 올라오지 않도록 위쪽은 항상 그 아래까지 비움 */
+  padding-top: 3.75rem;
   border-radius: 1.5rem;
   background: var(--makgeolli_White);
   box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.3);
@@ -3698,7 +3700,7 @@ section[id] {
      지정 폭(width)보다 내용 최소폭이 우선한다. 그래서 두 장이 안 들어가면
      대화상자가 통째로 화면 밖으로 밀려남. 여백과 배율을 줄여 360px 에서도 들어오게 맞춤 */
   .pairing_result_dialog {
-    padding: 1.5rem;
+    padding: 3.75rem 1.5rem 1.5rem;
   }
 
   .pairing_result_cards {

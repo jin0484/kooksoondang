@@ -1413,7 +1413,8 @@
 
         resultCards.replaceChildren();
 
-        [selectedCards.drink, selectedCards.food].forEach((card) => {
+        // 게임 화면과 같은 순서(음식 왼쪽, 음료 오른쪽)로 놓음
+        [selectedCards.food, selectedCards.drink].forEach((card) => {
             if (!card) return;
 
             const clone = card.cloneNode(true);
