@@ -83,8 +83,15 @@
   height: 100svh;
   min-height: 100svh;
 
+  /*
+   * PC 히어로는 화면 높이(100svh) 안에 피그마 구도가 그대로 들어가도록
+   * 위치·크기를 화면 높이 비율로 잡음.
+   * 기준: 피그마 1920 × 1184 (헤더 100 + curation 1084)
+   * 제목 윗선 = 144 / 1184 ≒ 12.2svh (헤더와 겹치지 않게 최소 5.75rem)
+   * + 2.5rem 은 아래 제목의 margin-top: -40px 를 상쇄하는 값
+   */
   padding-block:
-    clamp(7rem, 11vw, 11.5rem) 0;
+    calc(max(5.75rem, 12.2svh) + 2.5rem) 0;
 
   overflow: hidden;
 
@@ -133,7 +140,8 @@
 .products_hero_title {
   font: var(--PC-Banner_96B);
 
-  font-size: 96px;
+  /* 1080px 이상 높이에서는 96px, 화면이 낮으면 같이 줄어듦 */
+  font-size: min(96px, 8.9svh);
 
   /* 위로 40px */
   margin-top: -40px;
@@ -180,13 +188,14 @@
   position: absolute;
 
   left: 50%;
-  top: 70%;
+  /* 피그마 중심 751 / 1184 */
+  top: 63.5%;
 
   /* Keep the splash centered independently of GSAP scale transforms. */
   translate: -50% -50%;
 
-  width:
-    clamp(31.2rem, 54vw, 64.8rem);
+  /* 피그마 폭 1225 / 1184 → 화면 높이 기준 */
+  width: 103.5svh;
 
   height: auto;
 
@@ -235,13 +244,14 @@
 
 .hero_bottle_center {
   left: 50%;
-  /* 아래로 200px 내렸다가 다시 100px 올림 */
-  top: calc(71% + 100px);
+  /* 피그마 중심 870 / 1184. 아랫부분이 살짝 잘리는 것까지 시안과 같음 */
+  top: 73.5%;
 
   /* GSAP animates transform; layout centering stays on the individual translate. */
   translate: -50% -50%;
 
-  height: 69.6%;
+  /* 피그마 743 / 1184 */
+  height: 62.8%;
 
   z-index: 4;
 
@@ -251,11 +261,11 @@
 
 /* 왼쪽 위 Rice */
 .hero_bottle_rice {
-  /* 왼쪽 아래 대각선으로 200px (한 축당 200 / √2 ≒ 141px) */
-  left: calc(11.5% - 141px);
-  top: calc(38% + 141px);
+  /* 피그마 중심 (123, 485) / 1920 × 1184 */
+  left: 6.4%;
+  top: 41%;
 
-  height: 46.8%;
+  height: 40.9%;
 
   /* 시안 기울기 -46.41° (시계 방향) */
   transform:
@@ -267,11 +277,11 @@
 /* 왼쪽 아래 Draft */
 
 .hero_bottle_draft {
-  /* 오른쪽 아래 대각선 141px 에서 다시 왼쪽 50px / 위 100px / 아래 50px */
-  left: calc(9.2% + 91px);
-  top: calc(80% + 91px);
+  /* 피그마 중심 (183, 979) / 1920 × 1184 */
+  left: 9.5%;
+  top: 82.7%;
 
-  height: 52.8%;
+  height: 49.4%;
 
   /* 시안 기울기 -20.98° (시계 방향) */
   transform:
@@ -283,11 +293,11 @@
 /* 오른쪽 위 1000 */
 
 .hero_bottle_prebiotics {
+  /* 피그마 중심 (1679, 380) / 1920 × 1184 */
   left: 87.4%;
-  /* 아래로 20px */
-  top: calc(33% + 20px);
+  top: 32.1%;
 
-  height: 41.58%;
+  height: 37.5%;
 
   transform:
     translate(-50%, -50%)
@@ -298,15 +308,66 @@
 /* 오른쪽 아래 Strawberry */
 
 .hero_bottle_strawberry {
-  left: 92.6%;
-  /* 아래로 80px */
-  top: calc(81% + 80px);
+  /* 피그마 중심 (1787, 992) / 1920 × 1184 */
+  left: 93.1%;
+  top: 83.8%;
 
-  height: 50.4%;
+  height: 45.1%;
 
   transform:
     translate(-50%, -50%)
     rotate(-33deg);
+}
+
+
+/* =========================================================
+   HERO - PC 피그마 시안 맞춤 (1025px 이상)
+
+   태블릿 / 모바일은 아래 각자의 블록에서 따로 정하므로
+   PC 에서만 적용되도록 묶어 둠
+========================================================= */
+
+@media (min-width: 1025px) {
+
+  /* 피그마 curation 배경: 투명 → #C7B7AC (헤더 높이 100 / 1184 지점부터) */
+  .products_hero {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(250, 248, 247, 0) 8.4%,
+        #c7b7ac 100%
+      ),
+      #ffffff;
+  }
+
+
+  /* 피그마 제목 색 #272625 */
+  .products_hero_title {
+    color: var(--bekseju_darker_warm);
+  }
+
+
+  /* 피그마 시안에는 병 그림자가 없음 */
+  .hero_bottle {
+    filter: none;
+  }
+
+
+  /* 피그마 기울기 19.28° */
+  .hero_bottle_prebiotics {
+    transform:
+      translate(-50%, -50%)
+      rotate(19.28deg);
+  }
+
+
+  /* 피그마 기울기 -25.38° */
+  .hero_bottle_strawberry {
+    transform:
+      translate(-50%, -50%)
+      rotate(-25.38deg);
+  }
+
 }
 
 

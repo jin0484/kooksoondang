@@ -2127,6 +2127,12 @@
     }
 
 
+    /*
+     * 옆 병 4개는 CSS 에서 translate(-50%, -50%) 로 가운데를 맞춤.
+     * GSAP 이 이 -50% 를 직접 알아내게 두면 병 높이가 소수점일 때
+     * 못 알아보고 지워서, 화면 크기에 따라 병이 반 칸 어긋났음.
+     * 그래서 xPercent / yPercent 를 직접 알려 줌
+     */
     /* Rice */
 
     if (!isMobileHero && rice) {
@@ -2135,12 +2141,16 @@
             rice,
 
             {
+                xPercent: -50,
+                yPercent: -50,
                 x: -320,
                 y: -80,
                 opacity: 0
             },
 
             {
+                xPercent: -50,
+                yPercent: -50,
                 x: 0,
                 y: 0,
                 opacity: 1,
@@ -2162,12 +2172,16 @@
             prebiotics,
 
             {
+                xPercent: -50,
+                yPercent: -50,
                 x: 300,
                 y: -130,
                 opacity: 0
             },
 
             {
+                xPercent: -50,
+                yPercent: -50,
                 x: 0,
                 y: 0,
                 opacity: 1,
@@ -2189,12 +2203,16 @@
             draft,
 
             {
+                xPercent: -50,
+                yPercent: -50,
                 x: -270,
                 y: 230,
                 opacity: 0
             },
 
             {
+                xPercent: -50,
+                yPercent: -50,
                 x: 0,
                 y: 0,
                 opacity: 1,
@@ -2216,12 +2234,16 @@
             strawberry,
 
             {
+                xPercent: -50,
+                yPercent: -50,
                 x: 270,
                 y: 230,
                 opacity: 0
             },
 
             {
+                xPercent: -50,
+                yPercent: -50,
                 x: 0,
                 y: 0,
                 opacity: 1,
@@ -2265,7 +2287,11 @@
 
 
 
-    /* 백세주 */
+    /*
+     * 백세주
+     * CSS translate: -50% -50% 를 GSAP 이 transform 으로 합치면서 같은 문제가 생겨
+     * (1536×864 같은 화면에서 병이 반 칸 아래로 내려앉음) 여기도 직접 알려 줌
+     */
 
     if (center && !isMobileHero) {
 
@@ -2273,11 +2299,17 @@
             center,
 
             {
+                xPercent: -50,
+                yPercent: -50,
+                x: 0,
                 y: 280,
                 opacity: 0
             },
 
             {
+                xPercent: -50,
+                yPercent: -50,
+                x: 0,
                 y: 0,
                 opacity: 1,
 
@@ -2422,11 +2454,16 @@
        막는 방식으로 따로 둠
     ========================================= */
 
-    /* 마지막에 백세주가 커지는 배율 */
+    /* 스크롤하면 백세주가 커지는 배율 */
     const BOTTLE_SCALE = 1.2;
 
-    /* 백세주가 커지는 시간(초) */
-    const BOTTLE_SCALE_TIME = 0.8;
+    /*
+     * 백세주가 커지는 데 쓰는 스크롤 거리 (화면 높이 대비)
+     * 0.2 = 화면 높이의 20% ≒ 마우스 휠 한두 번 (피그마 메모 기준)
+     * 이 구간 동안은 다음 콘텐츠가 올라오지 않고 화면이 멈춰 있음
+     * 더 천천히 커지게 하려면 숫자를 키우면 됨
+     */
+    const BOTTLE_ZOOM_SCROLL = 0.2;
 
     let gateReleased = false;
 
@@ -2525,30 +2562,11 @@
     }
 
 
-    /* Hero 등장 연출의 마지막 장면. 끝나면 잠금을 푼다 */
-    function playFinalBeat() {
-
-        if (!centerBottle) {
-            releaseGate();
-            return;
-        }
-
-        gsap.to(
-            centerBottle,
-
-            {
-                scale: BOTTLE_SCALE,
-
-                duration: BOTTLE_SCALE_TIME,
-
-                ease: 'power2.out',
-
-                onComplete: releaseGate
-            }
-        );
-    }
-
-
+    /*
+     * 등장 연출이 끝나면 잠금만 푼다.
+     * 백세주는 그대로 멈춰 있다가, 아래 스크롤 연출에서
+     * 스크롤한 만큼 커진다
+     */
     lockGate();
 
 
@@ -2561,12 +2579,12 @@
          * gsap 타임라인은 then 을 갖고 있어서
          * 다 재생되면 여기로 온다
          */
-        heroIntro.then(playFinalBeat);
+        heroIntro.then(releaseGate);
 
     } else {
 
-        /* 등장 연출이 없으면 바로 마지막 장면만 */
-        playFinalBeat();
+        /* 등장 연출이 없으면 바로 풀기 */
+        releaseGate();
     }
 
 
@@ -2579,17 +2597,49 @@
         window.setTimeout(
             releaseGate,
 
-            ((heroIntro ? heroIntro.duration() : 0) +
-                BOTTLE_SCALE_TIME + 2) * 1000
+            ((heroIntro ? heroIntro.duration() : 0) + 2) * 1000
         );
 
 
     /* =========================================
        잠금이 풀린 뒤의 스크롤 연출
 
-       Hero 를 고정한 채 다음 콘텐츠가
-       아래에서 올라와 덮음
+       1) 화면은 멈춘 채 백세주만 스크롤에 맞춰 1 → 1.2배
+       2) 그다음 Hero 를 고정한 채 다음 콘텐츠가
+          아래에서 올라와 덮음
     ========================================= */
+
+    /* 1) 구간에 쓰는 스크롤 거리(px) */
+    function zoomDistance() {
+        return window.innerHeight * BOTTLE_ZOOM_SCROLL;
+    }
+
+    /*
+     * 백세주가 커지는 동안 다음 콘텐츠가 올라오지 않게
+     * 콘텐츠를 그 거리만큼 아래로 띄워 둠.
+     * Hero 가 화면을 꽉 채울 때(PC)만 띄움.
+     * 태블릿처럼 Hero 가 화면보다 짧으면 콘텐츠가 처음부터 보이고 있어서
+     * 띄우면 빈 띠가 생기므로 0
+     */
+    function zoomGap() {
+        return hero.offsetHeight >= window.innerHeight - 1
+            ? zoomDistance()
+            : 0;
+    }
+
+    /* 화면 크기가 바뀌면 ScrollTrigger 가 다시 계산하기 직전에 같이 맞춤 */
+    function setZoomGap() {
+        contentLayer.style.marginTop =
+            zoomGap() + 'px';
+    }
+
+    setZoomGap();
+
+    ScrollTrigger.addEventListener(
+        'refreshInit',
+        setZoomGap
+    );
+
 
     const coverTl =
         gsap.timeline({
@@ -2600,8 +2650,13 @@
 
                 start: 'top top',
 
-                /* Hero 고정 시간. 길수록 천천히 진행 */
-                end: '+=150%',
+                /*
+                 * Hero 고정 시간. 길수록 천천히 진행
+                 * 백세주 확대 구간 + 기존 덮기 구간(화면 높이의 150%)
+                 */
+                end: () =>
+                    '+=' +
+                    (zoomGap() + window.innerHeight * 1.5),
 
                 scrub: true,
 
@@ -2624,8 +2679,42 @@
         });
 
 
+    /*
+     * 타임라인 길이 = 스크롤 거리 비율
+     * 0 ~ BOTTLE_ZOOM_SCROLL : 백세주 확대
+     * 그 뒤 1.5             : 덮기 (화면 높이의 150%)
+     */
+
     /* =========================================
-       덮이는 동안 Hero 만 살짝 어두워짐
+       1) 화면은 멈춘 채 백세주만 커짐
+          스크롤을 올리면 다시 작아짐
+    ========================================= */
+
+    if (centerBottle) {
+
+        coverTl.fromTo(
+            centerBottle,
+
+            {
+                scale: 1
+            },
+
+            {
+                scale: BOTTLE_SCALE,
+
+                ease: 'none',
+
+                duration: BOTTLE_ZOOM_SCROLL
+            },
+
+            0
+        );
+
+    }
+
+
+    /* =========================================
+       2) 덮이는 동안 Hero 만 살짝 어두워짐
     ========================================= */
 
     if (heroDim) {
@@ -2638,10 +2727,10 @@
 
                 ease: 'none',
 
-                duration: 1
+                duration: 1.5
             },
 
-            0
+            BOTTLE_ZOOM_SCROLL
         );
 
     }
