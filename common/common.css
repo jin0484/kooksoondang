@@ -926,18 +926,20 @@ html.lenis body {
 
     .site_footer_inner {
         flex-wrap: nowrap;
-        gap: 1.5rem;
+        gap: 1rem;
     }
 
     .footer_left {
-        flex: 1 1 auto;
+        flex: 1 1 0;
         max-width: none;
         gap: 1.5rem;
     }
 
     .footer_right {
-        flex: 0 1 auto;
-        min-width: 0;
+        /* 오른쪽은 폭을 고정(주소는 이 안에서 접힘). 왼쪽이 남는 폭을 받아야 좁은 화면에서 푸터가 옆으로 넘치지 않음.
+           Family Site 버튼 글자가 두 줄로 꺾이지 않을 만큼은 min-content 로 항상 확보 */
+        flex: 0 0 11.5rem;
+        min-width: min-content;
         max-width: none;
         gap: 1.5rem;
     }
@@ -962,9 +964,18 @@ html.lenis body {
     }
 
     /* 저작권은 두 줄: 회사명까지 / ALL RIGHTS RESERVED. 한 줄일 때만 쓰는 | 는 감춤 */
+    /* 두 줄이 기본이지만, 칸이 모자라면 줄 안에서 접히게 둠. nowrap 으로 두면 왼쪽 칸이 줄지 못해
+       화면 폭이 좁을 때 푸터가 옆으로 넘쳐 좌우 여백이 한쪽씩 사라졌음 */
     .footer_copy_line {
         display: block;
-        white-space: nowrap;
+    }
+
+    .footer_left {
+        min-width: 0;
+    }
+
+    .footer_logo img {
+        max-width: 100%;
     }
 
     .footer_copy_sep {
@@ -972,8 +983,9 @@ html.lenis body {
     }
 
     .family_site_button {
-        padding: 0.75rem 2rem;
+        padding: 0.75rem 1.25rem;
         font-size: 1.0625rem;
+        white-space: nowrap;
     }
 
     .footer_right address {
@@ -1046,7 +1058,8 @@ html.lenis body {
         left: 0;
         right: 0;
         width: auto;
-        padding: 6.25rem 2.5rem 2.5rem 6rem;
+        /* 왼쪽: 헤더 로고 시작점(여백 40 + 햄버거 32 + 간격 26 = 98px)에 메뉴 글자를 맞춤. li 안쪽 여백이 10px 이라 88px */
+        padding: 6.25rem 2.5rem 2.5rem 5.5rem;
         justify-content: flex-start;
         border-radius: 0 0 0.75rem 0.75rem;
         background: #fff;
