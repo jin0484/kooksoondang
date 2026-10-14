@@ -2491,7 +2491,8 @@ section[id] {
     "number title"
     ". list";
   grid-template-columns: max-content minmax(0, 1fr);
-  column-gap: 120px;
+  /* 번호와 제목 사이: 1920px 에서 시안의 120px, 창이 좁아지면 같이 줄어듦 */
+  column-gap: clamp(1.5rem, 6.25vw, 7.5rem);
   row-gap: clamp(1.75rem, 3vw, 3.5rem);
   align-content: center;
 }
@@ -2513,7 +2514,7 @@ section[id] {
   grid-area: title;
   margin: 0;
   font-family: var(--font-Albert_Sans);
-  font-size: 32px;
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
   font-weight: 400;
   line-height: 1.12;
   letter-spacing: -0.035em;
@@ -2526,7 +2527,7 @@ section[id] {
 }
 
 .events.is_event_motion_ready .event_copy li {
-  padding-left: 32px;
+  padding-left: clamp(1.5rem, 2.5vw, 2rem);
   line-height: 1.35;
 }
 
@@ -3355,11 +3356,6 @@ section[id] {
     line-height: 1.54;
   }
 
-  /* 시안에는 TEST START 하나만 있음 */
-  .hero_actions .pill_ghost {
-    display: none;
-  }
-
   /* 360px 에서는 시안대로 224px 로 두고, 폭이 413px 을 넘으면 태블릿과 같은 식(54.2vw)을 씀.
      여기서부터 아래 캐릭터 계산이 "부모 = 54.2vw" 를 전제로 하므로 두 식이 맞물려야 함 */
   .hero_visual {
@@ -3373,15 +3369,15 @@ section[id] {
      768px 로 넘어갈 때 크기가 튀지 않게 했다.
      세로 위치(translateY)도 % 는 자기 높이 기준이라 같은 이유로 px 로 환산해 이었음 */
   .hero_visual .hero_character {
-    left: min(0px, calc(-2.6375rem + 5.5vw));
-    width: clamp(21.73rem, calc(14.34rem + 28.64vw), 28.07rem);
-    transform: translateY(clamp(-186.9px, calc(-2.12rem - 19.94vw), -116.3px));
+    left: min(0px, max(calc(3.325rem - 32vw), calc(-10.67rem + 22.2vw)));
+    width: clamp(26.85rem, calc(25.83rem + 4.67vw), 28.07rem);
+    transform: translateY(clamp(-186.9px, calc(-5.1rem - 13.73vw), -132px));
   }
 
   /* 프레임 SVG 는 2000x2000 정사각이라 캐릭터 PNG(1588x1484) 와 보정값이 조금 다름 */
   .hero_visual .hero_character_frame {
-    width: clamp(21.72rem, calc(14.33rem + 28.62vw), 28.04rem);
-    transform: translateY(clamp(-192.3px, calc(-1.9rem - 21.1vw), -117.6px));
+    width: clamp(26.84rem, calc(25.8rem + 4.67vw), 28.04rem);
+    transform: translateY(clamp(-192.3px, calc(-4.95rem - 14.74vw), -133.3px));
   }
 
   /* 배경 도형: 태블릿 시안 배치(.hero_shape_tablet)를 캐릭터와 같은 배율로 줄여 씀.
@@ -3389,11 +3385,11 @@ section[id] {
      폭은 캐릭터 폭의 1.5057배, 왼쪽은 캐릭터와 같은 값, 세로는 캐릭터와 같은 기준(50% + translateY)으로 둠.
      767px 에서는 태블릿 768px 과 같은 크기가 되어 경계에서 튀지 않음 */
   .hero_visual .hero_shape {
-    left: min(0px, calc(-2.6375rem + 5.5vw));
+    left: min(0px, max(calc(3.325rem - 32vw), calc(-10.67rem + 22.2vw)));
     right: auto;
     top: 50%;
-    width: calc(clamp(21.73rem, calc(14.34rem + 28.64vw), 28.07rem) * 1.5057);
-    transform: translateY(clamp(-186.9px, calc(-2.12rem - 19.94vw), -116.3px));
+    width: calc(clamp(26.85rem, calc(25.83rem + 4.67vw), 28.07rem) * 1.5057);
+    transform: translateY(clamp(-186.9px, calc(-5.1rem - 13.73vw), -132px));
   }
 
   /* ----- best ----- */
@@ -3815,5 +3811,129 @@ section[id] {
     background: var(--kooksoondang_orange);
     -webkit-mask: url('../asset/icon/event_cup.svg') center / contain no-repeat;
     mask: url('../asset/icon/event_cup.svg') center / contain no-repeat;
+  }
+}
+
+/* ---------- hero: 모바일 360px 시안 (main_mobile) ---------- */
+/* 시안의 오른쪽 일러스트는 도형마다 크기·위치가 따로라서(병 .79, 컵 .79, 페트 .62, 그릇 .58 배율)
+   태블릿 배율을 따르는 위 계산으로는 맞지 않음. 360px 시안 값을 도형별로 직접 줌.
+   transform-origin 은 도형 svg 의 왼쪽 위(= 캐릭터 왼쪽 위와 같은 점, 세로는 일러스트 틀 가운데)이고
+   값은 그 점 기준 이동량(px). 361~480px 에서는 이 값이 그대로 쓰여 캐릭터와 최대 몇 px 어긋날 수 있음 */
+
+@media (max-width: 30rem) {
+  /* INTRO / TEST START 두 버튼을 모두 보임. 좁은 폭에서 줄어들지 않고 한 줄에 놓이도록 간격만 줄임 */
+  .hero_actions {
+    gap: 0.75rem;
+    width: max-content;
+  }
+
+  .hero_actions .pill {
+    white-space: nowrap;
+  }
+
+  /* 시안: 높이 640, 안쪽 묶음은 위 120 / 아래 20 여백 사이 가운데 -> 제목 윗선이 약 203px */
+  .hero {
+    min-height: 40rem;
+    padding-top: 12.6875rem;
+  }
+
+  .hero_left {
+    gap: 1rem;
+  }
+
+  /* 컵 낙서: 시안(banner_cup) 은 제목 박스 안 (38, 46), 크기 42 x 25.2 이고 선 두께만큼 svg 가 사방으로 조금 더 큼.
+     제목 글자(40px)가 이 폭에서 고정이라 px 로 둠 */
+  .hero_cup {
+    width: 43.4px;
+    left: 37.3px;
+    top: 45.3px;
+  }
+
+  .hero_body {
+    gap: 2.5rem;
+  }
+
+  .hero_desc {
+    width: 9.3125rem;
+    font-size: 0.75rem;
+    line-height: 1.7;
+  }
+
+  .hero_actions .pill {
+    padding: 1rem 1.75rem;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .hero_visual .hero_shape {
+    transform-origin: 0 0;
+  }
+
+  .hero_visual .hero_shape[data-hero-layer="bottle"] {
+    transform: translate(83.5px, -262px) scale(0.786);
+  }
+
+  .hero_visual .hero_shape[data-hero-layer="cup"] {
+    transform: translate(111.7px, -269.8px) scale(0.79);
+  }
+
+  .hero_visual .hero_shape[data-hero-layer="pet"] {
+    transform: translate(61.8px, -120px) scale(0.62);
+  }
+
+  .hero_visual .hero_shape[data-hero-layer="bowl"] {
+    transform: translate(40.6px, -41.4px) scale(0.584);
+  }
+}
+
+/* ---------- hero: 태블릿 -> PC 사이 (1025px ~ 1400px) ---------- */
+/* 이 폭에서는 글 묶음(27.125rem)이 가로를 많이 차지해 일러스트 틀이 좁아지고,
+   캐릭터와 도형이 오른쪽 끝에 붙어 할머니가 너무 오른쪽으로 치우침.
+   글 묶음을 조금 줄여 틀을 넓히고, 도형 묶음과 캐릭터를 같은 양만큼 함께 왼쪽으로 옮김.
+   (서로의 겹침 -- 할머니가 큰 병 뒤에 서는 구도 -- 은 그대로 둠) */
+
+@media (min-width: 64.0625rem) and (max-width: 87.5rem) {
+  .hero_left {
+    width: min(100%, 22rem);
+  }
+
+  .hero_visual {
+    --hero-v: calc(100vw - var(--hero-pl) - 22rem - 2rem);
+  }
+
+  /* 도형은 틀 오른쪽 밖으로 22% 나가 있었음 -> 8% 로 줄여 14% 만큼 왼쪽으로 */
+  .hero_visual .hero_shape {
+    right: -8%;
+  }
+
+  /* 캐릭터는 같은 14% 만큼 왼쪽으로 (0.215 - 0.14) */
+  .hero_visual .hero_character {
+    left: calc(var(--hero-v) * 0.075 + 20px);
+  }
+}
+
+/* ---------- hero 버튼: 한 줄 / 두 줄 ---------- */
+/* 두 버튼이 한 줄에 놓이려면 폭이 필요함. 400px 보다 넓으면 한 줄(글자는 줄바꿈 없이),
+   그보다 좁아지면 INTRO 위 / TEST START 아래 두 줄로 쌓음.
+   .hero_left 폭에 눌려 TEST START 글자가 두 줄로 꺾이던 것도 함께 막음 */
+
+@media (min-width: 30.0625rem) and (max-width: 47.9375rem) {
+  .hero_actions {
+    width: max-content;
+  }
+
+  .hero_actions .pill {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 25rem) {
+  .hero_actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    width: auto;
   }
 }
