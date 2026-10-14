@@ -1673,12 +1673,13 @@
 
 
 /*
- * 카드 두둥실 + 호버 기울기(products.js 3-1)가 켜지면
- * JS 가 매 프레임 transform 을 바꾸므로 CSS 전환은 끔
- * (켜 두면 한 박자씩 늦게 따라와서 굼떠 보임)
+ * 카드 잔바람 흔들림 + 호버(products.js 3-1)가 켜지면 (PC 전용)
+ * JS 가 매 프레임 transform 을 바꾸므로 transform 전환은 끔
+ * (켜 두면 한 박자씩 늦게 따라와서 굼떠 보임). 그림자만 부드럽게
  */
 .starter_kit.is_card_playing .starter_kit_card {
-  transition: none;
+  transition:
+    box-shadow 0.45s ease;
 }
 
 
@@ -4288,16 +4289,23 @@
   }
 
 
+  /*
+   * 소개 글 두 줄 : 글이 많아 보이지 않도록 피그마(700)보다 한 단계 얇은 600,
+   * 색은 팀 공통색 --bekseju_dark3 그대로 쓰고 85% 만 보이게 (새 색 추가 없음).
+   * color-mix 를 모르는 옛 브라우저는 위 줄의 원래 색으로 보임
+   */
   .starter_kit_desc {
     margin-top: calc(5 * var(--sk));
 
     font:
-      700
+      600
       calc(28 * var(--sk)) / 1.3
       var(--font-Pretendard);
 
     color:
       var(--bekseju_dark3);
+    color:
+      color-mix(in srgb, var(--bekseju_dark3) 85%, transparent);
   }
 
 
@@ -4343,18 +4351,27 @@
 
   /* ---------- 카드 3장 ---------- */
 
+  /*
+   * 카드 목록은 섹션 전체를 덮는 투명한 판이라
+   * 그대로 두면 왼쪽 VIEW DETAILS 버튼 위를 가려서 클릭이 안 됨.
+   * 판은 클릭을 통과시키고, 카드만 마우스를 받게 함
+   */
   .starter_kit_list {
     position: absolute;
 
     inset: 0;
 
     display: block;
+
+    pointer-events: none;
   }
 
 
   /* 피그마 카드 : 300 × 400, 모서리 49, 안쪽 여백 위 55 / 오른쪽 17 / 아래 42 / 왼쪽 16 */
   .starter_kit_card {
     position: absolute;
+
+    pointer-events: auto;
 
     display: flex;
     flex-direction: column;
@@ -4485,6 +4502,47 @@
     transform:
       translate(-50%, -50%)
       rotate(9deg);
+  }
+
+
+  /*
+   * 호버 때 카드 안쪽 깊이감 (products.js 3-1 이 값을 넣음, 단위는 1920 기준 px)
+   * transform 은 자리·기울기에 쓰고 있어서 따로 translate 로 더함.
+   * 값이 없으면 0 이라 그대로
+   */
+  .starter_kit_splash {
+    translate:
+      calc(var(--card_splash_x, 0) * var(--sk))
+      calc(var(--card_splash_y, 0) * var(--sk));
+  }
+
+  .starter_kit_can {
+    translate:
+      calc(var(--card_can_x, 0) * var(--sk))
+      calc(var(--card_can_y, 0) * var(--sk));
+  }
+
+  .starter_kit_bottle {
+    translate:
+      calc(var(--card_bottle_x, 0) * var(--sk))
+      calc(var(--card_bottle_y, 0) * var(--sk));
+  }
+
+
+  /*
+   * 카드 그림자 : 피그마 값(1 1 4 #000 10%) + 호버 때만 은은하게 떠 보이는 그림자.
+   * 두 겹을 미리 깔아 두어야 호버 때 부드럽게 바뀜
+   */
+  .starter_kit_card {
+    box-shadow:
+      1px 1px 4px 0 rgba(0, 0, 0, 0.1),
+      0 0 0 0 rgba(76, 59, 51, 0);
+  }
+
+  .starter_kit_card.is_card_hover {
+    box-shadow:
+      1px 1px 4px 0 rgba(0, 0, 0, 0.1),
+      0 calc(12 * var(--sk)) calc(28 * var(--sk)) 0 rgba(76, 59, 51, 0.12);
   }
 
 

@@ -1754,27 +1754,51 @@
         if (!showcase) return;
 
 
-        const behavior =
+        const reduceMotion =
             window.matchMedia(
                 '(prefers-reduced-motion: reduce)'
-            ).matches
+            ).matches;
 
-                ? 'auto'
 
-                : 'smooth';
+        /*
+            도착 위치를 숫자로 직접 계산.
+
+            제품이 8개 → 3개로 줄면 페이지가 짧아져서
+            브라우저가 스크롤 위치를 순간 끌어올리는데,
+            Lenis 는 그걸 아직 모른 채 예전 위치로 계산해서
+            제품 목록보다 아래(제목이 잘린 곳)에 멈췄었음.
+
+            섹션 위 여백은 공통 CSS 의 scroll-margin-top
+            (고정 헤더 높이 + 여유) 을 그대로 따름.
+        */
+        const scrollMargin =
+            parseFloat(
+                getComputedStyle(showcase).scrollMarginTop
+            ) || 0;
+
+        const targetTop =
+            showcase.getBoundingClientRect().top +
+            window.scrollY -
+            scrollMargin;
 
 
         if (window.siteLenis) {
 
             window.siteLenis.scrollTo(
-                showcase
+                targetTop,
+                {
+                    immediate: reduceMotion,
+                    force: true
+                }
             );
 
         } else {
 
-            showcase.scrollIntoView({
-                behavior,
-                block: 'start'
+            window.scrollTo({
+                top: targetTop,
+                behavior: reduceMotion
+                    ? 'auto'
+                    : 'smooth'
             });
 
         }
@@ -3791,6 +3815,23 @@
   );
 
 
+  /*
+    섹션 전체(inner)도 등장 직전 상태로 미리 숨겨 둠.
+    (PC·태블릿은 아래 3번에서 오른쪽 → 왼쪽으로 싸악 들어옴)
+
+    예전엔 여기서 안 숨겨서, 스크롤로 섹션에 다가가는 동안
+    카드가 이미 보이고 있다가 → 등장 순간 확 사라졌다가 → 다시 들어와서
+    한 번 깜빡이고 두 번 등장하는 것처럼 보였음.
+    아래 3번 fromTo 의 시작값(x 180, 투명)과 꼭 같아야 함
+  */
+  if (inner && !isMobileLayout) {
+    gsap.set(inner, {
+      x: 180,
+      autoAlpha: 0
+    });
+  }
+
+
   if (cta) {
     gsap.set(cta, {
       autoAlpha: 0,
@@ -4400,7 +4441,7 @@ if (cards.length > 1) {
 
     }
 
-    /* 카드가 다 펼쳐지고 BEST 도장까지 찍힌 다음부터 두둥실 + 호버 기울기 */
+    /* 카드가 다 펼쳐지고 BEST 도장까지 찍힌 다음부터 잔바람 흔들림 + 호버 */
     tl.call(startCardPlay);
 
   }
@@ -4408,34 +4449,62 @@ if (cards.length > 1) {
 
 
   /* =====================================================
-     3-1. 카드 두둥실 + 호버 시 살짝 기울기 (PC 전용)
+     3-1. 카드 잔바람 흔들림 + 호버 (PC 전용)
 
-     - 평소 : 카드마다 박자가 다른 사인파로 위아래로 천천히 떠다니고
-              아주 살짝 좌우로 갸웃거림
-     - 호버 : 카드 안 마우스 위치를 따라 아주 살짝 앞뒤로 기울어짐
-              (최대 6도). 마우스가 나가면 부드럽게 원래대로
+     - 평소 : 잔바람에 흔들리듯 아주 살짝만 움직임
+              (위아래 2px, 좌우 갸웃 0.5° 안쪽, 카드마다 박자 다름)
+     - 호버 : 바람이 잦아들듯 흔들림이 줄고
+              카드가 살짝 떠오르며(5px) 마우스 쪽으로 은은하게 기울어짐(최대 4°).
+              안쪽 병·캔·물 튀김도 마우스를 따라 1 ~ 3px 씩 다르게 움직여 깊이감.
+              마우스가 나가면 다시 부드럽게 잔바람으로
 
      펼치기 연출이 끝난 자리(x, y, 기울기)를 기준으로 그 위에 더함.
+     숫자는 1920 화면 기준 px 이고, 화면이 작아지면 카드 크기에 맞춰 같이 줄어듦.
      마우스가 있는 PC 에서만. 태블릿·모바일은 기존 그대로
   ===================================================== */
 
-  /* 위아래로 떠다니는 폭(px) / 한 번 오르내리는 시간(초) / 시작점 */
-  const CARD_FLOAT = [
-    { float: 7, period: 4.6, phase: 0 },
-    { float: 6, period: 5.2, phase: 2.2 },
-    { float: 8, period: 4.9, phase: 4.1 }
+  /*
+   * 카드마다 잔바람 박자 (초).
+   * 서로 안 맞는 두 박자를 섞어서 기계적으로 반복되는 느낌을 없앰
+   */
+  const CARD_BREEZE = [
+    { bob: 6.4, sway: 5.3, flutter: 2.9, phase: 0 },
+    { bob: 7.1, sway: 5.9, flutter: 3.3, phase: 2.1 },
+    { bob: 6.8, sway: 5.6, flutter: 3.1, phase: 4.3 }
   ];
 
-  /* 평소 좌우로 갸웃거리는 정도(도) */
-  const CARD_SWAY = 0.8;
+  /* 평소 위아래로 흔들리는 폭 (px) */
+  const CARD_BOB = 2;
 
-  /* 호버 때 기울어지는 최대 각도(도) */
-  const CARD_TILT = 6;
+  /* 평소 좌우로 갸웃거리는 정도 (도) */
+  const CARD_SWAY = 0.5;
 
-  /* 기울기가 마우스를 따라가는 속도 (클수록 바로 붙음) */
-  const CARD_TILT_FOLLOW = 8;
+  /* 호버 중에 남는 잔바람 비율 (0 = 멈춤, 1 = 그대로) */
+  const CARD_HOVER_CALM = 0.3;
 
-  /* 떠다니기가 0 → 1 로 스며드는 시간(초) */
+  /* 호버 때 떠오르는 높이 (px) */
+  const CARD_HOVER_LIFT = 5;
+
+  /* 호버 때 커지는 정도 (1.01 = 1%) */
+  const CARD_HOVER_SCALE = 1.01;
+
+  /* 호버 때 마우스 쪽으로 기울어지는 최대 각도 (도) */
+  const CARD_TILT = 4;
+
+  /* 호버 때 카드 안쪽이 마우스를 따라 움직이는 거리 (px, 가로 / 세로) */
+  const CARD_INNER_MOVE = {
+    bottle: [3, 2],
+    can: [2, 1.5],
+    splash: [-1.5, -1]
+  };
+
+  /* 호버 때 병이 살짝 올라오는 높이 (px) */
+  const CARD_BOTTLE_RISE = 3;
+
+  /* 호버로 바뀌는 속도 (클수록 빠름. 6 이면 약 0.4초) */
+  const CARD_HOVER_FOLLOW = 6;
+
+  /* 잔바람이 0 → 1 로 스며드는 시간 (초) */
   const CARD_EASE_IN = 1;
 
   function startCardPlay() {
@@ -4452,20 +4521,36 @@ if (cards.length > 1) {
       cards.length === 0
     ) return;
 
+    const list =
+      section.querySelector(".starter_kit_list") ||
+      cards[0].parentElement;
+
     const items =
       cards.map((card, index) => {
 
         const item = {
           card,
-          float: CARD_FLOAT[index % CARD_FLOAT.length],
+          breeze: CARD_BREEZE[index % CARD_BREEZE.length],
+          baseX: Number(gsap.getProperty(card, "x")) || 0,
           baseY: Number(gsap.getProperty(card, "y")) || 0,
           baseRotation: Number(gsap.getProperty(card, "rotation")) || 0,
-          targetTiltX: 0,
-          targetTiltY: 0,
-          tiltX: 0,
-          tiltY: 0,
+
+          /* 앞뒤 순서 (CSS z-index). 겹친 곳에서는 앞 카드만 호버 */
+          layer: Number(getComputedStyle(card).zIndex) || 0,
+
+          /* 호버 정도 0 ~ 1, 카드 안 마우스 위치 -1 ~ 1 */
+          hover: 0,
+          targetHover: 0,
+          mouseX: 0,
+          mouseY: 0,
+          targetMouseX: 0,
+          targetMouseY: 0,
+
           setY: gsap.quickSetter(card, "y", "px"),
           setRotation: gsap.quickSetter(card, "rotation", "deg"),
+          /* quickSetter 는 scale 한 번에 못 받아서 가로·세로 따로 */
+          setScaleX: gsap.quickSetter(card, "scaleX"),
+          setScaleY: gsap.quickSetter(card, "scaleY"),
           setTiltX: gsap.quickSetter(card, "rotationX", "deg"),
           setTiltY: gsap.quickSetter(card, "rotationY", "deg")
         };
@@ -4475,30 +4560,99 @@ if (cards.length > 1) {
           transformPerspective: 900
         });
 
-        card.addEventListener("pointermove", (event) => {
-
-          if (event.pointerType && event.pointerType !== "mouse") return;
-
-          const rect = card.getBoundingClientRect();
-
-          /* 카드 안 위치 -1 ~ 1 */
-          const px =
-            ((event.clientX - rect.left) / rect.width) * 2 - 1;
-          const py =
-            ((event.clientY - rect.top) / rect.height) * 2 - 1;
-
-          /* 마우스가 있는 쪽이 살짝 눌리듯 기울어짐 */
-          item.targetTiltY = Math.max(-1, Math.min(1, px)) * CARD_TILT;
-          item.targetTiltX = -Math.max(-1, Math.min(1, py)) * CARD_TILT;
-        });
-
-        card.addEventListener("pointerleave", () => {
-          item.targetTiltX = 0;
-          item.targetTiltY = 0;
-        });
-
         return item;
       });
+
+    /*
+     * 어느 카드 위에 마우스가 있는지 계산.
+     * 카드 자체에 mouseenter 를 걸면 카드가 떠오르거나 기울 때
+     * 가장자리에서 마우스가 빠졌다 들어왔다 하며 떨리므로,
+     * 움직이기 전의 제자리(기울어진 사각형)를 기준으로 판단
+     */
+    let pointerX = 0;
+    let pointerY = 0;
+    let pointerInside = false;
+
+    function updateHover() {
+
+      let hovered = null;
+      let hoveredX = 0;
+      let hoveredY = 0;
+
+      if (pointerInside) {
+
+        const listRect = list.getBoundingClientRect();
+
+        items.forEach((item) => {
+
+          const card = item.card;
+          const halfW = card.offsetWidth / 2;
+          const halfH = card.offsetHeight / 2;
+
+          const centerX =
+            listRect.left + card.offsetLeft + halfW + item.baseX;
+          const centerY =
+            listRect.top + card.offsetTop + halfH + item.baseY;
+
+          /* 카드 기울기만큼 되돌려서 카드 기준 좌표로 */
+          const angle = -item.baseRotation * Math.PI / 180;
+          const dx = pointerX - centerX;
+          const dy = pointerY - centerY;
+          const localX = dx * Math.cos(angle) - dy * Math.sin(angle);
+          const localY = dx * Math.sin(angle) + dy * Math.cos(angle);
+
+          if (
+            Math.abs(localX) <= halfW &&
+            Math.abs(localY) <= halfH &&
+            (!hovered || item.layer > hovered.layer)
+          ) {
+            hovered = item;
+            hoveredX = localX / halfW;
+            hoveredY = localY / halfH;
+          }
+        });
+      }
+
+      items.forEach((item) => {
+
+        const isHovered = item === hovered;
+
+        item.targetHover = isHovered ? 1 : 0;
+
+        if (isHovered) {
+          item.targetMouseX = hoveredX;
+          item.targetMouseY = hoveredY;
+        } else {
+          item.targetMouseX = 0;
+          item.targetMouseY = 0;
+        }
+
+        item.card.classList.toggle("is_card_hover", isHovered);
+      });
+
+      wake();
+    }
+
+    section.addEventListener("pointermove", (event) => {
+
+      if (event.pointerType && event.pointerType !== "mouse") return;
+
+      pointerX = event.clientX;
+      pointerY = event.clientY;
+      pointerInside = true;
+
+      updateHover();
+    });
+
+    section.addEventListener("pointerleave", () => {
+      pointerInside = false;
+      updateHover();
+    });
+
+    /* 마우스는 가만히 있고 화면만 스크롤될 때도 다시 계산 */
+    window.addEventListener("scroll", () => {
+      if (pointerInside) updateHover();
+    }, { passive: true });
 
     /*
      * CSS 의 transform 전환(300ms)이 걸려 있으면
@@ -4526,29 +4680,85 @@ if (cards.length > 1) {
       easeIn = Math.min(easeIn + delta / CARD_EASE_IN, 1);
 
       const follow =
-        1 - Math.exp(-CARD_TILT_FOLLOW * delta);
+        1 - Math.exp(-CARD_HOVER_FOLLOW * delta);
 
       items.forEach((item) => {
 
-        const wave =
-          (clock / item.float.period) * Math.PI * 2 +
-          item.float.phase;
+        const card = item.card;
+        const breeze = item.breeze;
 
-        item.tiltX += (item.targetTiltX - item.tiltX) * follow;
-        item.tiltY += (item.targetTiltY - item.tiltY) * follow;
+        /* 1920 화면에서 카드 폭 300 → 1, 화면이 작으면 그만큼 작아짐 */
+        const unit = card.offsetWidth / 300 || 1;
+
+        item.hover += (item.targetHover - item.hover) * follow;
+        item.mouseX += (item.targetMouseX - item.mouseX) * follow;
+        item.mouseY += (item.targetMouseY - item.mouseY) * follow;
+
+        const hover = item.hover;
+
+        /* 호버하면 잔바람이 잦아듦 */
+        const calm =
+          easeIn * (1 - (1 - CARD_HOVER_CALM) * hover);
+
+        const t = clock * Math.PI * 2;
+
+        const bob =
+          Math.sin(t / breeze.bob + breeze.phase);
+
+        const sway =
+          Math.sin(t / breeze.sway + breeze.phase) * 0.7 +
+          Math.sin(t / breeze.flutter + breeze.phase * 1.7) * 0.3;
 
         item.setY(
           item.baseY +
-          Math.sin(wave) * item.float.float * easeIn
+          bob * CARD_BOB * unit * calm -
+          CARD_HOVER_LIFT * unit * hover
         );
 
         item.setRotation(
           item.baseRotation +
-          Math.sin(wave * 0.7 + 1) * CARD_SWAY * easeIn
+          sway * CARD_SWAY * calm
         );
 
-        item.setTiltX(item.tiltX);
-        item.setTiltY(item.tiltY);
+        const scale =
+          1 + (CARD_HOVER_SCALE - 1) * hover;
+
+        item.setScaleX(scale);
+        item.setScaleY(scale);
+
+        /* 마우스가 있는 쪽이 살짝 눌리듯 기울어짐 */
+        item.setTiltY(item.mouseX * CARD_TILT);
+        item.setTiltX(-item.mouseY * CARD_TILT);
+
+        /* 안쪽 병·캔·물 튀김 (CSS 의 translate 가 이 값을 씀) */
+        const style = card.style;
+        const mx = item.mouseX;
+        const my = item.mouseY;
+
+        style.setProperty(
+          "--card_bottle_x",
+          (mx * CARD_INNER_MOVE.bottle[0]).toFixed(2)
+        );
+        style.setProperty(
+          "--card_bottle_y",
+          (my * CARD_INNER_MOVE.bottle[1] - CARD_BOTTLE_RISE * hover).toFixed(2)
+        );
+        style.setProperty(
+          "--card_can_x",
+          (mx * CARD_INNER_MOVE.can[0]).toFixed(2)
+        );
+        style.setProperty(
+          "--card_can_y",
+          (my * CARD_INNER_MOVE.can[1]).toFixed(2)
+        );
+        style.setProperty(
+          "--card_splash_x",
+          (mx * CARD_INNER_MOVE.splash[0]).toFixed(2)
+        );
+        style.setProperty(
+          "--card_splash_y",
+          (my * CARD_INNER_MOVE.splash[1]).toFixed(2)
+        );
       });
 
       if (visible) {
@@ -4558,15 +4768,19 @@ if (cards.length > 1) {
       }
     }
 
+    function wake() {
+      if (visible && !frame) {
+        lastTime = 0;
+        frame = window.requestAnimationFrame(step);
+      }
+    }
+
     /* 화면 밖이면 쉼 */
     new IntersectionObserver((entries) => {
 
       visible = entries[entries.length - 1].isIntersecting;
 
-      if (visible && !frame) {
-        lastTime = 0;
-        frame = window.requestAnimationFrame(step);
-      }
+      wake();
     }).observe(section);
 
     frame = window.requestAnimationFrame(step);
