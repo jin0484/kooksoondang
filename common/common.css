@@ -139,6 +139,18 @@ html {
     overflow-x: clip;
 }
 
+/* 마우스로 드래그해 글자를 선택했을 때의 색: 기본 파란색 대신 브랜드 주황.
+   흰 글씨는 주황 위에서 대비가 약해(약 2.3:1) 본문색(진한 회색)을 씀 */
+::selection {
+    background: var(--kooksoondang_orange);
+    color: var(--bekseju_darker_cold);
+}
+
+::-moz-selection {
+    background: var(--kooksoondang_orange);
+    color: var(--bekseju_darker_cold);
+}
+
 body {
     margin: 0;
     width: 100%;
