@@ -2257,40 +2257,12 @@
     }
 
 
-    /* Splash */
-
-    if (!isMobileHero && splash) {
-
-        introTl.fromTo(
-            splash,
-
-            {
-                scale: 0.25,
-                opacity: 0
-            },
-
-            {
-                scale: 1,
-                opacity: 1,
-
-                duration: 0.8,
-
-                ease:
-                    'back.out(1.7)'
-            },
-
-            '-=0.3'
-        );
-
-    }
-
-
-
-
     /*
      * 백세주
      * CSS translate: -50% -50% 를 GSAP 이 transform 으로 합치면서 같은 문제가 생겨
      * (1536×864 같은 화면에서 병이 반 칸 아래로 내려앉음) 여기도 직접 알려 줌
+     *
+     * 물보다 백세주가 먼저 올라옴. 물은 병이 자리에 닿는 순간 튐 (아래 Splash)
      */
 
     if (center && !isMobileHero) {
@@ -2319,7 +2291,61 @@
                     'back.out(1.25)'
             },
 
-            '-=0.5'
+            '-=0.3'
+        );
+
+    }
+
+
+    /*
+     * Splash (물 튀김)
+     *
+     * 예전: 사진 한 장이 25% 크기에서 통째로 커지며 튕김 → 스티커처럼 보였음
+     * 지금: 사진 크기는 거의 그대로 두고, 병 몸통 쪽(가로 50%, 세로 78%)에서
+     *       바깥으로 퍼지듯이 드러남 (CSS 의 --splash_reveal 마스크).
+     *       처음엔 살짝 흐렸다가 선명해져서 빠르게 튀는 느낌을 줌.
+     *       튕김 없이 처음 빠르고 끝이 느린 곡선(power2.out).
+     *       너무 센 곡선(expo.out)은 퍼지는 게 안 보이고 한 번에 '팍' 나타나 보였음
+     *
+     * 시작 시점: 백세주가 올라오기 시작하고 0.45초 뒤
+     *           = 병이 처음 제자리에 닿는 순간 (back.out(1.25) 의 44% 지점)
+     *
+     * xPercent / yPercent 는 위 백세주와 같은 이유로 직접 알려 줌
+     */
+
+    if (!isMobileHero && splash) {
+
+        introTl.fromTo(
+            splash,
+
+            {
+                xPercent: -50,
+                yPercent: -50,
+                x: 0,
+                y: 0,
+                scale: 0.94,
+                opacity: 0,
+                filter: 'blur(8px)',
+                '--splash_reveal': '0%'
+            },
+
+            {
+                xPercent: -50,
+                yPercent: -50,
+                x: 0,
+                y: 0,
+                scale: 1,
+                opacity: 1,
+                filter: 'blur(0px)',
+                /* 125% 면 가장자리까지 다 보임 (부드러운 테두리 18% 포함) */
+                '--splash_reveal': '125%',
+
+                duration: 0.65,
+
+                ease: 'power2.out'
+            },
+
+            '<0.45'
         );
 
     }
@@ -2330,6 +2356,354 @@
      * 스크롤 잠금이 풀리는 기준이 곧 이 타임라인의 완료 시점
      */
     window.productsHeroIntro = introTl;
+
+})();
+
+
+
+/* =========================================================
+   3-1. Hero 옆 병 4개 : 둥실둥실 + 간지럼 (PC 전용)
+
+   메인 페이지 히어로·BEST 섹션의 병 움직임(main.js 의 data-momentum)과
+   같은 느낌을 이 페이지 히어로의 옆 병 4개에만 따로 만듦.
+   메인 파일은 건드리지 않음 (다른 사람 담당)
+
+   - 평소 : 병마다 주기·시작점이 다른 사인파로 제자리에서 천천히 떠다님
+            (메인처럼 커서 위치를 따라 밀리는 움직임은 정신없어서 뺐음)
+   - 호버 : 커서가 병을 스치는 속도·방향만큼 튕겼다가
+            스프링으로 출렁이며 제자리로 돌아옴 (간지럼)
+            가장자리를 스칠수록 많이 돌고, 가운데를 곧장 지나면 덜 돎
+
+   위치·회전은 등장 연출과 같은 GSAP 값(x, y, rotation)을 그대로 이어서 씀.
+   (CSS 의 translate(-50%, -50%) rotate(..) 기준이 깨지지 않게)
+   마우스가 있는 PC 에서만, 동작 줄이기 설정이면 켜지 않음
+========================================================= */
+
+(() => {
+
+    const hero =
+        document.querySelector(
+            '.products_hero'
+        );
+
+    if (!hero || typeof gsap === 'undefined') return;
+
+    const fineHover =
+        window.matchMedia(
+            '(hover: hover) and (pointer: fine)'
+        );
+
+    const reducedMotion =
+        window.matchMedia(
+            '(prefers-reduced-motion: reduce)'
+        );
+
+    const mobile =
+        window.matchMedia(
+            '(max-width: 767px)'
+        );
+
+    if (
+        !fineHover.matches ||
+        reducedMotion.matches ||
+        mobile.matches
+    ) {
+        return;
+    }
+
+
+    /* 튕김 / 스프링 값은 메인 페이지와 같음 */
+    const THROW_SCALE = 0.32;
+    const SPIN_SCALE = 0.16;
+    const MAX_THROW = 1600;
+    const MAX_SPIN = 320;
+    const STIFFNESS = 130;
+    const DAMPING = 15;
+    const REST_EPSILON = 0.08;
+
+    /* 튕기는 세기. 메인 BEST 섹션 병 카드와 같은 1 (0 ~ 1) */
+    const STRENGTH = 1;
+
+    /* 등장 연출이 끝난 뒤 떠다니는 움직임이 0 → 1 로 스며드는 시간(초) */
+    const EASE_IN_TIME = 1.2;
+
+    /*
+     * 병마다
+     * float  : 위아래로 떠다니는 폭(px)
+     * period : 한 번 오르내리는 데 걸리는 시간(초)
+     * phase  : 시작점. 서로 어긋나야 같이 움직이지 않음
+     */
+    const LAYERS = {
+        rice: {
+            float: 12,
+            period: 6.6,
+            phase: 0
+        },
+        draft: {
+            float: 16,
+            period: 7.4,
+            phase: 2.1
+        },
+        prebiotics: {
+            float: 10,
+            period: 6,
+            phase: 3.7
+        },
+        strawberry: {
+            float: 14,
+            period: 8.2,
+            phase: 1.2
+        }
+    };
+
+    const clamp = (value, limit) =>
+        Math.min(Math.max(value, -limit), limit);
+
+    const items =
+        Object.keys(LAYERS)
+            .map((name) => {
+
+                const element =
+                    hero.querySelector(
+                        '.hero_bottle_' + name
+                    );
+
+                if (!element) return null;
+
+                return {
+                    element,
+                    layer: LAYERS[name],
+                    baseRotation: 0,
+                    x: 0,
+                    y: 0,
+                    rotation: 0,
+                    velocityX: 0,
+                    velocityY: 0,
+                    velocityRotation: 0,
+                    awake: false,
+                    setX: null,
+                    setY: null,
+                    setRotation: null
+                };
+            })
+            .filter(Boolean);
+
+    if (!items.length) return;
+
+
+    /* 커서 상태 */
+    let pointerX = 0;
+    let pointerY = 0;
+    let pointerTime = 0;
+    let cursorVelocityX = 0;
+    let cursorVelocityY = 0;
+
+    let clock = 0;
+    let lastTime = 0;
+    let frame = 0;
+    let started = false;
+    let visible = true;
+    let easeIn = 0;
+
+
+    function render(item) {
+
+        const layer = item.layer;
+
+        const wave =
+            (clock / layer.period) * Math.PI * 2 +
+            layer.phase;
+
+        /* 가로는 세로보다 폭이 좁고 주기도 어긋나야
+           같은 자리를 왕복하지 않고 떠다니는 것처럼 보임 */
+        const ambientX =
+            Math.sin(wave * 0.73) * layer.float * 0.5 * easeIn;
+
+        const ambientY =
+            Math.sin(wave) * layer.float * easeIn;
+
+        item.setX(ambientX + item.x);
+        item.setY(ambientY + item.y);
+        item.setRotation(item.baseRotation + item.rotation);
+    }
+
+
+    function step(time) {
+
+        frame = 0;
+
+        const delta =
+            lastTime
+                ? Math.min((time - lastTime) / 1000, 0.04)
+                : 1 / 60;
+
+        lastTime = time;
+        clock += delta;
+        easeIn = Math.min(easeIn + delta / EASE_IN_TIME, 1);
+
+        items.forEach((item) => {
+
+            if (item.awake) {
+
+                item.velocityX +=
+                    (-STIFFNESS * item.x - DAMPING * item.velocityX) * delta;
+                item.velocityY +=
+                    (-STIFFNESS * item.y - DAMPING * item.velocityY) * delta;
+                item.velocityRotation +=
+                    (-STIFFNESS * item.rotation - DAMPING * item.velocityRotation) * delta;
+
+                item.x += item.velocityX * delta;
+                item.y += item.velocityY * delta;
+                item.rotation += item.velocityRotation * delta;
+
+                const settled =
+                    Math.abs(item.x) < REST_EPSILON &&
+                    Math.abs(item.velocityX) < REST_EPSILON &&
+                    Math.abs(item.y) < REST_EPSILON &&
+                    Math.abs(item.velocityY) < REST_EPSILON &&
+                    Math.abs(item.rotation) < REST_EPSILON &&
+                    Math.abs(item.velocityRotation) < REST_EPSILON;
+
+                if (settled) {
+                    item.awake = false;
+                    item.x = 0;
+                    item.y = 0;
+                    item.rotation = 0;
+                    item.velocityX = 0;
+                    item.velocityY = 0;
+                    item.velocityRotation = 0;
+                }
+            }
+
+            render(item);
+        });
+
+        /* 히어로가 화면 밖이면 쉼. 다시 보이면 이어서 */
+        if (visible) {
+            frame = window.requestAnimationFrame(step);
+        } else {
+            lastTime = 0;
+        }
+    }
+
+
+    function wake() {
+        if (!started || frame || !visible) return;
+        lastTime = 0;
+        frame = window.requestAnimationFrame(step);
+    }
+
+
+    function onPointerMove(event) {
+
+        const elapsed = event.timeStamp - pointerTime;
+
+        if (pointerTime && elapsed > 0) {
+
+            /* 순간 속도는 튀기 쉬워서 부드럽게 다듬음 */
+            const instantX =
+                ((event.clientX - pointerX) / elapsed) * 1000;
+            const instantY =
+                ((event.clientY - pointerY) / elapsed) * 1000;
+
+            cursorVelocityX = cursorVelocityX * 0.55 + instantX * 0.45;
+            cursorVelocityY = cursorVelocityY * 0.55 + instantY * 0.45;
+        }
+
+        pointerX = event.clientX;
+        pointerY = event.clientY;
+        pointerTime = event.timeStamp;
+    }
+
+
+    function onPointerLeave() {
+        pointerTime = 0;
+    }
+
+
+    /* 커서가 병에 들어오는 순간 튕김 */
+    function tickle(item, event) {
+
+        const bounds = item.element.getBoundingClientRect();
+
+        const offsetX =
+            event.clientX - (bounds.left + bounds.width / 2);
+        const offsetY =
+            event.clientY - (bounds.top + bounds.height / 2);
+
+        /* 중심에서 벗어난 정도 x 커서 속도 = 회전 방향과 세기 */
+        const cross =
+            offsetX * cursorVelocityY - offsetY * cursorVelocityX;
+
+        const distance =
+            Math.hypot(offsetX, offsetY) || 1;
+
+        item.velocityX =
+            clamp(cursorVelocityX * THROW_SCALE * STRENGTH, MAX_THROW * STRENGTH);
+        item.velocityY =
+            clamp(cursorVelocityY * THROW_SCALE * STRENGTH, MAX_THROW * STRENGTH);
+        item.velocityRotation =
+            clamp((cross / distance) * SPIN_SCALE * STRENGTH, MAX_SPIN * STRENGTH);
+
+        item.awake = true;
+    }
+
+
+    function start() {
+
+        if (started) return;
+        started = true;
+
+        items.forEach((item) => {
+
+            /* 등장 연출이 끝난 자리(기울기 포함)를 기준으로 삼음 */
+            item.baseRotation =
+                Number(gsap.getProperty(item.element, 'rotation')) || 0;
+
+            item.setX = gsap.quickSetter(item.element, 'x', 'px');
+            item.setY = gsap.quickSetter(item.element, 'y', 'px');
+            item.setRotation = gsap.quickSetter(item.element, 'rotation', 'deg');
+
+            item.element.addEventListener(
+                'pointerenter',
+                (event) => {
+                    if (event.pointerType && event.pointerType !== 'mouse') return;
+                    tickle(item, event);
+                }
+            );
+        });
+
+        /* 병이 커서를 받을 수 있게 (평소 무대는 pointer-events: none) */
+        hero.classList.add('is_bottle_playful');
+
+        hero.addEventListener('pointermove', onPointerMove, { passive: true });
+        hero.addEventListener('pointerleave', onPointerLeave);
+
+        new IntersectionObserver((entries) => {
+            /*
+             * 한 번에 여러 개가 올 수 있음 (등장 직후 ScrollTrigger 가 고정 위치를
+             * 다시 계산하면서 잠깐 화면 밖으로 잡혔다가 돌아옴). 가장 마지막 값을 씀
+             */
+            visible = entries[entries.length - 1].isIntersecting;
+            wake();
+        }).observe(hero);
+
+        wake();
+    }
+
+
+    const heroIntro = window.productsHeroIntro;
+
+    if (!heroIntro || heroIntro.progress() === 1) {
+        start();
+    } else {
+        /*
+         * 등장 연출이 끝나는 지점에 시작을 걸어 둠.
+         * then() 은 쓰지 않음: gsap 타임라인의 then 은 콜백을 하나만 기억해서
+         * 아래 4번(화면 잠금 풀기)의 then 이 이걸 덮어써 버림
+         */
+        heroIntro.call(start, null, heroIntro.duration());
+    }
 
 })();
 
@@ -2454,16 +2828,16 @@
        막는 방식으로 따로 둠
     ========================================= */
 
-    /* 스크롤하면 백세주가 커지는 배율 */
-    const BOTTLE_SCALE = 1.2;
+    /* 스크롤하면 백세주가 커지는 배율 (1.2 에서 조금 더 키움) */
+    const BOTTLE_SCALE = 1.25;
 
     /*
      * 백세주가 커지는 데 쓰는 스크롤 거리 (화면 높이 대비)
-     * 0.2 = 화면 높이의 20% ≒ 마우스 휠 한두 번 (피그마 메모 기준)
+     * 0.28 = 화면 높이의 28% ≒ 마우스 휠 두세 번 (예전 0.2 에서 조금 늘림)
      * 이 구간 동안은 다음 콘텐츠가 올라오지 않고 화면이 멈춰 있음
      * 더 천천히 커지게 하려면 숫자를 키우면 됨
      */
-    const BOTTLE_ZOOM_SCROLL = 0.2;
+    const BOTTLE_ZOOM_SCROLL = 0.28;
 
     let gateReleased = false;
 
@@ -2604,7 +2978,7 @@
     /* =========================================
        잠금이 풀린 뒤의 스크롤 연출
 
-       1) 화면은 멈춘 채 백세주만 스크롤에 맞춰 1 → 1.2배
+       1) 화면은 멈춘 채 백세주만 스크롤에 맞춰 1 → 1.25배 (병 아래쪽 기준)
        2) 그다음 Hero 를 고정한 채 다음 콘텐츠가
           아래에서 올라와 덮음
     ========================================= */
@@ -2688,9 +3062,20 @@
     /* =========================================
        1) 화면은 멈춘 채 백세주만 커짐
           스크롤을 올리면 다시 작아짐
+
+          병 아래쪽을 기준으로 커짐.
+          가운데 기준이면 아래로도 커져서 화면 밖으로 더 잘렸음.
+          아래 기준이면 위로만 커져서 살짝 떠오르는 것처럼 보임
     ========================================= */
 
     if (centerBottle) {
+
+        gsap.set(
+            centerBottle,
+            {
+                transformOrigin: '50% 100%'
+            }
+        );
 
         coverTl.fromTo(
             centerBottle,
@@ -3995,6 +4380,176 @@ if (cards.length > 1) {
 
     }
 
+    /* 카드가 다 펼쳐지고 BEST 도장까지 찍힌 다음부터 두둥실 + 호버 기울기 */
+    tl.call(startCardPlay);
+
+  }
+
+
+
+  /* =====================================================
+     3-1. 카드 두둥실 + 호버 시 살짝 기울기 (PC 전용)
+
+     - 평소 : 카드마다 박자가 다른 사인파로 위아래로 천천히 떠다니고
+              아주 살짝 좌우로 갸웃거림
+     - 호버 : 카드 안 마우스 위치를 따라 아주 살짝 앞뒤로 기울어짐
+              (최대 6도). 마우스가 나가면 부드럽게 원래대로
+
+     펼치기 연출이 끝난 자리(x, y, 기울기)를 기준으로 그 위에 더함.
+     마우스가 있는 PC 에서만. 태블릿·모바일은 기존 그대로
+  ===================================================== */
+
+  /* 위아래로 떠다니는 폭(px) / 한 번 오르내리는 시간(초) / 시작점 */
+  const CARD_FLOAT = [
+    { float: 7, period: 4.6, phase: 0 },
+    { float: 6, period: 5.2, phase: 2.2 },
+    { float: 8, period: 4.9, phase: 4.1 }
+  ];
+
+  /* 평소 좌우로 갸웃거리는 정도(도) */
+  const CARD_SWAY = 0.8;
+
+  /* 호버 때 기울어지는 최대 각도(도) */
+  const CARD_TILT = 6;
+
+  /* 기울기가 마우스를 따라가는 속도 (클수록 바로 붙음) */
+  const CARD_TILT_FOLLOW = 8;
+
+  /* 떠다니기가 0 → 1 로 스며드는 시간(초) */
+  const CARD_EASE_IN = 1;
+
+  function startCardPlay() {
+
+    const canHover =
+      window.matchMedia(
+        "(hover: hover) and (pointer: fine)"
+      ).matches;
+
+    if (
+      !canHover ||
+      isTabletLayout ||
+      isMobileLayout ||
+      cards.length === 0
+    ) return;
+
+    const items =
+      cards.map((card, index) => {
+
+        const item = {
+          card,
+          float: CARD_FLOAT[index % CARD_FLOAT.length],
+          baseY: Number(gsap.getProperty(card, "y")) || 0,
+          baseRotation: Number(gsap.getProperty(card, "rotation")) || 0,
+          targetTiltX: 0,
+          targetTiltY: 0,
+          tiltX: 0,
+          tiltY: 0,
+          setY: gsap.quickSetter(card, "y", "px"),
+          setRotation: gsap.quickSetter(card, "rotation", "deg"),
+          setTiltX: gsap.quickSetter(card, "rotationX", "deg"),
+          setTiltY: gsap.quickSetter(card, "rotationY", "deg")
+        };
+
+        /* 앞뒤 기울기가 입체로 보이게 원근 */
+        gsap.set(card, {
+          transformPerspective: 900
+        });
+
+        card.addEventListener("pointermove", (event) => {
+
+          if (event.pointerType && event.pointerType !== "mouse") return;
+
+          const rect = card.getBoundingClientRect();
+
+          /* 카드 안 위치 -1 ~ 1 */
+          const px =
+            ((event.clientX - rect.left) / rect.width) * 2 - 1;
+          const py =
+            ((event.clientY - rect.top) / rect.height) * 2 - 1;
+
+          /* 마우스가 있는 쪽이 살짝 눌리듯 기울어짐 */
+          item.targetTiltY = Math.max(-1, Math.min(1, px)) * CARD_TILT;
+          item.targetTiltX = -Math.max(-1, Math.min(1, py)) * CARD_TILT;
+        });
+
+        card.addEventListener("pointerleave", () => {
+          item.targetTiltX = 0;
+          item.targetTiltY = 0;
+        });
+
+        return item;
+      });
+
+    /*
+     * CSS 의 transform 전환(300ms)이 걸려 있으면
+     * 매 프레임 바꾸는 값이 한 박자씩 밀려서 굼떠 보임
+     */
+    section.classList.add("is_card_playing");
+
+    let clock = 0;
+    let lastTime = 0;
+    let frame = 0;
+    let visible = true;
+    let easeIn = 0;
+
+    function step(time) {
+
+      frame = 0;
+
+      const delta =
+        lastTime
+          ? Math.min((time - lastTime) / 1000, 0.04)
+          : 1 / 60;
+
+      lastTime = time;
+      clock += delta;
+      easeIn = Math.min(easeIn + delta / CARD_EASE_IN, 1);
+
+      const follow =
+        1 - Math.exp(-CARD_TILT_FOLLOW * delta);
+
+      items.forEach((item) => {
+
+        const wave =
+          (clock / item.float.period) * Math.PI * 2 +
+          item.float.phase;
+
+        item.tiltX += (item.targetTiltX - item.tiltX) * follow;
+        item.tiltY += (item.targetTiltY - item.tiltY) * follow;
+
+        item.setY(
+          item.baseY +
+          Math.sin(wave) * item.float.float * easeIn
+        );
+
+        item.setRotation(
+          item.baseRotation +
+          Math.sin(wave * 0.7 + 1) * CARD_SWAY * easeIn
+        );
+
+        item.setTiltX(item.tiltX);
+        item.setTiltY(item.tiltY);
+      });
+
+      if (visible) {
+        frame = window.requestAnimationFrame(step);
+      } else {
+        lastTime = 0;
+      }
+    }
+
+    /* 화면 밖이면 쉼 */
+    new IntersectionObserver((entries) => {
+
+      visible = entries[entries.length - 1].isIntersecting;
+
+      if (visible && !frame) {
+        lastTime = 0;
+        frame = window.requestAnimationFrame(step);
+      }
+    }).observe(section);
+
+    frame = window.requestAnimationFrame(step);
   }
 
 

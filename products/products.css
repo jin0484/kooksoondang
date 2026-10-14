@@ -197,6 +197,28 @@
   /* 피그마 폭 1225 / 1184 → 화면 높이 기준 */
   width: 103.5svh;
 
+  /*
+   * 물이 병 몸통 쪽에서 바깥으로 퍼지며 드러나게 하는 마스크.
+   * 등장 연출 중에 JS 가 --splash_reveal 을 0% → 150% 로 바꿈.
+   * 기본값 150% = 전부 보임 (JS 가 없거나 모바일·동작 줄이기 설정일 때)
+   * 가장자리 18% 는 부드럽게 흐려져서 동그랗게 잘린 티가 안 나게 함
+   */
+  --splash_reveal: 150%;
+
+  -webkit-mask-image:
+    radial-gradient(
+      circle at 50% 78%,
+      #000 calc(var(--splash_reveal) - 18%),
+      transparent var(--splash_reveal)
+    );
+
+  mask-image:
+    radial-gradient(
+      circle at 50% 78%,
+      #000 calc(var(--splash_reveal) - 18%),
+      transparent var(--splash_reveal)
+    );
+
   height: auto;
 
   z-index: 1;
@@ -265,7 +287,8 @@
   left: 6.4%;
   top: 41%;
 
-  height: 40.9%;
+  /* 피그마 40.9% 에서 8% 키움 */
+  height: 44.2%;
 
   /* 시안 기울기 -46.41° (시계 방향) */
   transform:
@@ -281,7 +304,8 @@
   left: 9.5%;
   top: 82.7%;
 
-  height: 49.4%;
+  /* 피그마 49.4% 에서 8% 키움 */
+  height: 53.4%;
 
   /* 시안 기울기 -20.98° (시계 방향) */
   transform:
@@ -297,7 +321,8 @@
   left: 87.4%;
   top: 32.1%;
 
-  height: 37.5%;
+  /* 피그마 37.5% 에서 8% 키움 */
+  height: 40.5%;
 
   transform:
     translate(-50%, -50%)
@@ -312,7 +337,8 @@
   left: 93.1%;
   top: 83.8%;
 
-  height: 45.1%;
+  /* 피그마 45.1% 에서 8% 키움 */
+  height: 48.7%;
 
   transform:
     translate(-50%, -50%)
@@ -368,6 +394,27 @@
       rotate(-25.38deg);
   }
 
+}
+
+
+/* =========================================================
+   HERO 옆 병 둥실둥실 + 간지럼 (products.js 3-1)
+
+   JS 가 켜질 때(마우스 있는 PC, 등장 연출 후) 히어로에
+   .is_bottle_playful 을 붙임. 그때만 옆 병 4개가 커서를 받음.
+   (병이 들어 있는 무대는 평소 pointer-events: none)
+   제목 글자 상자가 오른쪽 위 병과 겹쳐서 커서를 가로채지 않게 함
+========================================================= */
+
+.products_hero.is_bottle_playful .hero_bottle_rice,
+.products_hero.is_bottle_playful .hero_bottle_draft,
+.products_hero.is_bottle_playful .hero_bottle_prebiotics,
+.products_hero.is_bottle_playful .hero_bottle_strawberry {
+  pointer-events: auto;
+}
+
+.products_hero.is_bottle_playful .products_hero_inner {
+  pointer-events: none;
 }
 
 
@@ -764,13 +811,41 @@
 
   transition:
     background-color 200ms ease,
-    color 200ms ease;
+    color 200ms ease,
+    transform 150ms ease;
 }
 
 
-.category_button:not([aria-disabled="true"]):hover {
-  color:
-    var(--kooksoondang_orange);
+/*
+ * 눌러도 되는 버튼처럼 보이게:
+ * 마우스를 올리면 색만 한 톤 바뀜 (그림자·떠오름 없음)
+ * (마우스가 있는 기기에서만. 터치에서는 hover 가 눌린 채 남아서)
+ */
+@media (hover: hover) {
+
+  /* 선택 안 된 버튼: 배경 한 톤 진하게, 글자 더 진하게 */
+  .category_button:not(.is_active):hover {
+    background: #e2d3c9;
+
+    color:
+      var(--bekseju_dark1);
+  }
+
+
+  /* 선택된 버튼: 배경 한 톤 진하게 */
+  .category_button.is_active:hover {
+    background:
+      var(--bekseju_dark1);
+  }
+
+}
+
+
+/* 누르는 순간 살짝 눌림 */
+.category_button:active {
+  transform: scale(0.97);
+
+  transition-duration: 80ms;
 }
 
 
@@ -794,13 +869,12 @@
 
 /*
  * 준비중 카테고리.
- * 흐린 모양은 :disabled 와 같게 두되,
- * 안내를 띄워야 하므로 클릭은 받는다.
+ * 피그마처럼 흐리게 하지 않고 다른 버튼과 똑같이 보여 줌.
+ * 누르면 "Products coming soon" 안내가 뜨므로 손가락 커서를 씀
+ * (예전엔 50% 로 흐리고 기본 커서라 스티커처럼 보였음)
  */
 .category_button[aria-disabled="true"] {
-  cursor: default;
-
-  opacity: 0.5;
+  cursor: pointer;
 }
 
 
@@ -1594,6 +1668,16 @@
 
 .starter_kit_card:hover {
   z-index: 4;
+}
+
+
+/*
+ * 카드 두둥실 + 호버 기울기(products.js 3-1)가 켜지면
+ * JS 가 매 프레임 transform 을 바꾸므로 CSS 전환은 끔
+ * (켜 두면 한 박자씩 늦게 따라와서 굼떠 보임)
+ */
+.starter_kit.is_card_playing .starter_kit_card {
+  transition: none;
 }
 
 
