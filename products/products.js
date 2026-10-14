@@ -3803,14 +3803,22 @@
 
 
   /*
-    BEST는 원래 CSS에서 rotate(-12deg)이므로
-    최종 위치도 -12도로 맞춰줍니다.
+    BEST 도장의 최종 기울기 (CSS 의 .starter_kit_best 와 같아야 함)
+    - 태블릿·모바일: rotate(-12deg)
+    - PC: 피그마 글자 기울기 -23.9° 에서 딸기 카드(5°)를 뺀 -28.9°
   */
+  const bestRestRotation =
+    isMobileLayout || isTabletLayout
+      ? -12
+      : -28.9;
+
   if (best) {
     gsap.set(best, {
       autoAlpha: 0,
       scale: isMobileLayout ? 0.92 : 1.8,
-      rotation: isMobileLayout ? -12 : -35
+      rotation: isMobileLayout
+        ? bestRestRotation
+        : bestRestRotation - 23
     });
   }
 
@@ -3912,6 +3920,14 @@
       return;
     }
 
+    /*
+      PC : 딸기 카드는 CSS 에서 5° 기울어져 있음.
+      등장할 때 0° → 5° 로 살짝 기우는 맛을 살리려고 똑바로 세워 둠
+    */
+    gsap.set(strawberry, {
+      rotation: 0
+    });
+
     const strawberryRect =
       strawberry.getBoundingClientRect();
 
@@ -3923,13 +3939,17 @@
           card.getBoundingClientRect();
 
 
+        /*
+          카드마다 기울기가 달라서 바깥 상자 크기가 달라짐.
+          왼쪽 위 모서리가 아니라 중심끼리 맞춰야 딸기 바로 뒤에 겹침
+        */
         const x =
-          strawberryRect.left -
-          cardRect.left;
+          (strawberryRect.left + strawberryRect.width / 2) -
+          (cardRect.left + cardRect.width / 2);
 
         const y =
-          strawberryRect.top -
-          cardRect.top;
+          (strawberryRect.top + strawberryRect.height / 2) -
+          (cardRect.top + cardRect.height / 2);
 
 
         gsap.set(card, {
@@ -4232,11 +4252,11 @@ if (cards.length > 1) {
 
   } else {
 
-  /* 딸기 카드 */
+  /* 딸기 카드 (피그마 5°) */
   tl.to(
     cards[0],
     {
-      rotation: -5,
+      rotation: 5,
 
       duration: 0.18,
 
@@ -4247,16 +4267,16 @@ if (cards.length > 1) {
   );
 
 
-  /* 바나나 카드 */
+  /* 바나나 카드 (피그마 -7°. 자리는 CSS 가 정함) */
   tl.to(
     cards[1],
     {
       x: 0,
-      y: 8,
+      y: 0,
 
       scale: 1,
 
-      rotation: 7,
+      rotation: -7,
 
       duration: 0.28,
 
@@ -4267,16 +4287,16 @@ if (cards.length > 1) {
   );
 
 
-  /* 청포도 카드 */
+  /* 청포도 카드 (피그마 14°. 자리는 CSS 가 정함) */
   tl.to(
     cards[2],
     {
       x: 0,
-      y: 2,
+      y: 0,
 
       scale: 1,
 
-      rotation: -14,
+      rotation: 14,
 
       duration: 0.28,
 
@@ -4307,7 +4327,7 @@ if (cards.length > 1) {
 
             scale: 1,
 
-            rotation: -12,
+            rotation: bestRestRotation,
 
             duration: 0.22,
 
@@ -4326,7 +4346,7 @@ if (cards.length > 1) {
 
             scale: 0.82,
 
-            rotation: -5,
+            rotation: bestRestRotation + 7,
 
             duration: 0.13,
 
@@ -4342,7 +4362,7 @@ if (cards.length > 1) {
           {
             scale: 1.12,
 
-            rotation: -15,
+            rotation: bestRestRotation - 3,
 
             duration: 0.08,
 
@@ -4356,7 +4376,7 @@ if (cards.length > 1) {
           {
             scale: 1,
 
-            rotation: -12,
+            rotation: bestRestRotation,
 
             duration: 0.06
           }
