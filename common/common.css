@@ -708,7 +708,8 @@ html.lenis body {
 .footer_left {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    /* 시안: 로고 -> 링크 40px, 링크 -> 저작권 8px. 간격을 40px 로 두고 저작권만 32px 끌어올림 */
+    gap: 2.5rem;
     max-width: 38.75rem;
 }
 
@@ -733,7 +734,9 @@ html.lenis body {
 }
 
 .footer_left small {
+    margin-top: -2rem;
     font-size: 1rem;
+    line-height: 1.7;
     color: var(--bekseju_dark3);
 }
 
@@ -960,6 +963,7 @@ html.lenis body {
     }
 
     .footer_left small {
+        margin-top: 0;
         font-size: clamp(0.625rem, 1.95vw, 0.8125rem);
     }
 
