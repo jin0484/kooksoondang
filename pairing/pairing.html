@@ -106,47 +106,67 @@
   <main class="pairing_main">
     <section class="pairing_hero" id="pairing_hero" aria-labelledby="pairing_hero_title">
       <div class="pairing_hero_content">
+        <p class="pairing_eyebrow">A place for good taste</p>
         <h1 class="pairing_hero_title" id="pairing_hero_title">
           <span>Find Your Perfect</span>
-          <strong>pairing</strong>
+          <strong>pairing<span class="pairing_hero_dot" aria-hidden="true">.</span></strong>
         </h1>
-        <p class="pairing_hero_description">Discover the best makgeolli and food<br>combinations that match your taste.</p>
+        <p class="pairing_hero_description">A drink you love. A dish to go with it.<br>Discover a pairing that feels like you.</p>
+        <div class="pairing_hero_actions">
+          <a class="pairing_primary_link" href="#find_your_drink">Find my drink <span aria-hidden="true">↗</span></a>
+          <span class="pairing_hero_note">4 questions. Your own perfect match.</span>
+        </div>
       </div>
     </section>
 
     <section class="pairing_section pairing_drink_finder" id="find_your_drink" aria-labelledby="pairing_finder_title">
       <div class="pairing_container">
         <header class="pairing_section_heading">
+          <p class="pairing_eyebrow">01 / Discover your taste</p>
           <h2 id="pairing_finder_title">Find Your Drink</h2>
           <p>Find the Kooksoondang drink that best matches your taste.</p>
         </header>
 
-        <div class="pairing_questionnaire" id="pairing_questionnaire" aria-live="polite"></div>
+        <div class="pairing_question_progress" aria-live="polite" aria-atomic="true">
+          <div class="pairing_progress_heading">
+            <p class="pairing_progress_title">Your quiz progress</p>
+            <p id="pairing_question_status">0 of 4 answered</p>
+          </div>
+          <progress class="pairing_sr_only" id="pairing_question_progress" max="4" value="0" aria-label="Answered questions"></progress>
+          <ol class="pairing_progress_steps" id="pairing_progress_steps" aria-label="Question completion"></ol>
+          <p class="pairing_question_hint pairing_sr_only" id="pairing_question_hint">Answer all 4 questions to reveal your drink match.</p>
+        </div>
+        <div class="pairing_questionnaire" id="pairing_questionnaire" aria-describedby="pairing_question_hint"></div>
       </div>
     </section>
 
     <section class="pairing_section pairing_food_section" id="food_pairing" aria-labelledby="pairing_food_title">
       <div class="pairing_container">
         <header class="pairing_section_heading">
+          <p class="pairing_eyebrow">02 / Better together</p>
           <h2 id="pairing_food_title">Food Pairing</h2>
           <p>Discover foods that pair perfectly with your recommended drink.</p>
         </header>
 
         <div class="pairing_food_explorer">
+          <p class="pairing_food_match" id="pairing_food_match" hidden></p>
           <div class="pairing_food_tabs" role="tablist" aria-label="Food pairing categories">
-            <button class="pairing_food_tab" type="button" role="tab" aria-selected="false" data-food-category="popular">Popular Picks</button>
-            <button class="pairing_food_tab is_active" type="button" role="tab" aria-selected="true" data-food-category="korean">Korean Food</button>
-            <button class="pairing_food_tab" type="button" role="tab" aria-selected="false" data-food-category="global">Global Food</button>
+            <button class="pairing_food_tab" id="food_tab_popular" type="button" role="tab" aria-controls="pairing_food_panel" aria-selected="false" tabindex="-1" data-food-category="popular">Popular Picks</button>
+            <button class="pairing_food_tab is_active" id="food_tab_korean" type="button" role="tab" aria-controls="pairing_food_panel" aria-selected="true" data-food-category="korean">Korean Food</button>
+            <button class="pairing_food_tab" id="food_tab_global" type="button" role="tab" aria-controls="pairing_food_panel" aria-selected="false" tabindex="-1" data-food-category="global">Global Food</button>
           </div>
 
-          <div class="pairing_food_carousel">
-            <button class="pairing_carousel_arrow pairing_food_previous" type="button" aria-label="Show previous food cards">
-              <img src="./pairing_asset/icon/icon_left.svg" alt="" aria-hidden="true">
-            </button>
-            <div class="pairing_food_track" id="pairing_food_track" role="region" aria-label="Food pairing cards" tabindex="0"></div>
-            <button class="pairing_carousel_arrow pairing_food_next" type="button" aria-label="Show next food cards">
-              <img src="./pairing_asset/icon/icon_right.svg" alt="" aria-hidden="true">
-            </button>
+          <div id="pairing_food_panel" role="tabpanel" aria-labelledby="food_tab_korean">
+            <div class="pairing_food_carousel">
+              <button class="pairing_carousel_arrow pairing_food_previous" type="button" aria-label="Show previous food cards">
+                <img src="./pairing_asset/icon/icon_left.svg" alt="" aria-hidden="true">
+              </button>
+              <div class="pairing_food_track" id="pairing_food_track" role="region" aria-label="Food pairing cards" tabindex="0"></div>
+              <button class="pairing_carousel_arrow pairing_food_next" type="button" aria-label="Show next food cards">
+                <img src="./pairing_asset/icon/icon_right.svg" alt="" aria-hidden="true">
+              </button>
+            </div>
+            <p class="pairing_carousel_status" id="pairing_food_status" aria-live="polite" aria-atomic="true"></p>
           </div>
         </div>
       </div>
@@ -156,6 +176,7 @@
       <div class="pairing_container">
         <header class="pairing_recipes_heading">
           <div class="pairing_section_heading">
+            <p class="pairing_eyebrow">03 / A fresh way to enjoy</p>
             <h2 id="pairing_recipes_title">Drink Recipes</h2>
             <p>Try it in a refreshing recipe</p>
           </div>
@@ -171,10 +192,30 @@
           </div>
         </header>
 
+        <p class="pairing_recipe_status" id="pairing_recipe_status" aria-live="polite" aria-atomic="true"></p>
         <div class="pairing_recipe_viewport" id="pairing_recipe_viewport" tabindex="0" aria-label="Selected drink recipe"></div>
       </div>
     </section>
   </main>
+
+  <nav class="pairing_section_nav" aria-label="Pairing section shortcuts">
+    <span class="pairing_section_nav_heading" aria-hidden="true">EXPLORE</span>
+    <a href="#find_your_drink" aria-label="01 — Find Your Drink">
+      <svg class="pairing_nav_cup" viewBox="0 0 48 48" aria-hidden="true"><path d="M5 8H43L41.5 25C40.8 33 36 38 31 39V43H17V39C12 38 7.2 33 6.5 25Z"/></svg>
+      <span class="pairing_nav_number" aria-hidden="true">01</span>
+      <span class="pairing_nav_tooltip" aria-hidden="true">Find Your Drink</span>
+    </a>
+    <a href="#food_pairing" aria-label="02 — Food Pairing">
+      <svg class="pairing_nav_cup" viewBox="0 0 48 48" aria-hidden="true"><path d="M5 8H43L41.5 25C40.8 33 36 38 31 39V43H17V39C12 38 7.2 33 6.5 25Z"/></svg>
+      <span class="pairing_nav_number" aria-hidden="true">02</span>
+      <span class="pairing_nav_tooltip" aria-hidden="true">Food Pairing</span>
+    </a>
+    <a href="#drink_recipes" aria-label="03 — Drink Recipes">
+      <svg class="pairing_nav_cup" viewBox="0 0 48 48" aria-hidden="true"><path d="M5 8H43L41.5 25C40.8 33 36 38 31 39V43H17V39C12 38 7.2 33 6.5 25Z"/></svg>
+      <span class="pairing_nav_number" aria-hidden="true">03</span>
+      <span class="pairing_nav_tooltip" aria-hidden="true">Drink Recipes</span>
+    </a>
+  </nav>
 
   <!-- 세 페이지가 함께 쓰는 TOP 버튼. 모양은 common.css, 동작은 common.js 가 맡음 -->
   <button class="site_top_button" type="button" aria-label="Back to top" data-top-button>
@@ -229,9 +270,11 @@
 
 
 
-  <dialog class="pairing_result_modal" id="pairing_result_modal" aria-labelledby="pairing_result_modal_title">
+  <dialog class="pairing_result_modal" id="pairing_result_modal" aria-labelledby="pairing_result_modal_title" data-lenis-prevent>
+    <div class="pairing_modal_toolbar">
+      <button class="pairing_modal_close" id="pairing_modal_close" type="button" aria-label="Close recommendation" autofocus>&times;</button>
+    </div>
     <div class="pairing_result_modal_surface">
-      <button class="pairing_modal_close" id="pairing_modal_close" type="button" aria-label="Close recommendation">&times;</button>
       <div class="pairing_result_modal_content" id="pairing_result_modal_content"></div>
     </div>
   </dialog>
