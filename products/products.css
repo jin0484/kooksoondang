@@ -1109,7 +1109,7 @@
     translate(-50%, -50%);
 
   transition:
-    transform 0.45s
+    transform 0.4s
       cubic-bezier(
         0.22,
         1,
@@ -1119,20 +1119,79 @@
 }
 
 
-.product_card > article:hover
-.product_bottle,
+/* =========================================================
+   PC 호버: 제품이 앞으로 다가오는 느낌
 
-.product_card > article:focus-visible
-.product_bottle,
+   평소에는 동그라미·병을 0.93배로 작게 두고,
+   호버하면 원래 크기(피그마 크기)로 커지면서
+   동그라미는 동시에 좌우로 늘어나 띠가 됨.
+   (예전의 병이 살짝 올라가는 움직임은 크기 변화와 겹쳐서 뺐음)
 
-.product_card > article:focus-within
-.product_bottle {
+   마우스가 있는 PC 에서만 적용.
+   태블릿·모바일은 호버가 없어서 원래 크기 그대로 둠
+========================================================= */
 
-  transform:
-    translate(
-      -50%,
-      calc(-50% - 0.15rem)
-    );
+@media (hover: hover) and (min-width: 1025px) {
+
+  /* 0.93배: 82.08% x 0.93 = 76.33%, 76.22% x 0.93 = 70.88% */
+  .product_tone {
+    width: 76.33%;
+    height: 70.88%;
+
+    transition:
+      width 0.4s
+        cubic-bezier(
+          0.22,
+          1,
+          0.36,
+          1
+        ),
+
+      height 0.4s
+        cubic-bezier(
+          0.22,
+          1,
+          0.36,
+          1
+        );
+  }
+
+
+  .product_bottle {
+    transform:
+      translate(-50%, -50%)
+      scale(0.93);
+  }
+
+
+  .product_card > article:hover
+  .product_tone,
+
+  .product_card > article:focus-visible
+  .product_tone,
+
+  .product_card > article:focus-within
+  .product_tone {
+
+    /* 원래 크기로 (가로는 위의 hover 규칙대로 카드 밖까지 늘어남) */
+    height: 76.22%;
+  }
+
+
+  .product_card > article:hover
+  .product_bottle,
+
+  .product_card > article:focus-visible
+  .product_bottle,
+
+  .product_card > article:focus-within
+  .product_bottle {
+
+    transform:
+      translate(-50%, -50%)
+      scale(1);
+  }
+
 }
 
 
