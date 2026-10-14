@@ -60,6 +60,38 @@
         document.querySelector('[data-craving-input]');
 
 
+    const cravingPlaceholders = [
+        'What about “Makgeolli”?',
+        'How about “Draft Makgeolli”?',
+        '“Rice Makgeolli” today?',
+        'Craving “Strawberry Makgeolli”?',
+        'How about “Bekseju”?',
+        '“Yedam” today?',
+        'What about “Ryeo Premium Soju”?',
+        'How about “Charmsoon Soju”?'
+    ];
+
+
+    function updateCravingPlaceholder() {
+        if (!searchInput) return;
+
+        const index = Math.floor(
+            Math.random() * cravingPlaceholders.length
+        );
+
+        searchInput.placeholder = cravingPlaceholders[index];
+    }
+
+
+    updateCravingPlaceholder();
+
+    window.addEventListener('pageshow', (event) => {
+        if (event.persisted) {
+            updateCravingPlaceholder();
+        }
+    });
+
+
     const emptyMessage =
         document.querySelector('[data-product-empty]');
 
