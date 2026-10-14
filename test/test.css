@@ -1075,10 +1075,13 @@ body {
     }
 }
 
-/* 2번 문제만 예외로 세로 가운데 정렬.
-   문구가 길어 위로 붙이면 화면이 위쪽으로 쏠려 보임 */
+/* 2번 문제는 예외로 세로 가운데 정렬.
+   문구가 길어 위로 붙이면 화면이 위쪽으로 쏠려 보임.
+   3번 문제 버튼도 2번과 같은 자리에 오도록 같은 규칙을 씀 (술 그림은 화면 가운데 탁자 위라 버튼과 안 겹침) */
 #q2_yangban,
-#q2_pyeongmin {
+#q2_pyeongmin,
+#q3_yangban,
+#q3_pyeongmin {
     justify-content: center;
 }
 
@@ -1088,10 +1091,20 @@ body {
     gap: 10px;
 }
 
-/* Q2 동행 선택 박스만 기본 위치보다 60px 아래로 배치 */
+/* Q2·Q3 선택 박스는 가운데에서 아래로 내려 화면 아래쪽에 둠 */
 #q2_yangban .choices,
-#q2_pyeongmin .choices {
+#q2_pyeongmin .choices,
+#q3_yangban .choices,
+#q3_pyeongmin .choices {
     translate: 0 min(140px, calc(17.6vh - 18px));
+}
+
+/* Q2 버튼은 위 translate 에 더해, 그림 없는 문제 화면 공통 규칙(.screen_question ... .choices)의
+   transform 도 받아 화면 아래쪽에 놓임. Q3 는 술 그림(.stage)이 있어 그 규칙에서 빠지므로
+   같은 값을 여기서 따로 줘서 Q2 와 같은 높이에 맞춤 */
+#q3_yangban .choices,
+#q3_pyeongmin .choices {
+    transform: translateY(min(150px, calc(18.9vh - 20px)));
 }
 
 /* 평민 갈래는 주막 마당. 평민 질문 화면에서 같은 배경을 씀. */
@@ -1206,11 +1219,16 @@ body {
 #q4_yangban .food_preview,
 #q4_pyeongmin .food_preview {
     position: absolute;
+    /* 그림 넷은 같은 비율(2000px 캔버스, 받침 폭 같음)로 그려져 있으므로
+       모두 같은 폭·배율로 띄워야 어느 화면 크기에서든 인물 크기가 같게 보임 */
     /* PNG 하단 투명 여백까지 보정해 받침이 버튼 상단에 맞닿게 함 */
     bottom: calc(100% - 16px);
     left: 50%;
     z-index: 1;
     width: clamp(220px, 22vw, 420px);
+    /* reset.css 의 img max-width:100% 가 버튼 폭으로 그림을 잘라,
+       글이 짧은 버튼의 그림만 작아지던 것을 풂 */
+    max-width: none;
     height: auto;
     pointer-events: none;
     opacity: 0;
@@ -1244,36 +1262,6 @@ body {
     #q4_yangban .choice.is_picked .food_preview,
     #q4_pyeongmin .choice.is_picked .food_preview {
         transition: opacity 600ms ease;
-    }
-}
-
-/* Yangban_4 미리보기는 버튼 위 공간에 맞게 원본 표시 크기의 66%로 조정 */
-#q4_yangban .choice[data-set="food:yes"] .food_preview {
-    transform: translate(-50%, 16px) scale(0.6336);
-}
-
-#q4_yangban .choice[data-set="food:yes"]:is(:focus-visible, .is_picked) .food_preview {
-    transform: translate(-50%, 0) scale(0.66);
-}
-
-@media (hover: hover) {
-    #q4_yangban .choice[data-set="food:yes"]:hover .food_preview {
-        transform: translate(-50%, 0) scale(0.66);
-    }
-}
-
-/* Pyeongmin_3 미리보기는 원본 표시 크기의 70%로 조정 */
-#q4_pyeongmin .choice[data-set="food:yes"] .food_preview {
-    transform: translate(-50%, 16px) scale(0.672);
-}
-
-#q4_pyeongmin .choice[data-set="food:yes"]:is(:focus-visible, .is_picked) .food_preview {
-    transform: translate(-50%, 0) scale(0.7);
-}
-
-@media (hover: hover) {
-    #q4_pyeongmin .choice[data-set="food:yes"]:hover .food_preview {
-        transform: translate(-50%, 0) scale(0.7);
     }
 }
 
@@ -1314,8 +1302,8 @@ body {
         transform: none;
     }
 
-    /* 같은 자리에 번갈아 뜨는 두 그림의 크기를 맞춤.
-       PC 는 버튼마다 그림 자리가 달라 크기를 다르게 쓰지만(100% / 66~70%), 여기서는 모두 70% */
+    /* 버튼 묶음 아래 남는 자리에 맞게 두 그림을 똑같이 70% 로 줄임.
+       그림 넷은 같은 비율(2000px 캔버스, 받침 폭 같음)로 그려져 있어서 PC 처럼 같은 배율을 쓰면 인물 크기가 맞음 */
     #q4_yangban .choice[data-set] .food_preview,
     #q4_pyeongmin .choice[data-set] .food_preview {
         transform: translate(-50%, 16px) scale(0.672);
@@ -1444,16 +1432,6 @@ body {
     margin-left: -30px;
 }
 
-@media (max-width: 767px) {
-    /* 세로 화면에서도 배경은 높이에 맞춰 채워지므로 술 세 잔은 PC 와 같은 자리(탁자 위)에 그대로 놓임.
-       버튼만 세로로 쌓이는데, 가운데에 두면 낮은 화면에서 술과 겹쳐서 질문 띠 바로 아래로 올림 */
-    #q3_yangban,
-    #q3_pyeongmin {
-        justify-content: flex-start;
-        padding-top: calc(var(--top-shade) + 24px);
-    }
-}
-
 /* ===================== 전환 컷 ===================== */
 
 /* 문제 사이에 끼는 연출 화면. 아무 데나 누르면 다음으로 넘어감 */
@@ -1549,12 +1527,13 @@ body {
     gap: 12px;
 }
 
-/* 왼쪽은 메인으로 나가는 링크라 a, 오른쪽은 버튼이지만 생김새는 같은 알약 */
+/* 왼쪽은 메인으로 나가는 링크라 a, 오른쪽은 버튼이지만 생김새는 같음.
+   모서리는 인트로·문제 화면 버튼과 같은 잔 모양(위 4px, 아래 28px) */
 .btn_main,
 .btn_share {
     padding: 12px 22px;
     border: 0;
-    border-radius: 999px;
+    border-radius: 0.25rem 0.25rem 1.75rem 1.75rem;
     color: var(--test_ink);
     font: var(--PC-Body_Small_14SB);
     font-size: 13px;
@@ -1564,7 +1543,7 @@ body {
     transition: transform 0.2s, filter 0.2s;
 }
 
-/* 왼쪽은 밝은 알약에 어두운 글씨, 오른쪽은 상세 판과 같은 갈색 알약에 밝은 글씨 */
+/* 왼쪽은 주황 바탕에 흰 글씨, 오른쪽은 상세 판과 같은 갈색 바탕에 밝은 글씨 */
 .btn_main {
     background: var(--kooksoondang_orange, #F29556);
     color: var(--makgeolli_White, #FFF);
@@ -1852,7 +1831,8 @@ body {
     align-self: center;
     margin-top: auto;
     padding: 11px 24px;
-    border-radius: 999px;
+    /* 결과 화면의 다른 버튼과 같은 잔 모양 */
+    border-radius: 0.25rem 0.25rem 1.75rem 1.75rem;
     background: var(--bekseju_dark2, #5D504A);
     color: var(--test_ink);
     font: var(--PC-Body_Small_14SB);
@@ -1973,15 +1953,20 @@ body {
     }
 
     /* Q2: 화면이 좁거나 세로로 길면 동행 미리보기 인물이 버튼 자리까지 올라와 버튼에 가려짐.
-       그래서 버튼을 아래로 내리지 않고 질문 띠 바로 밑(10px)에 붙임 */
+       그래서 버튼을 아래로 내리지 않고 질문 띠 바로 밑(10px)에 붙임.
+       Q3 도 Q2 와 같은 자리를 씀 (아래로 내리면 좁은 화면에서 탁자 위 술 그림과 겹침) */
     #q2_yangban,
-    #q2_pyeongmin {
+    #q2_pyeongmin,
+    #q3_yangban,
+    #q3_pyeongmin {
         justify-content: flex-start;
         padding-top: calc(var(--top-shade) + 10px);
     }
 
     #q2_yangban .choices,
-    #q2_pyeongmin .choices {
+    #q2_pyeongmin .choices,
+    #q3_yangban .choices,
+    #q3_pyeongmin .choices {
         translate: none;
         transform: none;
     }
