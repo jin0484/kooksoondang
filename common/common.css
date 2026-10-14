@@ -1384,7 +1384,8 @@ html.lenis body {
     position: fixed;
 
     right: clamp(1rem, 2.1vw, 2.5rem);
-    bottom: clamp(1rem, 2.1vw, 2.5rem);
+    /* --top-button-lift: 푸터에 가까워지면 common.js 가 올려서 파도 위에 머물게 함 */
+    bottom: calc(clamp(1rem, 2.1vw, 2.5rem) + var(--top-button-lift, 0px));
 
     z-index: 100;
 
@@ -1450,7 +1451,7 @@ html.lenis body {
 @media (max-width: 80rem) {
     .site_top_button {
         right: clamp(1.5rem, 3.5vw, 2.25rem);
-        bottom: clamp(1.5rem, 3.5vw, 2.25rem);
+        bottom: calc(clamp(1.5rem, 3.5vw, 2.25rem) + var(--top-button-lift, 0px));
         row-gap: 0.3rem;
         width: clamp(2.25rem, 4.8vw, 3rem);
     }
@@ -1459,7 +1460,7 @@ html.lenis body {
 @media (max-width: 48rem) {
     .site_top_button {
         right: 1rem;
-        bottom: 1rem;
+        bottom: calc(1rem + var(--top-button-lift, 0px));
         row-gap: 0.24rem;
         width: clamp(1.95rem, 9vw, 2.25rem);
     }

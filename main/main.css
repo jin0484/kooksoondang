@@ -1304,8 +1304,11 @@ section[id] {
   height: calc(110vh + var(--pairing-tail));
   overflow: hidden;
   background: var(--bekseju_darker_cold);
-  /* 위아래 여백을 같은 값으로 둬야 콘텐츠가 섹션 정중앙에 놓임 */
-  padding: clamp(4rem, 6vw, 5rem) var(--gutter-x);
+  /* 이 섹션은 위로 한 화면(100vh)을 다 덮은 순간 고정돼 보이는 구간이라, 그때 화면에 보이는 위쪽 100vh 안에서
+     콘텐츠가 가운데에 와야 함. 섹션 전체(110vh + 꼬리 14vh) 정중앙에 두면 중심이 화면 중앙보다 아래(약 62vh)라
+     아래가 잘려 보였음 -> 아래 여백을 꼬리 + 10vh 만큼 더 줘서 가운데 맞춤 기준을 위 100vh 로 옮김 */
+  padding: clamp(4rem, 6vw, 5rem) var(--gutter-x)
+    calc(clamp(4rem, 6vw, 5rem) + var(--pairing-tail) + 10vh);
   /* 안쪽 콘텐츠 뭉치를 섹션 전체 높이 기준으로 상하 가운데 정렬 */
   display: flex;
   align-items: center;
@@ -2378,10 +2381,40 @@ section[id] {
   display: block;
   width: 3.375rem;
   aspect-ratio: 56.3239 / 155.136;
-  background-color: var(--event-bottle-color, var(--makgeolli_light1));
+  background-color: var(--makgeolli_light1);
+  /* 잔이 닿으면 병이 주황으로 물들 때, 일자로 바뀌지 않고 물결치는 수면이 아래에서 위로 차오름.
+     TEST 화면 전환의 물결처럼 은은하게: 물결 길이는 병 폭의 절반(한 폭에 두 굽이), 높이 차이는 병 높이의 약 2%. 처음 시안(굽이가 너무 촘촘)보다 약하고 직선처럼 보이던 두 번째보다 뚜렷함.
+     배경 그림은 병 높이의 3배(위 1/3 투명, 가운데 물결 경계, 아래 2/3 주황).
+     --event-bottle-fill(0 -> 1) 에 따라 그림을 위로 밀어 올리면 수면이 차오르고, 가로로 천천히 흘러 은은하게 출렁임.
+     병 모양은 아래 mask 가 잘라 줌 */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 300' preserveAspectRatio='none'%3E%3Cpath d='M0 150Q12.5 146 25 150T50 150T75 150T100 150V300H0Z' fill='%23F29556'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 100% 300%;
+  /* 가로 위치는 아래 sway 애니메이션이 왔다 갔다 하며 맡고, 세로 위치만 채움 값(0 -> 1)을 따라 차오름 */
+  background-position-x: 0%;
+  background-position-y: calc(var(--event-bottle-fill, 0) * 100%);
+  animation: event_bottle_sway 2200ms ease-in-out infinite alternate;
   -webkit-mask: url('../asset/icon/event_bottle.svg') center / contain no-repeat;
   mask: url('../asset/icon/event_bottle.svg') center / contain no-repeat;
-  transition: background-color 180ms ease;
+  transition: background-position-y 2400ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 수면이 좌우로 천천히 일렁임. 한 굽이 길이(= 병 폭)만큼 왔다 갔다 해서 이음매가 보이지 않음 */
+@keyframes event_bottle_sway {
+  from {
+    background-position-x: 0%;
+  }
+
+  /* % 로 쓰면 그림 폭 = 상자 폭이라 이동량이 0 이 됨 -> 병 폭(3.375rem)을 그대로 씀 */
+  to {
+    background-position-x: 3.375rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .event_icon_bottle {
+    animation: none;
+  }
 }
 
 .event_number {
@@ -3227,6 +3260,7 @@ section[id] {
     --event-line-progress: 0.93;
     --event-cup-x: 90%;
     --event-bottle-color: var(--kooksoondang_orange);
+    --event-bottle-fill: 1;
   }
 
   /* ----- events: 스크롤 스토리텔링 -----
