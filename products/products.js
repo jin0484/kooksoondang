@@ -138,7 +138,7 @@
 
 
     const state = {
-        category: 'makgeolli',
+        category: 'all',
         experience: '',
         keyword: ''
     };
@@ -147,7 +147,7 @@
     /* -----------------------------------------------------
        준비중 안내 (작은 반투명 팝업)
 
-       BEKSEJU / YEDAMCHEONG / SOJU / VIEW ALL 처럼
+       BEKSEJU & YEDAM / SOJU / VIEW ALL 처럼
        아직 보여줄 제품이 없는 버튼에서 부름
     ----------------------------------------------------- */
 
@@ -233,6 +233,7 @@
 
         if (
             state.category &&
+            state.category !== 'all' &&
             category !== state.category
         ) {
             return false;
@@ -1666,7 +1667,7 @@
         }
 
 
-        state.category = '';
+        state.category = 'all';
         state.experience = '';
         state.keyword = '';
 
@@ -1676,7 +1677,7 @@
 
                 setPressed(
                     item,
-                    false
+                    item.dataset.category === 'all'
                 );
 
             }
@@ -5017,5 +5018,462 @@ if (cards.length > 1) {
       passive: true
     }
   );
+
+})();
+
+
+
+/* =========================================================
+   내 술 취향 결과 창
+
+   TOP 위 캐릭터를 누르면 화면 위에 창이 뜨고(페이지 이동 없음),
+   그 안에 테스트 페이지(test/test.html)를 그대로 보여 줌.
+
+   - 테스트 결과를 기억하고 있으면 그 결과 화면 (?result=result_x)
+   - 없으면 테스트 첫 화면 → 창 안에서 바로 해 볼 수 있고,
+     결과가 나오면 기억해 뒀다가 다음에 열 때 바로 보여 줌
+   - 결과는 localStorage 의 'kooksoondang_test_result' 에 저장
+     (테스트 페이지에서도 같은 이름으로 저장해 주면 처음부터 결과가 뜸)
+
+   창 안의 MAIN 같은 링크는 창 안에서 이동하지 않고
+   창을 닫은 뒤 바깥 페이지가 이동함. VIEW MORE 는 지금 페이지가
+   제품 페이지이므로 창만 닫고 제품 목록으로 스크롤.
+   테스트 페이지 파일(test 폴더)은 건드리지 않음.
+========================================================= */
+
+(() => {
+
+  const opener =
+    document.querySelector("[data-type-result-open]");
+
+  const modal =
+    document.querySelector("[data-type-result-modal]");
+
+  if (!opener || !modal) return;
+
+
+  const panel = modal.querySelector(".type_result_panel");
+  const backdrop = modal.querySelector(".type_result_backdrop");
+  const frame = modal.querySelector("[data-type-result-frame]");
+  const closeButton = modal.querySelector(".type_result_close");
+
+  if (!panel || !frame) return;
+
+
+  const STORAGE_KEY = "kooksoondang_test_result";
+  const TEST_URL = "../test/test.html";
+
+  /* PC 에서 테스트 화면을 이 크기로 그린 뒤 창에 맞게 줄임 */
+  const CANVAS_WIDTH = 1440;
+  const CANVAS_HEIGHT = 810;
+
+  const desktopQuery =
+    window.matchMedia("(min-width: 1025px)");
+
+  const reduceMotion =
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const canAnimate =
+    typeof window.gsap !== "undefined" && !reduceMotion;
+
+
+  let isOpen = false;
+  let lastFocus = null;
+  let resultObserver = null;
+  let inertItems = [];
+
+
+  /* ---------- 결과 기억 ---------- */
+
+  function isResultId(value) {
+    return /^result_[a-f]$/.test(value || "");
+  }
+
+  function readSavedResult() {
+    try {
+      const saved = window.localStorage.getItem(STORAGE_KEY);
+
+      return isResultId(saved) ? saved : null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function saveResult(id) {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, id);
+    } catch (error) {
+      /* 저장이 막힌 브라우저면 그냥 넘어감 */
+    }
+  }
+
+
+  /* ---------- 창 크기 (PC 는 1440 × 810 을 통째로 줄임) ---------- */
+
+  function fitPanel() {
+
+    if (!desktopQuery.matches) {
+      panel.style.removeProperty("--type_result_w");
+      panel.style.removeProperty("--type_result_h");
+      panel.style.removeProperty("--type_result_scale");
+      return;
+    }
+
+    const scale = Math.min(
+      (window.innerWidth * 0.9) / CANVAS_WIDTH,
+      (window.innerHeight * 0.88) / CANVAS_HEIGHT,
+      1
+    );
+
+    panel.style.setProperty("--type_result_w", `${CANVAS_WIDTH * scale}px`);
+    panel.style.setProperty("--type_result_h", `${CANVAS_HEIGHT * scale}px`);
+    panel.style.setProperty("--type_result_scale", scale.toFixed(4));
+  }
+
+
+  /* ---------- 창 밖으로 나가는 이동 ---------- */
+
+  function goTo(url) {
+
+    if (window.sitePageTransition) {
+      window.sitePageTransition.leaveTo(url);
+    } else {
+      window.location.assign(url);
+    }
+  }
+
+  function isProductsPage(url) {
+    return /\/products\/products\.html$/.test(url.pathname);
+  }
+
+  function scrollToProducts() {
+
+    const showcase =
+      document.getElementById("product_showcase");
+
+    if (!showcase) return;
+
+    const margin =
+      parseFloat(getComputedStyle(showcase).scrollMarginTop) || 0;
+
+    const top =
+      showcase.getBoundingClientRect().top + window.scrollY - margin;
+
+    if (window.siteLenis) {
+      window.siteLenis.scrollTo(top, {
+        immediate: reduceMotion,
+        force: true
+      });
+    } else {
+      window.scrollTo({
+        top,
+        behavior: reduceMotion ? "auto" : "smooth"
+      });
+    }
+  }
+
+
+  /* ---------- 창 안(테스트 페이지)과 이어 주기 ---------- */
+
+  function handleFrameClick(event) {
+
+    const target = event.target;
+
+    if (!target || typeof target.closest !== "function") return;
+
+
+    /* 문제 화면의 SKIP : 창 안에서는 그냥 창을 닫음 */
+    if (target.closest("#btn_skip")) {
+      event.preventDefault();
+      event.stopPropagation();
+      closeModal();
+      return;
+    }
+
+
+    const link = target.closest("a[href]");
+
+    if (!link) return;
+
+    /* 새 탭으로 여는 링크는 그대로 둠 */
+    if (link.target && link.target !== "_self") return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const url = new URL(
+      link.getAttribute("href"),
+      frame.contentWindow.location.href
+    );
+
+    if (isProductsPage(url)) {
+      closeModal(scrollToProducts);
+    } else {
+      closeModal(() => goTo(url.href));
+    }
+  }
+
+  function rememberShownResult() {
+
+    let doc = null;
+
+    try {
+      doc = frame.contentDocument;
+    } catch (error) {
+      return;
+    }
+
+    const shown =
+      doc && doc.querySelector(".screen_result.is_on");
+
+    if (shown && isResultId(shown.id)) {
+      saveResult(shown.id);
+    }
+  }
+
+  function connectFrame() {
+
+    let frameWindow = null;
+    let doc = null;
+
+    /* 주소가 다른 곳에서 열었거나(file:// 등) 막히면 이어 주기는 건너뜀 */
+    try {
+      frameWindow = frame.contentWindow;
+      doc = frame.contentDocument;
+    } catch (error) {
+      return;
+    }
+
+    if (!frameWindow || !doc) return;
+
+
+    const path = frameWindow.location.pathname;
+
+    /* 창 안이 테스트 페이지가 아닌 곳으로 넘어갔으면 → 창을 닫고 바깥에서 이동 */
+    if (!/\/test\/test\.html$/.test(path)) {
+
+      const url = new URL(frameWindow.location.href);
+
+      if (isProductsPage(url)) {
+        closeModal(scrollToProducts);
+      } else {
+        closeModal(() => goTo(url.href));
+      }
+
+      return;
+    }
+
+
+    frameWindow.addEventListener("click", handleFrameClick, true);
+    frameWindow.addEventListener("keydown", handleKeydown);
+
+
+    /* 창 안에서 테스트를 끝내면 결과를 기억 */
+    const test = doc.getElementById("test");
+
+    if (resultObserver) resultObserver.disconnect();
+
+    if (test) {
+      resultObserver = new MutationObserver(rememberShownResult);
+      resultObserver.observe(test, {
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["class"]
+      });
+    }
+
+    rememberShownResult();
+  }
+
+  frame.addEventListener("load", () => {
+
+    if (!isOpen) return;
+
+    let href = "";
+
+    try {
+      href = frame.contentWindow.location.href;
+    } catch (error) {
+      href = "";
+    }
+
+    if (href === "about:blank") return;
+
+    connectFrame();
+    frame.classList.add("is_loaded");
+  });
+
+
+  /* ---------- 뒤쪽 페이지 잠그기 ---------- */
+
+  function lockPage() {
+
+    document.documentElement.classList.add("is_type_result_open");
+    window.siteLenis?.stop();
+
+    /* 창 말고 나머지는 클릭·탭 이동이 안 되게 */
+    inertItems = [...document.body.children].filter((element) =>
+      element !== modal &&
+      element.tagName !== "SCRIPT" &&
+      !element.inert
+    );
+
+    inertItems.forEach((element) => {
+      element.inert = true;
+    });
+  }
+
+  function unlockPage() {
+
+    inertItems.forEach((element) => {
+      element.inert = false;
+    });
+
+    inertItems = [];
+
+    document.documentElement.classList.remove("is_type_result_open");
+    window.siteLenis?.start();
+  }
+
+
+  /* ---------- 열기 / 닫기 ---------- */
+
+  function openModal() {
+
+    if (isOpen) return;
+
+    isOpen = true;
+    lastFocus = document.activeElement;
+
+    fitPanel();
+
+    const saved = readSavedResult();
+
+    frame.classList.remove("is_loaded");
+    frame.src = saved
+      ? `${TEST_URL}?result=${saved}`
+      : TEST_URL;
+
+    modal.hidden = false;
+    opener.setAttribute("aria-expanded", "true");
+
+    lockPage();
+
+
+    if (canAnimate) {
+
+      /* 캐릭터 자리에서 창이 톡 커져 나오는 느낌 */
+      const from = opener.getBoundingClientRect();
+      const box = panel.getBoundingClientRect();
+
+      const originX = from.left + from.width / 2 - box.left;
+      const originY = from.top + from.height / 2 - box.top;
+
+      gsap.killTweensOf([panel, backdrop]);
+
+      gsap.fromTo(
+        backdrop,
+        { autoAlpha: 0 },
+        { autoAlpha: 1, duration: 0.3, ease: "power1.out" }
+      );
+
+      gsap.fromTo(
+        panel,
+        {
+          autoAlpha: 0,
+          scale: 0.12,
+          transformOrigin: `${originX}px ${originY}px`
+        },
+        {
+          autoAlpha: 1,
+          scale: 1,
+          duration: 0.5,
+          ease: "power3.out"
+        }
+      );
+    }
+
+    closeButton?.focus({ preventScroll: true });
+  }
+
+  function closeModal(afterClose) {
+
+    if (!isOpen) return;
+
+    isOpen = false;
+
+    if (resultObserver) {
+      resultObserver.disconnect();
+      resultObserver = null;
+    }
+
+    opener.setAttribute("aria-expanded", "false");
+
+
+    const finish = () => {
+
+      modal.hidden = true;
+
+      /* 안에서 돌던 애니메이션까지 멈추도록 비움. 다음에 열 때 새로 읽음 */
+      frame.classList.remove("is_loaded");
+      frame.src = "about:blank";
+
+      if (canAnimate) {
+        gsap.set([panel, backdrop], { clearProps: "all" });
+      }
+
+      unlockPage();
+
+      if (lastFocus && typeof lastFocus.focus === "function") {
+        lastFocus.focus({ preventScroll: true });
+      }
+
+      if (typeof afterClose === "function") afterClose();
+    };
+
+
+    if (!canAnimate) {
+      finish();
+      return;
+    }
+
+    gsap.killTweensOf([panel, backdrop]);
+
+    gsap.to(panel, {
+      autoAlpha: 0,
+      scale: 0.12,
+      duration: 0.28,
+      ease: "power2.in"
+    });
+
+    gsap.to(backdrop, {
+      autoAlpha: 0,
+      duration: 0.28,
+      ease: "power1.in",
+      onComplete: finish
+    });
+  }
+
+
+  /* ---------- 이벤트 ---------- */
+
+  function handleKeydown(event) {
+    if (isOpen && event.key === "Escape") {
+      event.preventDefault();
+      closeModal();
+    }
+  }
+
+  opener.addEventListener("click", openModal);
+
+  modal.querySelectorAll("[data-type-result-close]").forEach((button) => {
+    button.addEventListener("click", () => closeModal());
+  });
+
+  document.addEventListener("keydown", handleKeydown);
+
+  window.addEventListener("resize", () => {
+    if (isOpen) fitPanel();
+  });
 
 })();

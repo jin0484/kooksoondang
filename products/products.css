@@ -804,6 +804,8 @@
 
   letter-spacing: 0.02em;
 
+  white-space: nowrap;
+
   color:
     var(--bekseju_dark2);
 
@@ -3191,6 +3193,245 @@
 
 @media (prefers-reduced-motion: reduce) {
   .products_top_character {
+    transition: none !important;
+  }
+}
+
+
+/* =========================================================
+   TOP 캐릭터 버튼 + 내 술 취향 결과 창
+
+   TOP 위 캐릭터를 누르면 화면 위에 창이 뜨고,
+   그 안에 테스트 결과 화면(test/test.html)이 보임. 페이지 이동 없음.
+   동작은 products.js 의 '내 술 취향 결과 창'
+========================================================= */
+
+/* 캐릭터를 감싼 버튼. 캐릭터처럼 TOP 버튼이 보일 때만 누를 수 있음 */
+.products_top_character_button {
+  display: block;
+
+  padding: 0;
+  border: 0;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  visibility: hidden;
+  pointer-events: none;
+
+  /* 발끝 기준으로 살짝 커짐 */
+  transform-origin: 50% 100%;
+
+  transition:
+    visibility 260ms ease,
+    scale 220ms ease;
+}
+
+.products_top_stack:has(.site_top_button.is_visible)
+.products_top_character_button {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .products_top_character_button:hover {
+    scale: 1.06;
+  }
+}
+
+.products_top_character_button:focus-visible {
+  outline: 2px solid #f29556;
+  outline-offset: 4px;
+
+  border-radius: 12px;
+}
+
+
+/* 창이 떠 있는 동안 뒤쪽 페이지는 스크롤되지 않게 */
+html.is_type_result_open {
+  overflow: hidden;
+}
+
+
+.type_result_modal {
+  position: fixed;
+  inset: 0;
+
+  /* 헤더·TOP 버튼·안내 토스트보다 위 */
+  z-index: 1000;
+
+  display: grid;
+  place-items: center;
+
+  padding: 1rem;
+}
+
+.type_result_modal[hidden] {
+  display: none;
+}
+
+
+/* 뒤쪽을 살짝 어둡게 (bekseju_darker_warm #272625 55%) */
+.type_result_backdrop {
+  position: absolute;
+  inset: 0;
+
+  background:
+    rgba(39, 38, 37, 0.55);
+}
+
+
+/*
+ * 창 크기
+ * - PC : JS 가 화면에 맞춰 --type_result_w / --type_result_h 를 넣음
+ *        (테스트 화면 1440 × 810 을 통째로 줄여서 보여 줌)
+ * - 태블릿·모바일 : 화면에 꽉 차게, 안쪽은 테스트 페이지의 반응형 그대로
+ */
+.type_result_panel {
+  position: relative;
+
+  width:
+    var(--type_result_w, min(calc(100vw - 2rem), 45rem));
+  height:
+    var(--type_result_h, min(calc(100svh - 2rem), 56rem));
+
+  overflow: hidden;
+
+  border-radius: 1.75rem;
+
+  background:
+    var(--makgeolli_White);
+
+  box-shadow:
+    0 1.5rem 3.75rem rgba(39, 38, 37, 0.28);
+}
+
+
+.type_result_frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  border: 0;
+
+  /* 다 읽히면 부드럽게 나타남 */
+  opacity: 0;
+
+  transition:
+    opacity 300ms ease;
+}
+
+.type_result_frame.is_loaded {
+  opacity: 1;
+}
+
+@media (min-width: 1025px) {
+  .type_result_frame {
+    width: 1440px;
+    height: 810px;
+
+    transform:
+      scale(var(--type_result_scale, 1));
+    transform-origin: 0 0;
+  }
+}
+
+
+/* 닫기 (오른쪽 위 동그란 X) */
+.type_result_close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+
+  z-index: 1;
+
+  display: grid;
+  place-items: center;
+
+  width: 2.75rem;
+  height: 2.75rem;
+
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+
+  background:
+    var(--bekseju_dark1);
+
+  cursor: pointer;
+
+  transition:
+    scale 200ms ease,
+    background-color 200ms ease;
+}
+
+.type_result_close span,
+.type_result_close span::before {
+  display: block;
+
+  width: 1.125rem;
+  height: 2px;
+
+  border-radius: 2px;
+
+  background:
+    var(--makgeolli_White);
+}
+
+.type_result_close span {
+  rotate: 45deg;
+}
+
+.type_result_close span::before {
+  content: "";
+
+  rotate: 90deg;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .type_result_close:hover {
+    scale: 1.08;
+
+    background:
+      var(--bekseju_dark2);
+  }
+}
+
+.type_result_close:focus-visible {
+  outline: 2px solid #f29556;
+  outline-offset: 3px;
+}
+
+
+@media (max-width: 767px) {
+  .type_result_modal {
+    padding: 0.75rem;
+  }
+
+  .type_result_panel {
+    border-radius: 1.25rem;
+  }
+
+  .type_result_close {
+    top: 0.75rem;
+    right: 0.75rem;
+
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .products_top_character_button,
+  .type_result_frame,
+  .type_result_close {
     transition: none !important;
   }
 }
