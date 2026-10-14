@@ -1225,11 +1225,11 @@ html.lenis body {
 
     /* 360 시안 서랍: 상단 60 여백, 좌우 16, 항목 16px, 일러스트는 오른쪽 아래 */
     .nav_drawer_panel {
-        padding: 3.75rem 1rem 5.1875rem;
+        padding: 4.5rem 1rem 5.1875rem;
     }
 
     .nav_drawer_panel ul {
-        gap: 0.25rem;
+        gap: 0.75rem;
     }
 
     .nav_drawer_panel li {
@@ -1263,7 +1263,7 @@ html.lenis body {
     }
 
     .site_footer {
-        padding: 4rem 0 3.75rem;
+        padding: 2.5rem 0 3.75rem;
     }
 
     /* 로고·링크 / SNS 가 한 줄을 나눠 쓰고, 패밀리 사이트가 그 아래 폭을 다 씀 */
@@ -1274,13 +1274,13 @@ html.lenis body {
             "left sns"
             "family family";
         align-items: end;
-        gap: 1.75rem 1rem;
+        gap: 1.25rem 1rem;
         padding: 0 1rem;
     }
 
     .footer_left {
         grid-area: left;
-        gap: 1.125rem;
+        gap: 0.75rem;
     }
 
     /* 자식들을 위 그리드 칸에 직접 앉힘 */
@@ -1290,7 +1290,7 @@ html.lenis body {
 
     .footer_sns {
         grid-area: sns;
-        gap: 0.625rem;
+        gap: 0;
     }
 
     .family_site {
@@ -1312,19 +1312,22 @@ html.lenis body {
     }
 
     .footer_links button {
+        padding: 0;
         font-size: 0.875rem;
+        line-height: 1.7;
     }
 
     .footer_sns img {
-        width: 1.6875rem;
+        width: 2.6438rem;
     }
 
     .family_site_button {
         justify-content: center;
         width: 100%;
-        padding: 0.625rem 1rem;
-        border-radius: 0.25rem 0.25rem 1.5rem 1.5rem;
-        font-size: 1.0625rem;
+        padding: 0.875rem 2.5rem;
+        border-radius: 0.25rem 0.25rem 2rem 2rem;
+        font-size: 1.125rem;
+        line-height: 1;
     }
 
     .family_site_list {
@@ -1433,5 +1436,21 @@ html.lenis body {
     .site_top_button * {
         animation: none !important;
         transition: none !important;
+    }
+}
+
+/* ---------- 햄버거 서랍: 좁은 폭에서 일러스트가 메뉴 글자와 겹치지 않게 ---------- */
+/* 오른쪽 아래에 띄워 둔 술병 일러스트(179px)는 폭이 576px 아래로 내려가면 EVENT/PROMOTION 줄과 겹침.
+   그 폭부터는 띄우지 않고 메뉴 목록 아래, 오른쪽 끝에 놓아 서랍이 그만큼 길어지게 함 */
+
+@media (max-width: 36rem) {
+    .nav_drawer_panel {
+        padding-bottom: 1.25rem;
+    }
+
+    .nav_drawer_illust {
+        position: static;
+        align-self: flex-end;
+        margin-top: 1.25rem;
     }
 }

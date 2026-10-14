@@ -17,13 +17,7 @@
         icon.classList.add('is_icon_animating');
     }
 
-    sideNav.addEventListener('click', (event) => {
-        const link = event.target.closest('a');
-
-        if (!link || !sideNav.contains(link)) return;
-
-        const activeItem = link.closest('li');
-
+    function setCurrent(activeItem) {
         sideNavItems.forEach((item) => {
             const isActive = item === activeItem;
             const itemLink = item.querySelector('a');
@@ -33,7 +27,53 @@
             itemLink?.toggleAttribute('aria-current', isActive);
             changeSideNavIcon(icon, isActive ? activeIcon : inactiveIcon);
         });
+    }
+
+    sideNav.addEventListener('click', (event) => {
+        const link = event.target.closest('a');
+
+        if (!link || !sideNav.contains(link)) return;
+
+        setCurrent(link.closest('li'));
     });
+
+    // 스크롤 위치를 따라가며 현재 구역을 바꿈. 클릭할 때만 바뀌면 스크롤로 내려가도 처음 항목에 머묾.
+    // 화면 위에서 40% 지점을 기준선으로 삼아, 그 선을 지난 구역 중 가장 아래(마지막) 구역을 현재로 봄.
+    // 고정(sticky)으로 붙들린 구역은 top 이 0 에 머물지만 뒤따르는 구역이 선을 넘으면 마지막이 바뀌므로 그대로 동작함
+    const sections = Array.from(sideNavItems)
+        .map((item) => {
+            const href = item.querySelector('a')?.getAttribute('href') || '';
+            const target = href.startsWith('#') && href.length > 1 ? document.getElementById(href.slice(1)) : null;
+
+            return target ? { item, target } : null;
+        })
+        .filter(Boolean);
+
+    if (sections.length) {
+        let spyFrame = 0;
+
+        const updateCurrent = () => {
+            spyFrame = 0;
+
+            const line = window.innerHeight * 0.4;
+            let current = sections[0];
+
+            sections.forEach((section) => {
+                if (section.target.getBoundingClientRect().top <= line) current = section;
+            });
+
+            if (!current.item.classList.contains('is_current')) setCurrent(current.item);
+        };
+
+        const requestUpdate = () => {
+            if (!spyFrame) spyFrame = window.requestAnimationFrame(updateCurrent);
+        };
+
+        window.addEventListener('scroll', requestUpdate, { passive: true });
+        window.addEventListener('resize', requestUpdate);
+        window.addEventListener('load', requestUpdate);
+        requestUpdate();
+    }
 })();
 
 /* 태블릿 헤더의 햄버거 서랍. 여닫는 모습은 css 가 맡고 여기서는 상태 클래스와 aria 만 바꿈 */
