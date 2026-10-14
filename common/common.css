@@ -783,6 +783,8 @@ html.lenis body {
     right: 0;
     left: auto;
     width: 100%;
+    /* 버튼이 가장 긴 이름(Woorisool Areumteo)보다 좁아지면 그 이름이 잘리므로, 그때만 이름 폭까지 넓어짐 */
+    min-width: max-content;
     bottom: calc(100% + 0.5rem);
     display: flex;
     flex-direction: column;
@@ -990,6 +992,10 @@ html.lenis body {
         padding: 0.75rem 1.25rem;
         font-size: 1.0625rem;
         white-space: nowrap;
+        /* 팝업 목록 폭 = 버튼 폭이므로, 가장 긴 이름(Woorisool Areumteo, 약 145px + 좌우 8px)이 들어가는 폭 아래로는 줄지 않게 함 */
+        min-width: 10.25rem;
+        /* 최소 폭 때문에 버튼이 글자보다 넓어졌을 때 글자와 화살표가 왼쪽에 몰리지 않고 가운데에 오게 함 */
+        justify-content: center;
     }
 
     .footer_right address {
@@ -1469,5 +1475,25 @@ html.lenis body {
         position: static;
         align-self: flex-end;
         margin-top: 1.25rem;
+    }
+}
+
+/* ---------- 푸터: 태블릿과 넓은 데스크톱 사이 (1025px ~ 1344px) ---------- */
+/* 왼쪽(최대 620px) + 간격 48px + 오른쪽(최대 472px) + 좌우 여백이 1340px 가까이 필요해서,
+   그보다 좁으면 flex-wrap 때문에 오른쪽 묶음이 왼쪽 아래로 떨어져 푸터가 무너졌음.
+   이 폭에서는 한 줄을 유지하고 왼쪽이 남는 폭에 맞춰 줄어들게 함(저작권 문구는 칸 안에서 접힘) */
+
+@media (min-width: 64.0625rem) and (max-width: 84rem) {
+    .site_footer_inner {
+        flex-wrap: nowrap;
+    }
+
+    .footer_left {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    .footer_right {
+        flex: 0 0 auto;
     }
 }
