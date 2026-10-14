@@ -4856,3 +4856,166 @@ if (cards.length > 1) {
 
 })();
 
+
+
+/* =========================================================
+   TOP 묶음(캐릭터 + TOP 버튼) 스크롤 따라오기 (PC 전용)
+
+   화면 오른쪽 아래 캐릭터와 TOP 버튼이 한 덩어리로
+   스크롤할 때 아주 살짝 뒤처졌다가 통- 하고 제자리로 돌아옴.
+
+   - 스크롤 속도만큼 반대쪽으로 밀림 (최대 위 8px / 아래 6px)
+   - 기울기 없이 위아래로만
+   - 스크롤이 멈추면 용수철처럼 한 번 살짝 넘쳤다가 0.5초 안에 제자리
+
+   마우스가 있는 PC 에서만. 태블릿·모바일, 동작 줄이기 설정이면 그대로.
+   위치는 CSS 의 --top_stack_lag 로 넘김
+========================================================= */
+
+(() => {
+
+  const stack =
+    document.querySelector(".products_top_stack");
+
+  if (!stack) return;
+
+
+  const canPlay =
+    window.matchMedia(
+      "(min-width: 1025px) and (hover: hover) and (pointer: fine)"
+    ).matches &&
+    !window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+  if (!canPlay) return;
+
+
+  /* 위로 밀리는 최대 거리 / 아래로 밀리는 최대 거리 (px) */
+  const LAG_UP = 8;
+  const LAG_DOWN = 6;
+
+  /* 이 정도 스크롤 속도(px/초)에서 최대 거리의 약 76% 만큼 밀림 */
+  const LAG_SPEED = 1800;
+
+  /* 용수철 세기 / 출렁임을 잡는 힘 (작을수록 더 통통 튐) */
+  const SPRING = 220;
+  const DAMPING = 10;
+
+  /*
+   * 관성. 스크롤이 갑자기 빨라지거나 멈출 때 한 번 더 툭 밀어 줌.
+   * 그래서 스크롤을 멈추면 제자리를 살짝 지나쳤다가 통- 하고 돌아옴
+   */
+  const INERTIA = 0.12;
+
+
+  let lastScroll = window.scrollY;
+  let lastTime = 0;
+  let speed = 0;
+  let offset = 0;
+  let offsetVelocity = 0;
+  let frame = 0;
+
+
+  function step(time) {
+
+    frame = 0;
+
+    const delta =
+      lastTime
+        ? Math.min((time - lastTime) / 1000, 0.05)
+        : 1 / 60;
+
+    lastTime = time;
+
+
+    /* 스크롤 속도 (px/초). 튀는 값은 부드럽게 */
+    const scroll = window.scrollY;
+    const rawSpeed = (scroll - lastScroll) / delta;
+
+    lastScroll = scroll;
+
+    const prevSpeed = speed;
+
+    speed += (rawSpeed - speed) * Math.min(delta * 12, 1);
+
+
+    /* 아래로 스크롤하면 위로, 위로 스크롤하면 아래로 살짝 밀림 */
+    const pull =
+      Math.tanh(speed / LAG_SPEED);
+
+    const target =
+      pull > 0
+        ? -pull * LAG_UP
+        : -pull * LAG_DOWN;
+
+
+    /* 용수철 */
+    const force =
+      (target - offset) * SPRING -
+      offsetVelocity * DAMPING;
+
+    offsetVelocity += force * delta;
+
+    /* 빨라지면 위로, 멈추면 아래로 툭 */
+    offsetVelocity -= (speed - prevSpeed) * INERTIA;
+
+    offset += offsetVelocity * delta;
+
+
+    /*
+     * 화면에 보이는 값은 최대 거리 안으로 부드럽게 눌러 담음.
+     * (딱 잘라 막으면 끝에서 멈칫해 보여서 tanh 로 점점 덜 밀리게)
+     */
+    const limit =
+      offset < 0
+        ? LAG_UP
+        : LAG_DOWN;
+
+    const shown =
+      Math.tanh(offset / limit) * limit;
+
+
+    stack.style.setProperty(
+      "--top_stack_lag",
+      `${shown.toFixed(2)}px`
+    );
+
+
+    /* 다 멈췄으면 쉼 (다음 스크롤 때 다시 깨움) */
+    const resting =
+      Math.abs(speed) < 1 &&
+      Math.abs(offset) < 0.02 &&
+      Math.abs(offsetVelocity) < 0.02;
+
+    if (resting) {
+
+      speed = 0;
+      offset = 0;
+      offsetVelocity = 0;
+      lastTime = 0;
+
+      stack.style.setProperty("--top_stack_lag", "0px");
+
+      return;
+    }
+
+    frame = window.requestAnimationFrame(step);
+  }
+
+
+  window.addEventListener(
+    "scroll",
+    () => {
+
+      if (frame) return;
+
+      lastTime = 0;
+      frame = window.requestAnimationFrame(step);
+    },
+    {
+      passive: true
+    }
+  );
+
+})();

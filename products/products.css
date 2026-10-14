@@ -3149,6 +3149,16 @@
 }
 
 
+/*
+ * 캐릭터 + TOP 버튼 묶음이 스크롤할 때 살짝 뒤처졌다 돌아오는 움직임
+ * (products.js 'TOP 묶음 스크롤 따라오기' 가 값을 넣음, PC 전용).
+ * JS 가 값을 안 넣으면 0 이라 그대로
+ */
+.products_top_stack {
+  translate: 0 var(--top_stack_lag, 0px);
+}
+
+
 @media (max-width: 80rem) {
   .products_top_stack {
     right: clamp(1.5rem, 3.5vw, 2.25rem);
