@@ -3280,7 +3280,9 @@ section[id] {
       "number title"
       ".      list"
       "progress progress";
-    grid-template-rows: auto auto minmax(0, 1fr);
+    /* 마지막 줄(진행 막대)이 컵 아이콘(약 51px + 아래 14px)이 들어갈 높이보다 줄어들면
+       컵이 위로 삐져나와 목록 마지막 글자와 겹침. 최소 높이를 주면 모자란 만큼 사진이 줄어듦 */
+    grid-template-rows: auto auto minmax(clamp(5.125rem, 8vw, 7.625rem), 1fr);
     column-gap: clamp(4.5rem, 9.5vw, 6.5rem);
     row-gap: 1.5rem;
     align-content: stretch;
@@ -3937,5 +3939,51 @@ section[id] {
     align-items: flex-start;
     gap: 0.75rem;
     width: auto;
+  }
+}
+
+/* ---------- 이벤트: 화면이 아주 낮을 때 ---------- */
+/* 한 화면에 고정되는 이벤트 장면은 높이가 100svh 로 못박혀 있어서, 창 높이가 약 560px 아래로 내려가면
+   위아래 여백 + 제목 + 목록 + 막대 줄만으로도 높이를 넘겨 맨 아래 컵·병 아이콘이 화면 밖으로 잘림.
+   이 높이에서는 여백과 간격을 줄이고 막대 줄 최소 높이도 낮춰, 모자란 만큼 사진만 줄어들게 함 */
+
+@media (max-width: 64rem) and (max-height: 35rem) {
+  .events.is_event_motion_ready .events_inner {
+    padding: 1rem 0;
+    gap: 0.5rem;
+  }
+
+  /* 제목 EVENTS(3rem) + 제목 아래 간격 3rem 이 낮은 화면에서는 가장 큰 덩어리라 같이 줄임 */
+  .events.is_event_motion_ready .events_head h2 {
+    font-size: 1.75rem;
+    line-height: 1.2;
+  }
+
+  /* 제목 아래 칸이 남는 높이 안에서만 자라게 해야(min-height: 0) 사진이 먼저 줄고 아이콘 줄이 밖으로 밀려나지 않음 */
+  .events.is_event_motion_ready .events_viewport {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
+  .events.is_event_motion_ready .event_card {
+    gap: 1rem;
+  }
+
+  /* 본문이 사진과 같은 비율로 줄어들면 안쪽 줄들이 칸을 넘쳐 아이콘이 밖으로 나감 -> 본문은 줄지 않고 사진만 줄게 함 */
+  .events.is_event_motion_ready .event_copy {
+    flex: 1 0 auto;
+  }
+
+  .events.is_event_motion_ready .event_copy {
+    row-gap: 0.75rem;
+    grid-template-rows: auto auto minmax(4.25rem, 1fr);
+  }
+
+  .events.is_event_motion_ready .event_progress {
+    min-height: 4.25rem;
+  }
+
+  .events.is_event_motion_ready .event_copy ul {
+    gap: 0.25rem;
   }
 }
