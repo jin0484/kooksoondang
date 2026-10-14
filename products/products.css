@@ -868,6 +868,12 @@
 
   border-radius: inherit;
 
+  /*
+   * hover 때 동그라미가 좌우로 길어지면서 카드 밖으로 나가는데,
+   * 그 바깥 부분을 카드 모양대로 잘라 냄 (피그마 카드도 overflow clip)
+   */
+  overflow: hidden;
+
   transition:
     box-shadow 320ms ease;
 }
@@ -893,6 +899,12 @@
   z-index: 3;
 
   border-radius: inherit;
+}
+
+
+/* 카드가 바깥을 잘라 내므로 키보드 포커스 테두리는 안쪽에 그림 */
+.product_link:focus-visible {
+  outline-offset: -3px;
 }
 
 
@@ -941,7 +953,12 @@
    */
   height: 76.22%;
 
-  border-radius: 50%;
+  /*
+   * 50% 가 아니라 아주 큰 값으로 둠.
+   * 정사각형일 땐 똑같이 동그라미지만, 가로로 길어지면
+   * 양끝이 반원인 알약 모양을 그대로 유지함 (50% 면 타원이 됨)
+   */
+  border-radius: 999px;
 
   background:
     var(
@@ -955,24 +972,9 @@
   transform-origin:
     center center;
 
+  /* 높이·둥글기는 그대로, 가로 길이만 바뀜 */
   transition:
-    width 0.45s
-      cubic-bezier(
-        0.22,
-        1,
-        0.36,
-        1
-      ),
-
-    height 0.45s
-      cubic-bezier(
-        0.22,
-        1,
-        0.36,
-        1
-      ),
-
-    border-radius 0.45s
+    width 0.4s
       cubic-bezier(
         0.22,
         1,
@@ -982,7 +984,14 @@
 }
 
 
-/* Hover 시 원형 → 직사각형 */
+/*
+ * Hover 시 동그라미가 높이는 그대로 좌우로만 길어짐.
+ * 양끝 반원까지 카드 밖으로 완전히 나가서 잘리기 때문에
+ * 카드 안에서는 가로 띠(네모)처럼 보임. 모양 자체는 계속 동그라미가 늘어난 것
+ *
+ * 필요한 폭 = 카드 폭 + 동그라미 지름(양끝 반원 두 개) + 여유
+ *          = (100% + 82.08%) + 좌우 여백 x 2 + 0.5rem
+ */
 
 .product_card > article:hover
 .product_tone,
@@ -993,19 +1002,12 @@
 .product_card > article:focus-within
 .product_tone {
 
-  /* 카드 좌우 여백까지 먹고 들어가 끝에서 끝까지 참 */
   width:
-    calc(100% + var(--card_pad_x) * 2);
-
-  /* 동그라미와 같은 비율로 5% + 10% 줄임 */
-  height:
-    clamp(
-      128.25px,
-      10.43vw,
-      200.07px
+    calc(
+      182.08% +
+      var(--card_pad_x) * 2 +
+      0.5rem
     );
-
-  border-radius: 0;
 }
 
 
@@ -1013,7 +1015,7 @@
    FRUIT
 ========================================================= */
 
-/* 평소에는 숨어 있다가 hover 때 뒤 배경이 네모로 바뀌는 것과
+/* 평소에는 숨어 있다가 hover 때 뒤 동그라미가 길어지는 것과
    거의 동시에(0.1초 뒤) 튀어 나옴.
    지연은 hover 쪽 transition 에만 걸어 둠.
    여기(기본값)에 걸면 커서를 뗄 때도 0.1초 늦게 사라져 굼떠 보인다 */
