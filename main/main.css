@@ -2048,7 +2048,8 @@ section[id] {
 /* 고른 카드 두 장을 그대로 복제해 축소만 함.
    카드 실물이 248x368 의 0.7배(173.6x257.6)라 배율도 0.62/0.7 로 환산해 둠 */
 .pairing_result_cards {
-  --result-card-scale: 0.886;
+  /* 0.886 -> 1.1: 카드가 더 크게 보이도록. 대화상자 폭(40.25rem - 여백)에 두 장이 넉넉히 들어감 */
+  --result-card-scale: 1.1;
   display: flex;
   justify-content: center;
   gap: 1.25rem;
@@ -3747,7 +3748,8 @@ section[id] {
   }
 
   .pairing_result_cards {
-    --result-card-scale: 0.78;
+    /* 0.78 -> 1: 360px 에서도 두 장(카드 폭 120px x 2 + 간격 12px = 252px) 이 대화상자 안쪽 폭(264px)에 들어가는 한도 */
+    --result-card-scale: 1;
     gap: 0.75rem;
   }
 
@@ -4026,5 +4028,37 @@ section[id] {
 
   .events.is_event_motion_ready .event_copy ul {
     gap: 0.25rem;
+  }
+}
+
+/* ---------- 스크롤 잠금 중에도 스크롤바 유지 ---------- */
+/* 이벤트 앞 스크롤 잠금(main.js 의 lock)은 lenis.stop() 을 부르는데, lenis 의 css 는 이때 html 을 overflow: clip 으로 바꿔
+   세로 스크롤바를 없앰 -> 화면 폭이 스크롤바 폭(약 15px)만큼 넓어졌다 좁아지며 꿀렁임.
+   잠금 중에만(.is_scroll_trap) 세로 스크롤바 자리를 남김. 휠·터치·키보드는 main.js 가 막고 있음 */
+
+html.lenis.is_scroll_trap.lenis-stopped:not(.lenis-autoToggle) {
+  /* scroll 이 아니라 visible: scroll 이면 vw/vh 단위가 스크롤바 폭만큼 작아져 페이지 크기가 변함(common.css 참고) */
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+/* ---------- 페어링: 화면을 다 덮어 고정되면 모서리를 직각으로 ---------- */
+/* 페어링 섹션은 브랜드 스토리 위로 아치 모양(윗모서리 둥근)으로 덮으며 올라옴.
+   윗변이 화면 맨 위에 닿아 한 화면을 다 채우는 동안에는 모서리 뒤로 흰 배경이 비쳐 보이므로 직각(전부 검정)으로 바꾸고,
+   다시 내려가 윗변이 화면 안으로 들어오면 원래 아치로 돌아감(main.js 가 .is_pairing_flat 을 붙였다 뗌) */
+
+.pairing--history-overlay {
+  transition: border-radius 320ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 320ms ease, border-color 320ms ease;
+}
+
+.pairing--history-overlay.is_pairing_flat {
+  border-radius: 0;
+  box-shadow: none;
+  border-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pairing--history-overlay {
+    transition: none;
   }
 }
