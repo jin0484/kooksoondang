@@ -2529,7 +2529,8 @@
     // 모션을 끈 사용자에겐 마스크 자체를 씌우지 않아 처음부터 그대로 보임
     if (reducedMotionQuery.matches) return;
 
-    // 되감기까지 하려면 옵저버를 계속 붙여 두고, 임계값을 넘나들 때마다 클래스를 토글해야 함.
+    // 한 번 드러나면 그대로 둠. 예전에는 임계값을 넘나들 때마다 클래스를 토글해서, 아래에서 위로 다시 올라올 때마다
+    // 사라졌다가 처음처럼 다시 차올랐음(되감기). 이제는 처음 한 번만 차오르고 이후로는 계속 보임.
     // isIntersecting 은 1px 만 걸쳐도 true 라 임계값 판단에 못 쓰고 intersectionRatio 로 비교함
     const revealRatio = 0.2;
 
@@ -2538,9 +2539,10 @@
     window.requestAnimationFrame(() => divider.classList.add('is_glass_armed'));
 
     const revealObserver = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-            divider.classList.toggle('is_glass_revealed', entry.intersectionRatio >= revealRatio);
-        });
+        if (!entries.some((entry) => entry.intersectionRatio >= revealRatio)) return;
+
+        divider.classList.add('is_glass_revealed');
+        revealObserver.disconnect();
     }, { threshold: [0, revealRatio, 1] });
 
     revealObserver.observe(divider);
@@ -2712,4 +2714,28 @@
         event.preventDefault();
         event.stopPropagation();
     }, true);
+})();
+
+/* 페어링 섹션 윗변이 화면 맨 위에 닿아(= 한 화면을 다 덮어 고정되는 구간) 있는 동안은 모서리를 직각으로 둠.
+   윗변이 화면 안으로 내려오면(위로 스크롤하거나 아직 올라오는 중) 다시 아치 모양 */
+(() => {
+    const section = document.querySelector('.pairing--history-overlay');
+
+    if (!section) return;
+
+    let frame = 0;
+
+    function update() {
+        frame = 0;
+        // 윗변이 화면 맨 위(0)에 닿았거나 넘어갔는지. 0.5px 여유는 소수점 오차 흡수
+        section.classList.toggle('is_pairing_flat', section.getBoundingClientRect().top <= 0.5);
+    }
+
+    function request() {
+        if (!frame) frame = window.requestAnimationFrame(update);
+    }
+
+    window.addEventListener('scroll', request, { passive: true });
+    window.addEventListener('resize', request);
+    update();
 })();
