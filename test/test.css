@@ -1221,11 +1221,13 @@ body {
     position: absolute;
     /* 그림 넷은 같은 비율(2000px 캔버스, 받침 폭 같음)로 그려져 있으므로
        모두 같은 폭·배율로 띄워야 어느 화면 크기에서든 인물 크기가 같게 보임 */
-    /* PNG 하단 투명 여백까지 보정해 받침이 버튼 상단에 맞닿게 함 */
-    bottom: calc(100% - 16px);
+    /* PNG 하단 투명 여백까지 보정해 받침이 버튼 상단에 맞닿게 하고, 거기서 5px 더 내림 */
+    bottom: calc(100% - 21px);
     left: 50%;
     z-index: 1;
-    width: clamp(220px, 22vw, 420px);
+    /* 버튼 폭은 글자 크기로 정해져 화면 크기와 상관없이 짧은 쪽 283px / 긴 쪽 374px.
+       그림(받침 끝까지)이 짧은 버튼 밖으로 튀어나오지 않게 최대 280px 로 묶음 */
+    width: clamp(220px, 22vw, 280px);
     /* reset.css 의 img max-width:100% 가 버튼 폭으로 그림을 잘라,
        글이 짧은 버튼의 그림만 작아지던 것을 풂 */
     max-width: none;
@@ -1649,26 +1651,27 @@ body {
 
 .chemistry {
     display: flex;
-    justify-content: center;
+    /* 판 안의 제목·글처럼 왼쪽에 붙임 */
+    justify-content: flex-start;
     gap: 24px;
     margin-top: 16px;
 }
 
+/* 기존 clamp(72px, 6.5vw, 100px) 에서 10% 씩 두 번 키움 (1.21배) */
 .chemistry li {
-    width: clamp(72px, 6.5vw, 100px);
+    width: clamp(87.12px, 7.865vw, 121px);
 }
 
 .chemistry img {
     width: 100%;
     height: auto;
-    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35));
 }
 
 /* ---------- 음주 스타일 ---------- */
 
 .result_desc {
     display: grid;
-    gap: 14px;
+    gap: 8px;
     margin-top: 24px;
     padding-left: 12px;
     font: var(--PC-Body_Normal_16SB);
@@ -1828,7 +1831,9 @@ body {
 }
 
 .btn_more {
-    align-self: center;
+    /* 판 안 술 목록 폭만큼 가로로 늘림 (왼쪽 술병 끝 ~ 오른쪽 맛 막대 끝). 글자는 가운데 */
+    align-self: stretch;
+    text-align: center;
     margin-top: auto;
     padding: 11px 24px;
     /* 결과 화면의 다른 버튼과 같은 잔 모양 */
