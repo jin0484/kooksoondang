@@ -1510,3 +1510,15 @@ html.lenis body {
         flex: 0 0 auto;
     }
 }
+
+/* ---------- 햄버거 서랍이 열린 동안에도 스크롤바 유지 ---------- */
+/* common.js 가 서랍을 열 때 lenis.stop() 을 부르면 lenis 의 css 가 html 을 overflow: clip 으로 만들어 세로 스크롤바가 사라짐.
+   그러면 화면 폭이 스크롤바 폭만큼 넓어져 페이지가 꿀렁이므로, 서랍이 열려 있는 동안만 스크롤바 자리를 남김.
+   휠·터치·키보드 스크롤은 common.js 가 직접 막고 있음 */
+
+html.lenis.is_nav_scroll_lock.lenis-stopped:not(.lenis-autoToggle) {
+    /* overflow-y 를 scroll 로 두면 vw/vh 단위가 "스크롤바가 있다"고 가정하고 계산돼(스크롤바 폭만큼 작아져)
+       페이지의 vw 기반 크기가 줄며 아래 페이지가 몇 px 올라갔음. 평소와 같은 visible 로 두면 스크롤바도 남고 단위도 그대로임 */
+    overflow-x: clip;
+    overflow-y: visible;
+}

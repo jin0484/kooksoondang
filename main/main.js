@@ -1433,6 +1433,31 @@
         });
     }
 
+    // 결과 카드를 대화상자 폭 안에서 가능한 한 크게 보여줌(최대 1.1배).
+    // 카드 실제 폭(--pairing-card-w)은 화면 폭·높이에 따라 달라서 css 만으로는 "안쪽 폭에 두 장이 딱 맞는 배율"을 구할 수 없어
+    // (길이 / 길이 나눗셈 불가) 열릴 때와 창 크기가 바뀔 때 js 가 재서 --result-card-scale 에 넣음
+    function fitResultCards() {
+        if (!resultModal || !resultDialog || !resultCards || resultModal.hidden) return;
+
+        const count = resultCards.children.length;
+        const natural = resultCards.querySelector('.pairing_card')?.offsetWidth;
+
+        if (!count || !natural) return;
+
+        const modalStyle = window.getComputedStyle(resultModal);
+        const dialogStyle = window.getComputedStyle(resultDialog);
+        const rem = parseFloat(window.getComputedStyle(document.documentElement).fontSize) || 16;
+        const modalInner = resultModal.clientWidth - parseFloat(modalStyle.paddingLeft) - parseFloat(modalStyle.paddingRight);
+        const dialogWidth = Math.min(modalInner, 40.25 * rem);
+        const available = dialogWidth - parseFloat(dialogStyle.paddingLeft) - parseFloat(dialogStyle.paddingRight);
+        const gap = parseFloat(window.getComputedStyle(resultCards).columnGap) || 0;
+        const fit = (available - gap * (count - 1)) / (count * natural);
+
+        resultCards.style.setProperty('--result-card-scale', Math.min(1.1, Math.max(0.5, fit)).toFixed(3));
+    }
+
+    window.addEventListener('resize', fitResultCards, { passive: true });
+
     function showResult(result) {
         if (!resultModal) {
             setFeedback(`${result.foodLabel} × ${result.drinkLabel}: ${result.score} pts — ${result.description}`);
@@ -1445,6 +1470,7 @@
         if (resultDescription) resultDescription.textContent = result.description;
 
         resultModal.hidden = false;
+        fitResultCards();
         window.requestAnimationFrame(() => resultDialog?.focus({ preventScroll: true }));
     }
 
@@ -1817,6 +1843,9 @@
     const revealTrail = 20;
     const transitionSpan = 0.18;
     const cupStopProgress = 0.9;
+    // 병이 차오르기 시작하는 시점. 컵이 멈추는 지점(0.9)을 기다리면 스크롤하며 지나칠 수 있어서
+    // 컵이 병에 다가오는 중간(여정 78%)부터 미리 차오르기 시작함
+    const bottleFillStart = 0.78;
     const motionProperties = [
         '--event-card-opacity',
         '--event-copy-opacity',
@@ -1910,7 +1939,7 @@
                 : 'var(--makgeolli_light1)'
         );
         // 병이 물들어 차오르는 정도(0 비어 있음 / 1 가득). 값이 바뀌면 css 전환이 수면을 올림
-        slide.element.style.setProperty('--event-bottle-fill', cupProgress >= cupStopProgress ? '1' : '0');
+        slide.element.style.setProperty('--event-bottle-fill', journeyProgress >= bottleFillStart ? '1' : '0');
         slide.element.style.setProperty('--event-line-progress', journeyProgress.toFixed(3));
 
         slide.characters.forEach((character, characterIndex) => {
@@ -2247,6 +2276,9 @@
         if (isLocked) return;
 
         isLocked = true;
+        // lenis.stop() 이 html 을 overflow: clip 으로 만들어 세로 스크롤바가 사라지면 화면이 스크롤바 폭만큼 꿀렁임.
+        // 이 잠금은 휠·터치·키보드를 직접 막고 스크롤바 드래그도 holdPosition 이 되돌리므로 스크롤바는 남겨 둬도 안전함(main.css)
+        document.documentElement.classList.add('is_scroll_trap');
         window.siteLenis?.stop();
         jumpTo(lockY);
         window.addEventListener('wheel', blockEvent, { passive: false });
@@ -2267,6 +2299,7 @@
 
         isLocked = false;
         hasFinished = true;
+        document.documentElement.classList.remove('is_scroll_trap');
         window.removeEventListener('wheel', blockEvent);
         window.removeEventListener('touchmove', blockEvent);
         window.removeEventListener('keydown', blockKey);
@@ -2496,7 +2529,8 @@
     // 모션을 끈 사용자에겐 마스크 자체를 씌우지 않아 처음부터 그대로 보임
     if (reducedMotionQuery.matches) return;
 
-    // 되감기까지 하려면 옵저버를 계속 붙여 두고, 임계값을 넘나들 때마다 클래스를 토글해야 함.
+    // 한 번 드러나면 그대로 둠. 예전에는 임계값을 넘나들 때마다 클래스를 토글해서, 아래에서 위로 다시 올라올 때마다
+    // 사라졌다가 처음처럼 다시 차올랐음(되감기). 이제는 처음 한 번만 차오르고 이후로는 계속 보임.
     // isIntersecting 은 1px 만 걸쳐도 true 라 임계값 판단에 못 쓰고 intersectionRatio 로 비교함
     const revealRatio = 0.2;
 
@@ -2505,9 +2539,10 @@
     window.requestAnimationFrame(() => divider.classList.add('is_glass_armed'));
 
     const revealObserver = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-            divider.classList.toggle('is_glass_revealed', entry.intersectionRatio >= revealRatio);
-        });
+        if (!entries.some((entry) => entry.intersectionRatio >= revealRatio)) return;
+
+        divider.classList.add('is_glass_revealed');
+        revealObserver.disconnect();
     }, { threshold: [0, revealRatio, 1] });
 
     revealObserver.observe(divider);
@@ -2679,4 +2714,28 @@
         event.preventDefault();
         event.stopPropagation();
     }, true);
+})();
+
+/* 페어링 섹션 윗변이 화면 맨 위에 닿아(= 한 화면을 다 덮어 고정되는 구간) 있는 동안은 모서리를 직각으로 둠.
+   윗변이 화면 안으로 내려오면(위로 스크롤하거나 아직 올라오는 중) 다시 아치 모양 */
+(() => {
+    const section = document.querySelector('.pairing--history-overlay');
+
+    if (!section) return;
+
+    let frame = 0;
+
+    function update() {
+        frame = 0;
+        // 윗변이 화면 맨 위(0)에 닿았거나 넘어갔는지. 0.5px 여유는 소수점 오차 흡수
+        section.classList.toggle('is_pairing_flat', section.getBoundingClientRect().top <= 0.5);
+    }
+
+    function request() {
+        if (!frame) frame = window.requestAnimationFrame(update);
+    }
+
+    window.addEventListener('scroll', request, { passive: true });
+    window.addEventListener('resize', request);
+    update();
 })();

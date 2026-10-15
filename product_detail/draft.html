@@ -44,15 +44,6 @@
 
 
     <!-- =========================================
-         LOADING
-    ========================================== -->
-
-    <div id="loader">
-        LOADING
-    </div>
-
-
-    <!-- =========================================
          HEADER (main 과 같은 것)
     ========================================== -->
 
@@ -120,11 +111,6 @@
   </div>
 
 
-    <!-- =========================================
-         THREE.JS CANVAS
-    ========================================== -->
-
-    <canvas id="scene"></canvas>
 
 
 
@@ -419,7 +405,7 @@
 
 
         <h2 class="more_products_title">
-            more products
+            More Products
         </h2>
 
 
@@ -548,35 +534,9 @@
     </footer>
 
 
-    <!-- =========================================
-         SCROLL HINT
-    ========================================== -->
-
-    <div class="scroll-hint" id="hint">
-        SCROLL
-    </div>
 
 
 
-    <!-- =========================================
-         THREE.JS IMPORT MAP
-    ========================================== -->
-
-    <script type="importmap">
-
-        {
-            "imports": {
-
-                "three":
-                    "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
-
-                "three/addons/":
-                    "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
-
-            }
-        }
-
-    </script>
 
 
 
@@ -584,7 +544,66 @@
          JAVASCRIPT
     ========================================== -->
 
-    <script type="module" src="./draft.js"></script>
+    <!-- 태블릿·모바일에서 한 줄 슬라이드가 된 more products 목록을 마우스로도 끌어서 넘길 수 있게 함.
+         손가락(터치)은 브라우저 기본 가로 스크롤이 처리하므로 마우스일 때만 가로챔.
+         3D(draft.js)를 걷어내기 전에 만든 스크립트라 따로 두었음 -->
+    <script>
+        (() => {
+            const list = document.querySelector('.more_products_list');
+            if (!list) return;
+
+            let startX = 0;
+            let startScroll = 0;
+            let dragging = false;
+            let moved = false;
+
+            list.addEventListener('pointerdown', (event) => {
+                // 목록이 넘칠 때(= 슬라이드 모드)만, 마우스 왼쪽 버튼일 때만
+                if (event.pointerType !== 'mouse' || event.button !== 0) return;
+                if (list.scrollWidth <= list.clientWidth) return;
+
+                dragging = true;
+                moved = false;
+                startX = event.clientX;
+                startScroll = list.scrollLeft;
+                list.setPointerCapture(event.pointerId);
+            });
+
+            list.addEventListener('pointermove', (event) => {
+                if (!dragging) return;
+
+                const delta = event.clientX - startX;
+
+                if (Math.abs(delta) > 5) {
+                    moved = true;
+                    list.classList.add('is_dragging');
+                }
+
+                list.scrollLeft = startScroll - delta;
+            });
+
+            const end = (event) => {
+                if (!dragging) return;
+
+                dragging = false;
+                list.classList.remove('is_dragging');
+
+                if (list.hasPointerCapture(event.pointerId)) list.releasePointerCapture(event.pointerId);
+            };
+
+            list.addEventListener('pointerup', end);
+            list.addEventListener('pointercancel', end);
+
+            // 끌고 나서 손을 뗄 때 카드가 눌려 이동하는 것을 막음
+            list.addEventListener('click', (event) => {
+                if (!moved) return;
+
+                event.preventDefault();
+                event.stopPropagation();
+                moved = false;
+            }, true);
+        })();
+    </script>
 
 
 </body>

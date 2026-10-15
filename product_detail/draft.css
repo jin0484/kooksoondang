@@ -26,21 +26,16 @@
 }
 
 
+/* 기본 웹사이트처럼: 스크롤바를 숨기지 않고 브라우저 기본 스크롤을 그대로 씀 */
 html {
     scroll-behavior: auto;
-    scrollbar-width: none;
-}
-
-html::-webkit-scrollbar,
-body::-webkit-scrollbar {
-    display: none;
 }
 
 body {
     width: 100%;
 
-    overflow-x: hidden;
-    scrollbar-width: none;
+    /* hidden 은 body 를 스크롤 컨테이너로 만들어 sticky 와 스크롤을 꼬이게 해서 clip 으로(다른 페이지와 같음) */
+    overflow-x: clip;
 
     background: var(--white);
     color: var(--ink);
@@ -73,38 +68,6 @@ img {
     height: 100%;
 
     z-index: 2;
-
-    pointer-events: none;
-}
-
-
-/* =========================================================
-   LOADER
-========================================================= */
-
-#loader {
-    position: fixed;
-    inset: 0;
-
-    z-index: 100;
-
-    display: grid;
-    place-items: center;
-
-    background: var(--green);
-
-    color: var(--white);
-
-    font-size: 12px;
-    letter-spacing: 0.3em;
-
-    transition:
-        opacity 0.8s ease;
-}
-
-
-#loader.hidden {
-    opacity: 0;
 
     pointer-events: none;
 }
@@ -1000,17 +963,19 @@ section {
    Three.js 병 최종 착지 공간
 ========================================================= */
 
+/* 데스크톱도 태블릿처럼 목록 아래 빈 공간을 줄임: 최소 높이 1000px 를 없애고 아래 여백을 120px 에서 6rem(96px) 로.
+   위 260px 은 병이 내려앉는 자리라 그대로 */
 .more_products {
     position: relative;
 
     width: 100%;
 
-    min-height: 1000px;
+    min-height: 0;
 
     padding:
         260px
         6vw
-        120px;
+        6rem;
 
     background: var(--white);
 }
@@ -1056,7 +1021,8 @@ section {
 
     letter-spacing: -0.04em;
 
-    text-transform: lowercase;
+    /* HTML 에 적은 그대로(More Products) 보이게 함. 예전에는 lowercase 라 첫 글자도 소문자로 바뀌었음 */
+    text-transform: none;
 }
 
 
@@ -1070,12 +1036,19 @@ section {
     margin: 0;
     padding: 0;
     list-style: none;
+    /* 카드는 160px 보다 줄어들지 않게 하고, 폭이 줄면 카드 사이 간격이 먼저 줄어듦.
+       목록 폭은 화면 폭의 88%(좌우 여백이 6vw 씩)라 간격 = (88vw - 카드 5장 800px) / 4 = 22vw - 200px.
+       카드 사이 간격은 2.5rem(40px) 이 너무 넓어 1.5rem(24px) 으로 줄임. 이 식은 1025px 에서 약 25px 이라 1025px 이상 어디서나 24px 로 고정됨
+       (카드가 160px 아래로 줄지 않는 규칙은 그대로, 간격이 줄어든 만큼 카드가 조금 넓어짐) */
     grid-template-columns:
         repeat(
             5,
-            1fr
+            minmax(
+                160px,
+                1fr
+            )
         );
-    gap: 3rem 2.5rem;
+    gap: 3rem clamp(0.5rem, calc(22vw - 200px), 1.5rem);
 }
 
 
@@ -1204,105 +1177,6 @@ section {
 .site_footer {
     margin-top: calc(5.175vw + 1px);
     z-index: 3;
-}
-
-
-/* =========================================================
-   SCROLL HINT
-========================================================= */
-
-.scroll-hint {
-    position: fixed;
-
-    left: 50%;
-    bottom: 3vh;
-
-    transform:
-        translateX(-50%);
-
-    z-index: 10;
-
-    color: var(--white);
-
-    font-size: 10px;
-
-    letter-spacing: 0.35em;
-
-    pointer-events: none;
-
-    transition:
-        opacity 0.5s ease;
-}
-
-
-.scroll-hint::after {
-    content: "";
-
-    display: block;
-
-    width: 1px;
-    height: 40px;
-
-    margin:
-        12px
-        auto
-        0;
-
-    background:
-        linear-gradient(
-            var(--white),
-            transparent
-        );
-
-    animation:
-        scrollDrop
-        2s
-        ease-in-out
-        infinite;
-}
-
-
-/* =========================================================
-   SCROLL HINT ANIMATION
-========================================================= */
-
-@keyframes scrollDrop {
-
-    0% {
-        transform:
-            scaleY(0);
-
-        transform-origin:
-            top;
-    }
-
-
-    45% {
-        transform:
-            scaleY(1);
-
-        transform-origin:
-            top;
-    }
-
-
-    55% {
-        transform:
-            scaleY(1);
-
-        transform-origin:
-            bottom;
-    }
-
-
-    100% {
-        transform:
-            scaleY(0);
-
-        transform-origin:
-            bottom;
-    }
-
 }
 
 
@@ -1478,16 +1352,6 @@ section {
 /* =========================================================
    REDUCED MOTION
 ========================================================= */
-
-@media (
-    prefers-reduced-motion: reduce
-) {
-
-    .scroll-hint::after {
-        animation: none;
-    }
-
-}
 
 /* =========================================================
    PRODUCT DETAIL
@@ -2586,4 +2450,61 @@ section {
     height: 100%;
 
     object-fit: cover;
+}
+
+/* =========================================================
+   MORE PRODUCT LIST - 태블릿·모바일은 한 줄 슬라이드
+   (1024px 이하) 3열 / 2열로 여러 줄이 되던 것을 한 줄로 두고 옆으로 넘겨 봄.
+   손가락은 브라우저 기본 가로 스크롤 + 스냅이 맡고, 마우스로 끄는 건 이 페이지 아래쪽의 인라인 스크립트(draft.html)가 받아 줌
+========================================================= */
+
+@media (max-width: 1024px) {
+    /* 한 줄 슬라이드가 되어 목록이 낮아졌는데 섹션 최소 높이(1000px)와 아래 여백(120px / 80px)은 그대로라 아래가 너무 비었음.
+       위 260px(병이 내려앉는 자리)은 건드리지 않고 아래만 줄임 */
+    .more_products {
+        min-height: 0;
+        padding-bottom: 5rem;
+    }
+
+    .more_products_list {
+        display: flex;
+        gap: 1rem;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        /* 카드 그림자/호버 위쪽이 잘리지 않게 위아래 여유 */
+        padding-block: 0.5rem 1.5rem;
+        margin-block: -0.5rem -1.5rem;
+        cursor: grab;
+    }
+
+    .more_products_list::-webkit-scrollbar {
+        display: none;
+    }
+
+    .more_products_list.is_dragging {
+        cursor: grabbing;
+        scroll-snap-type: none;
+        user-select: none;
+    }
+
+    .more_product_card {
+        flex: 0 0 clamp(12rem, 30vw, 15.5rem);
+        width: auto;
+        scroll-snap-align: start;
+    }
+}
+
+@media (max-width: 767px) {
+    .more_products {
+        padding-bottom: 3.5rem;
+    }
+
+    .more_product_card {
+        /* 한 장이 화면의 약 62% 를 차지하고 다음 장이 오른쪽에 걸쳐 보여 "더 있다"는 걸 알 수 있게 함 */
+        flex: 0 0 min(62vw, 14rem);
+    }
 }
