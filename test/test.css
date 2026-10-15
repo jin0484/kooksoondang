@@ -1146,19 +1146,101 @@ body {
     z-index: 1;
 }
 
-/* Q2 양반 경로에서 동행 선택을 미리 보여 주는 인물 그림.
-   배경과 같은 16:9 캔버스라 cover로 겹치면 원래 전환 컷과 같은 자리에 놓임. */
+/* Q2 동행 선택 화면: 배경 그림과 인물 미리보기 그림을 한 장면으로 같이 움직임.
+   두 그림 다 1920x1080(16:9) 캔버스이고, 인물은 배경 속 방석 위 자리에 그려져 있음.
+   예전처럼 배경만 cover 로 깔면 화면이 세로로 길수록 양옆이 잘려 방석·인물이 끊김.
+   그래서 장면(배경 + 인물)의 크기·자리를 아래 값으로 같이 정해, 방석까지 포함한 인물 묶음이
+   어느 화면에서든 좌우 16px 안쪽에 다 들어오게 함.
+   - 인물 묶음이 화면에 다 들어오면 원래처럼 화면을 꽉 채움(cover)
+   - 다 안 들어오면 묶음이 들어올 만큼 장면을 줄이고, 위아래 남는 자리는 바탕색으로 둠
+   --mate-x0 / --mate-x1 / --mate-y0 / --mate-y1 : '같이' 그림의 인물 묶음이 캔버스에서 차지하는 범위(0~1) */
+#q2_yangban,
+#q2_pyeongmin {
+    --sw: calc(100vw - 2 * var(--frame));
+    --sh: calc(100dvh - 2 * var(--frame));
+    /* 버튼 묶음 높이. 태블릿·모바일에서 인물을 버튼 아래 빈자리에 세울 때 씀 */
+    --mate-buttons-h: 70px;
+
+    /* 화면을 꽉 채우는 크기 / 인물 묶음이 좌우 16px 안에 들어오는 크기 중 작은 쪽 */
+    --scene-w: min(
+        max(var(--sw), var(--sh) * 16 / 9),
+        (var(--sw) - 32px) / (var(--mate-x1) - var(--mate-x0))
+    );
+    --scene-h: calc(var(--scene-w) * 9 / 16);
+
+    /* 가로: 인물 묶음 가운데를 화면 가운데로. 장면이 화면보다 넓으면 가장자리가 비지 않게 묶어 둠 */
+    --scene-x: clamp(
+        var(--sw) - var(--scene-w),
+        var(--sw) / 2 - var(--scene-w) * (var(--mate-x0) + var(--mate-x1)) / 2,
+        0px
+    );
+    /* 세로: 기본은 원래처럼 가운데 */
+    --scene-y: calc((var(--sh) - var(--scene-h)) / 2);
+
+    /* 첫 겹은 장면 그림, 둘째 겹은 장면을 줄였을 때 위아래 남는 자리를 그림 위·아래 끝 색으로 채우는 바탕 */
+    background-size: var(--scene-w) var(--scene-h), 100% 100%;
+    background-position: var(--scene-x) var(--scene-y), 0 0;
+    background-repeat: no-repeat;
+}
+
+#q2_yangban {
+    background-image:
+        url("test_asset/Yangban_background.png"),
+        linear-gradient(to bottom, #4c3b33 50%, #ffffff 50%);
+    --mate-x0: 0.11;
+    --mate-x1: 0.917;
+    --mate-y0: 0.407;
+    --mate-y1: 0.937;
+}
+
+#q2_pyeongmin {
+    background-image:
+        url("test_asset/Pyeongmin_back.png"),
+        linear-gradient(to bottom, #e1c1ab 50%, #f5e7de 50%);
+    --mate-x0: 0.285;
+    --mate-x1: 0.698;
+    --mate-y0: 0.456;
+    --mate-y1: 0.852;
+}
+
+/* 태블릿·모바일은 버튼이 질문 띠 바로 아래에 있음.
+   장면을 줄여 위아래가 남을 때는 인물 묶음을 버튼 아래 빈자리 가운데(20px 위)에 세움.
+   화면을 꽉 채울 때는 가운데 그대로 */
+@media (max-width: 1024px) {
+    #q2_yangban,
+    #q2_pyeongmin {
+        --scene-y: max(
+            (var(--sh) - var(--scene-h)) / 2,
+            min(
+                (var(--top-shade) + 10px + var(--mate-buttons-h) + var(--sh)) / 2 - 20px
+                    - var(--scene-h) * (var(--mate-y0) + var(--mate-y1)) / 2,
+                var(--sh) - var(--scene-h)
+            )
+        );
+    }
+}
+
+/* 모바일은 버튼 두 개가 위아래로 쌓여 묶음이 더 높음 */
+@media (max-width: 767px) {
+    #q2_yangban,
+    #q2_pyeongmin {
+        --mate-buttons-h: 130px;
+    }
+}
+
+/* 인물 미리보기 그림은 배경과 같은 크기·자리에 겹쳐 방석 위에 앉게 함 */
 #q2_yangban>.mate_preview,
 #q2_pyeongmin>.mate_preview {
     position: absolute;
-    inset: 0;
+    left: var(--scene-x);
+    top: var(--scene-y);
     z-index: 1;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    /* 기존 표시 크기(80%)에서 20% 키운 96% */
-    transform: translateY(-30px) scale(0.96);
+    width: var(--scene-w);
+    height: var(--scene-h);
+    max-width: none;
+    object-fit: fill;
+    /* 기존 표시 크기(80%)에서 20% 키운 96%. 위로 띄우는 30px 은 1080px 높이 기준이라 장면 높이에 비례시킴 */
+    transform: translateY(-2.778%) scale(0.96);
     transform-origin: center bottom;
     opacity: 0;
     pointer-events: none;
@@ -1167,51 +1249,6 @@ body {
 
 #q2_pyeongmin>.mate_preview {
     transform: scale(0.96);
-}
-
-/* 모바일: 16:9 그림을 화면에 cover 로 채우면 세로 화면에서는 양옆이 잘려 인물이 끊김.
-   그래서 인물 묶음('같이' 그림 기준, 그림 안 비율)이 화면 폭 안에 다 들어오게 크기를 잡고
-   버튼 아래 남는 자리의 가운데에 세움. '혼자' 그림도 같은 크기·자리를 써서 인물이 같은 곳에 같은 크기로 보임.
-   --mate-x0 / --mate-x1 / --mate-y0 / --mate-y1 : 인물 묶음이 그림 안에서 차지하는 가로·세로 범위(0~1).
-   가로로 눕힌 휴대폰은 화면 비율이 그림(16:9)과 비슷해 원래 cover 로도 잘리지 않고,
-   버튼 아래 남는 높이도 없어서 세로 화면에서만 씀 */
-@media (max-width: 767px) and (orientation: portrait) {
-    #q2_yangban {
-        --mate-x0: 0.11;
-        --mate-x1: 0.917;
-        --mate-y0: 0.407;
-        --mate-y1: 0.937;
-    }
-
-    #q2_pyeongmin {
-        --mate-x0: 0.285;
-        --mate-x1: 0.698;
-        --mate-y0: 0.456;
-        --mate-y1: 0.852;
-    }
-
-    #q2_yangban>.mate_preview,
-    #q2_pyeongmin>.mate_preview {
-        inset: auto;
-        left: 50%;
-        /* 버튼 묶음 아래 끝(질문 띠 + 10px 여백 + 버튼 두 개 ≒ 띠 + 140px)과 화면 아래 끝 사이의 가운데에서 20px 위에 세움 */
-        top: calc((var(--top-shade) + 140px + 100dvh) / 2 - 20px);
-        /* 폭: 인물 묶음이 좌우 16px 여백 안에 들어오는 크기.
-           높이로도 한 번 더 묶어, 낮은 화면에서 인물이 버튼 위로 올라오지 않게 함 */
-        width: min(
-            calc((100vw - 32px) / (var(--mate-x1) - var(--mate-x0))),
-            calc((100dvh - var(--top-shade) - 200px) / ((var(--mate-y1) - var(--mate-y0)) * 0.5625))
-        );
-        height: auto;
-        max-width: none;
-        object-fit: fill;
-        /* 인물 묶음의 가로·세로 가운데를 위 top 자리(화면 가로 가운데)에 맞춤 */
-        transform: translate(
-            calc((var(--mate-x0) + var(--mate-x1)) / -2 * 100%),
-            calc((var(--mate-y0) + var(--mate-y1)) / -2 * 100%)
-        );
-        transform-origin: center;
-    }
 }
 
 #q2_yangban>.question,
@@ -2045,15 +2082,16 @@ body {
 
     .result_card {
         display: grid;
-        grid-template-columns: clamp(200px, 30vw, 280px) minmax(0, 1fr);
+        /* 가운데 칸(auto)은 MAIN·SHARE SNS 버튼 폭, 오른쪽 칸은 그 옆에 붙는 TRY AGAIN */
+        grid-template-columns: clamp(200px, 30vw, 280px) auto minmax(0, 1fr);
         /* 위아래 1fr 두 줄이 남는 높이를 나눠 가져 이름·버튼 묶음이 인물 옆 세로 가운데에 놓임 */
         grid-template-rows: 1fr auto auto 1fr auto;
         grid-template-areas:
-            "char label"
-            "char title"
-            "char actions"
-            "char restart"
-            "panel panel";
+            "char label label"
+            "char title title"
+            "char actions restart"
+            "char . ."
+            "panel panel panel";
         column-gap: clamp(24px, 4vw, 48px);
         row-gap: 0;
         align-items: start;
@@ -2078,10 +2116,14 @@ body {
         margin-top: 20px;
     }
 
+    /* TRY AGAIN 은 SHARE SNS 오른쪽 20px 옆, 버튼 줄 세로 가운데에 둠.
+       칸 사이 간격(column-gap)만큼 당겨 버튼과의 사이를 20px 로 맞춤 */
     .btn_restart {
         grid-area: restart;
         justify-self: start;
-        margin-top: 16px;
+        align-self: center;
+        margin-top: 20px;
+        margin-left: calc(20px - clamp(24px, 4vw, 48px));
     }
 
     .result_panel {
@@ -2301,7 +2343,11 @@ body {
         margin-top: 28px;
     }
 
+    /* 모바일은 한 줄로 쌓으므로 태블릿에서 버튼 옆에 붙이던 당김을 풀고 버튼 아래 가운데에 둠 */
     .btn_restart {
         justify-self: center;
+        align-self: auto;
+        margin-top: 16px;
+        margin-left: 0;
     }
 }
