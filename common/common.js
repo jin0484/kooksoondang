@@ -84,14 +84,65 @@
     if (!toggle || !drawer) return;
 
     const isOpen = () => drawer.classList.contains('is_nav_open');
+    const root = document.documentElement;
+    const scrollKeys = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ', 'Spacebar']);
+    let lockY = 0;
+
+    // 서랍이 열린 동안 뒤 페이지 스크롤을 막되 세로 스크롤바 자리는 남겨 둠.
+    // lenis.stop() 만 쓰면 html 이 overflow: clip 이 되어 스크롤바가 사라지고, 화면 폭이 그만큼 넓어져 페이지가 꿀렁임.
+    // 그래서 휠·터치·키보드는 여기서 직접 막고, 스크롤바 드래그처럼 막을 수 없는 경로는 위치를 되돌려 붙잡음(common.css 의 .is_nav_scroll_lock)
+    const blockEvent = (event) => {
+        if (event.target instanceof Element && event.target.closest('[data-nav-drawer]') && event.type === 'keydown') return;
+
+        event.preventDefault();
+    };
+
+    const blockKey = (event) => {
+        if (scrollKeys.has(event.key)) event.preventDefault();
+    };
+
+    const holdPosition = () => {
+        if (Math.abs(window.scrollY - lockY) <= 1) return;
+
+        window.scrollTo(0, lockY);
+        window.siteLenis?.scrollTo?.(lockY, { immediate: true, force: true });
+    };
+
+    function setScrollLock(locked) {
+        if (locked === root.classList.contains('is_nav_scroll_lock')) return;
+
+        root.classList.toggle('is_nav_scroll_lock', locked);
+
+        if (locked) {
+            lockY = window.scrollY;
+            window.addEventListener('wheel', blockEvent, { passive: false });
+            window.addEventListener('touchmove', blockEvent, { passive: false });
+            window.addEventListener('keydown', blockKey);
+            window.addEventListener('scroll', holdPosition, { passive: true });
+            return;
+        }
+
+        window.removeEventListener('wheel', blockEvent);
+        window.removeEventListener('touchmove', blockEvent);
+        window.removeEventListener('keydown', blockKey);
+        window.removeEventListener('scroll', holdPosition);
+        // 닫을 때도 열기 직전 위치로 정확히 되돌려, 열고 닫는 사이 어떤 이유로든 생긴 몇 px 어긋남을 없앰
+        holdPosition();
+    }
 
     function setOpen(open) {
         drawer.classList.toggle('is_nav_open', open);
         toggle.setAttribute('aria-expanded', String(open));
         toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
         // 서랍이 열려 있는 동안에는 뒤 페이지가 따라 움직이지 않게 스크롤을 잠금
-        document.body.style.overflow = open ? 'hidden' : '';
-        window.siteLenis?.[open ? 'stop' : 'start']?.();
+        // 순서가 중요함. 열 때는 잠금 클래스를 먼저 붙인 뒤 lenis.stop(), 닫을 때는 lenis.start() 를 먼저 한 뒤 클래스를 뗌.
+        // 거꾸로 하면 그 사이 잠깐 lenis 의 overflow: clip 만 남아 스크롤바가 사라지고, 폭이 15px 바뀌면서
+        // 브라우저의 스크롤 앵커링이 스크롤 위치를 15px 옮겨 놓음(닫고 나면 원래 자리에서 15px 어긋남)
+        const keepStopped = !open && root.classList.contains('is_scroll_trap'); // 메인의 스크롤 잠금이 걸려 있으면 lenis 를 멋대로 다시 켜지 않음
+
+        if (open) setScrollLock(true);
+        if (!keepStopped) window.siteLenis?.[open ? 'stop' : 'start']?.();
+        if (!open) setScrollLock(false);
     }
 
     toggle.addEventListener('click', () => setOpen(!isOpen()));
