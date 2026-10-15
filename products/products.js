@@ -165,6 +165,12 @@
 
     let mobilePageTransitioning = false;
 
+    let mobilePageTransitionVersion = 0;
+
+    let isCategoryMenuOpen = false;
+
+    let categoryViewportWidth = window.innerWidth;
+
     const showcase =
         document.getElementById('product_showcase');
 
@@ -296,6 +302,8 @@
 
 
     function renderProducts() {
+
+        cancelMobilePageTransition();
 
         let visibleCount = 0;
 
@@ -600,6 +608,8 @@
 
 
     function resetMobileCarousel() {
+
+        cancelMobilePageTransition();
 
         cards.forEach((card) => {
             setMobileCardVisibility(
@@ -1112,10 +1122,25 @@
     }
 
 
+    function cancelMobilePageTransition() {
+
+        mobilePageTransitionVersion += 1;
+        mobilePageTransitioning = false;
+
+        grid.classList.remove(
+            'is_mobile_page_leaving',
+            'is_mobile_page_entering'
+        );
+
+        grid.style.removeProperty('--mobile-page-direction');
+    }
+
+
     function changeMobileProductPage(
         visibleCards,
         nextPageIndex,
-        direction
+        direction,
+        scrollToList = false
     ) {
 
         const pageCount = Math.max(
@@ -1153,11 +1178,19 @@
         if (reduceMotion) {
             mobilePageIndex = targetPageIndex;
             renderMobileCarousel(visibleCards);
+
+            if (scrollToList) {
+                scrollToMobileProductList(reduceMotion);
+            }
+
             return;
         }
 
 
         mobilePageTransitioning = true;
+
+        const transitionVersion =
+            ++mobilePageTransitionVersion;
 
 
         grid.style.setProperty(
@@ -1178,8 +1211,19 @@
 
         window.setTimeout(() => {
 
+            if (
+                transitionVersion !== mobilePageTransitionVersion ||
+                !mobileCarouselQuery.matches
+            ) {
+                return;
+            }
+
             mobilePageIndex = targetPageIndex;
             renderMobileCarousel(visibleCards);
+
+            if (scrollToList) {
+                scrollToMobileProductList(reduceMotion);
+            }
 
 
             grid.classList.remove(
@@ -1195,17 +1239,65 @@
             window.requestAnimationFrame(() => {
                 window.requestAnimationFrame(() => {
 
+                    if (
+                        transitionVersion !== mobilePageTransitionVersion
+                    ) {
+                        return;
+                    }
+
                     grid.classList.remove(
                         'is_mobile_page_entering'
                     );
 
 
                     window.setTimeout(() => {
-                        mobilePageTransitioning = false;
+
+                        if (
+                            transitionVersion === mobilePageTransitionVersion
+                        ) {
+                            mobilePageTransitioning = false;
+                        }
                     }, 220);
                 });
             });
         }, 160);
+    }
+
+
+    function scrollToMobileProductList(reduceMotion) {
+
+        if (!mobileCarouselQuery.matches) return;
+
+        /* 마지막 페이지의 카드 수가 줄어든 높이를 Lenis에도 즉시 반영. */
+        window.siteLenis?.resize?.();
+
+        const headerHeight =
+            document.querySelector('.site_header')
+                ?.getBoundingClientRect().height || 0;
+
+        const scrollMargin = parseFloat(
+            getComputedStyle(showcase || grid).scrollMarginTop
+        ) || 0;
+
+        const targetTop = Math.max(
+            0,
+            grid.getBoundingClientRect().top + window.scrollY -
+            Math.max(scrollMargin, headerHeight + 16)
+        );
+
+        grid.focus({ preventScroll: true });
+
+        if (window.siteLenis) {
+            window.siteLenis.scrollTo(targetTop, {
+                immediate: reduceMotion,
+                force: true
+            });
+        } else {
+            window.scrollTo({
+                top: targetTop,
+                behavior: reduceMotion ? 'auto' : 'smooth'
+            });
+        }
     }
 
 
@@ -1577,6 +1669,16 @@
         if (!button) return;
 
 
+        /* 모바일에서는 선택된 버튼이 카테고리 펼치기 버튼을 겸함. */
+        if (
+            mobileCarouselQuery.matches &&
+            button.classList.contains('is_active')
+        ) {
+            setCategoryMenuOpen(!isCategoryMenuOpen);
+            return;
+        }
+
+
         /* 준비중 카테고리는 거르지 않고 안내만 띄움 */
         if (
             button.hasAttribute('data-coming-soon')
@@ -1602,7 +1704,103 @@
         );
 
 
+        setCategoryMenuOpen(false, mobileCarouselQuery.matches);
+
+
         renderProducts();
+    }
+
+
+    function syncCategoryMenu() {
+
+        if (!categoryList) return;
+
+        const isMobile = mobileCarouselQuery.matches;
+
+        categoryList.classList.toggle(
+            'is_open',
+            isMobile && isCategoryMenuOpen
+        );
+
+        categoryButtons.forEach((button) => {
+
+            if (isMobile && button.classList.contains('is_active')) {
+                button.setAttribute(
+                    'aria-expanded',
+                    String(isCategoryMenuOpen)
+                );
+            } else {
+                button.removeAttribute('aria-expanded');
+            }
+        });
+    }
+
+
+    function setCategoryMenuOpen(isOpen, returnFocus = false) {
+
+        isCategoryMenuOpen =
+            mobileCarouselQuery.matches && isOpen;
+
+        syncCategoryMenu();
+
+        if (returnFocus) {
+            categoryButtons.find((button) =>
+                button.classList.contains('is_active')
+            )?.focus({ preventScroll: true });
+        }
+    }
+
+
+    function handleCategoryKeydown(event) {
+
+        if (!mobileCarouselQuery.matches) return;
+
+        const button = event.target.closest('.category_button');
+
+        if (!button) return;
+
+        if (event.key === 'Escape' && isCategoryMenuOpen) {
+            event.preventDefault();
+            setCategoryMenuOpen(false, true);
+            return;
+        }
+
+        const index = categoryButtons.indexOf(button);
+        let nextIndex = index;
+
+        if (event.key === 'ArrowDown') {
+            nextIndex = (index + 1) % categoryButtons.length;
+        } else if (event.key === 'ArrowUp') {
+            nextIndex =
+                (index - 1 + categoryButtons.length) %
+                categoryButtons.length;
+        } else if (event.key === 'Home') {
+            nextIndex = 0;
+        } else if (event.key === 'End') {
+            nextIndex = categoryButtons.length - 1;
+        } else {
+            return;
+        }
+
+        event.preventDefault();
+        setCategoryMenuOpen(true);
+        categoryButtons[nextIndex]?.focus({ preventScroll: true });
+    }
+
+
+    function handleCategoryViewportChange() {
+
+        if (categoryViewportWidth !== window.innerWidth) {
+            categoryViewportWidth = window.innerWidth;
+
+            setCategoryMenuOpen(
+                false,
+                mobileCarouselQuery.matches &&
+                categoryList?.contains(document.activeElement)
+            );
+        } else {
+            syncCategoryMenu();
+        }
     }
 
 
@@ -1733,6 +1931,9 @@
         }
 
 
+        setCategoryMenuOpen(false);
+
+
         renderProducts();
     }
 
@@ -1779,6 +1980,9 @@
         if (searchInput) {
             searchInput.value = '';
         }
+
+
+        setCategoryMenuOpen(false);
 
 
         renderProducts();
@@ -1842,6 +2046,26 @@
         'click',
         handleCategoryClick
     );
+
+
+    categoryList?.addEventListener(
+        'keydown',
+        handleCategoryKeydown
+    );
+
+
+    document.addEventListener('click', (event) => {
+        if (isCategoryMenuOpen && !categoryList?.contains(event.target)) {
+            setCategoryMenuOpen(false);
+        }
+    });
+
+
+    document.addEventListener('focusin', (event) => {
+        if (isCategoryMenuOpen && !categoryList?.contains(event.target)) {
+            setCategoryMenuOpen(false);
+        }
+    });
 
 
     tagList?.addEventListener(
@@ -1983,7 +2207,8 @@
                 targetPageIndex,
                 targetPageIndex > mobilePageIndex
                     ? 1
-                    : -1
+                    : -1,
+                true
             );
         }
     );
@@ -2026,6 +2251,16 @@
             passive: true
         }
     );
+
+
+    window.addEventListener(
+        'resize',
+        handleCategoryViewportChange,
+        { passive: true }
+    );
+
+
+    syncCategoryMenu();
 
 
     renderProducts();
