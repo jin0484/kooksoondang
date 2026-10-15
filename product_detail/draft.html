@@ -120,11 +120,6 @@
   </div>
 
 
-    <!-- =========================================
-         THREE.JS CANVAS
-    ========================================== -->
-
-    <canvas id="scene"></canvas>
 
 
 
@@ -558,25 +553,6 @@
 
 
 
-    <!-- =========================================
-         THREE.JS IMPORT MAP
-    ========================================== -->
-
-    <script type="importmap">
-
-        {
-            "imports": {
-
-                "three":
-                    "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
-
-                "three/addons/":
-                    "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
-
-            }
-        }
-
-    </script>
 
 
 
@@ -584,7 +560,8 @@
          JAVASCRIPT
     ========================================== -->
 
-    <script type="module" src="./draft.js"></script>
+    <!-- 3D 병(three.js) 연출은 걷어냄. 3D 와 상관없는 최소 동작(로딩 덮개, 스크롤 안내, section 나타남)만 draft_page.js 가 맡음 -->
+    <script src="./draft_page.js" defer></script>
 
     <!-- 태블릿·모바일에서 한 줄 슬라이드가 된 more products 목록을 마우스로도 끌어서 넘길 수 있게 함.
          손가락(터치)은 브라우저 기본 가로 스크롤이 처리하므로 마우스일 때만 가로챔.
