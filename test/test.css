@@ -1169,6 +1169,51 @@ body {
     transform: scale(0.96);
 }
 
+/* 모바일: 16:9 그림을 화면에 cover 로 채우면 세로 화면에서는 양옆이 잘려 인물이 끊김.
+   그래서 인물 묶음('같이' 그림 기준, 그림 안 비율)이 화면 폭 안에 다 들어오게 크기를 잡고
+   버튼 아래 남는 자리의 가운데에 세움. '혼자' 그림도 같은 크기·자리를 써서 인물이 같은 곳에 같은 크기로 보임.
+   --mate-x0 / --mate-x1 / --mate-y0 / --mate-y1 : 인물 묶음이 그림 안에서 차지하는 가로·세로 범위(0~1).
+   가로로 눕힌 휴대폰은 화면 비율이 그림(16:9)과 비슷해 원래 cover 로도 잘리지 않고,
+   버튼 아래 남는 높이도 없어서 세로 화면에서만 씀 */
+@media (max-width: 767px) and (orientation: portrait) {
+    #q2_yangban {
+        --mate-x0: 0.11;
+        --mate-x1: 0.917;
+        --mate-y0: 0.407;
+        --mate-y1: 0.937;
+    }
+
+    #q2_pyeongmin {
+        --mate-x0: 0.285;
+        --mate-x1: 0.698;
+        --mate-y0: 0.456;
+        --mate-y1: 0.852;
+    }
+
+    #q2_yangban>.mate_preview,
+    #q2_pyeongmin>.mate_preview {
+        inset: auto;
+        left: 50%;
+        /* 버튼 묶음 아래 끝(질문 띠 + 10px 여백 + 버튼 두 개 ≒ 띠 + 140px)과 화면 아래 끝 사이의 가운데에서 20px 위에 세움 */
+        top: calc((var(--top-shade) + 140px + 100dvh) / 2 - 20px);
+        /* 폭: 인물 묶음이 좌우 16px 여백 안에 들어오는 크기.
+           높이로도 한 번 더 묶어, 낮은 화면에서 인물이 버튼 위로 올라오지 않게 함 */
+        width: min(
+            calc((100vw - 32px) / (var(--mate-x1) - var(--mate-x0))),
+            calc((100dvh - var(--top-shade) - 200px) / ((var(--mate-y1) - var(--mate-y0)) * 0.5625))
+        );
+        height: auto;
+        max-width: none;
+        object-fit: fill;
+        /* 인물 묶음의 가로·세로 가운데를 위 top 자리(화면 가로 가운데)에 맞춤 */
+        transform: translate(
+            calc((var(--mate-x0) + var(--mate-x1)) / -2 * 100%),
+            calc((var(--mate-y0) + var(--mate-y1)) / -2 * 100%)
+        );
+        transform-origin: center;
+    }
+}
+
 #q2_yangban>.question,
 #q2_yangban>.choices,
 #q2_pyeongmin>.question,
@@ -1285,7 +1330,8 @@ body {
 
     #q4_yangban .food_preview,
     #q4_pyeongmin .food_preview {
-        top: calc(100% + 12px);
+        /* 버튼 묶음 아래 12px 에서 30px 더 내림 */
+        top: calc(100% + 42px);
         bottom: auto;
         /* 낮은 화면에서도 버튼 아래 남는 높이 안에 들어오도록 높이로도 한 번 더 묶음 */
         width: min(78vw, 360px, calc(100dvh - var(--top-shade) - 200px));
