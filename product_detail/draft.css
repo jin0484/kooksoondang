@@ -26,21 +26,16 @@
 }
 
 
+/* 기본 웹사이트처럼: 스크롤바를 숨기지 않고 브라우저 기본 스크롤을 그대로 씀 */
 html {
     scroll-behavior: auto;
-    scrollbar-width: none;
-}
-
-html::-webkit-scrollbar,
-body::-webkit-scrollbar {
-    display: none;
 }
 
 body {
     width: 100%;
 
-    overflow-x: hidden;
-    scrollbar-width: none;
+    /* hidden 은 body 를 스크롤 컨테이너로 만들어 sticky 와 스크롤을 꼬이게 해서 clip 으로(다른 페이지와 같음) */
+    overflow-x: clip;
 
     background: var(--white);
     color: var(--ink);
@@ -73,38 +68,6 @@ img {
     height: 100%;
 
     z-index: 2;
-
-    pointer-events: none;
-}
-
-
-/* =========================================================
-   LOADER
-========================================================= */
-
-#loader {
-    position: fixed;
-    inset: 0;
-
-    z-index: 100;
-
-    display: grid;
-    place-items: center;
-
-    background: var(--green);
-
-    color: var(--white);
-
-    font-size: 12px;
-    letter-spacing: 0.3em;
-
-    transition:
-        opacity 0.8s ease;
-}
-
-
-#loader.hidden {
-    opacity: 0;
 
     pointer-events: none;
 }
@@ -1218,105 +1181,6 @@ section {
 
 
 /* =========================================================
-   SCROLL HINT
-========================================================= */
-
-.scroll-hint {
-    position: fixed;
-
-    left: 50%;
-    bottom: 3vh;
-
-    transform:
-        translateX(-50%);
-
-    z-index: 10;
-
-    color: var(--white);
-
-    font-size: 10px;
-
-    letter-spacing: 0.35em;
-
-    pointer-events: none;
-
-    transition:
-        opacity 0.5s ease;
-}
-
-
-.scroll-hint::after {
-    content: "";
-
-    display: block;
-
-    width: 1px;
-    height: 40px;
-
-    margin:
-        12px
-        auto
-        0;
-
-    background:
-        linear-gradient(
-            var(--white),
-            transparent
-        );
-
-    animation:
-        scrollDrop
-        2s
-        ease-in-out
-        infinite;
-}
-
-
-/* =========================================================
-   SCROLL HINT ANIMATION
-========================================================= */
-
-@keyframes scrollDrop {
-
-    0% {
-        transform:
-            scaleY(0);
-
-        transform-origin:
-            top;
-    }
-
-
-    45% {
-        transform:
-            scaleY(1);
-
-        transform-origin:
-            top;
-    }
-
-
-    55% {
-        transform:
-            scaleY(1);
-
-        transform-origin:
-            bottom;
-    }
-
-
-    100% {
-        transform:
-            scaleY(0);
-
-        transform-origin:
-            bottom;
-    }
-
-}
-
-
-/* =========================================================
    TABLET
 ========================================================= */
 
@@ -1488,16 +1352,6 @@ section {
 /* =========================================================
    REDUCED MOTION
 ========================================================= */
-
-@media (
-    prefers-reduced-motion: reduce
-) {
-
-    .scroll-hint::after {
-        animation: none;
-    }
-
-}
 
 /* =========================================================
    PRODUCT DETAIL
@@ -2601,7 +2455,7 @@ section {
 /* =========================================================
    MORE PRODUCT LIST - 태블릿·모바일은 한 줄 슬라이드
    (1024px 이하) 3열 / 2열로 여러 줄이 되던 것을 한 줄로 두고 옆으로 넘겨 봄.
-   손가락은 브라우저 기본 가로 스크롤 + 스냅이 맡고, 마우스로 끄는 건 draft.js 가 받아 줌
+   손가락은 브라우저 기본 가로 스크롤 + 스냅이 맡고, 마우스로 끄는 건 이 페이지 아래쪽의 인라인 스크립트(draft.html)가 받아 줌
 ========================================================= */
 
 @media (max-width: 1024px) {
