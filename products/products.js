@@ -3886,6 +3886,13 @@
       ? -12
       : -28.9;
 
+
+  /*
+    BEST 도장은 카드가 다 펼쳐지고 나서 이만큼(초) 쉬었다가 찍힘.
+    (예전엔 펼쳐지는 도중에 찍혀서 정신없었음)
+  */
+  const BEST_AFTER_CARDS = 0.15;
+
   if (best) {
     gsap.set(best, {
       autoAlpha: 0,
@@ -4408,7 +4415,8 @@ if (cards.length > 1) {
             ease: "power2.out"
           },
 
-          "-=0.08"
+          /* 카드가 다 펼쳐진 뒤 잠깐 쉬었다가 */
+          `+=${BEST_AFTER_CARDS}`
         );
 
       } else {
@@ -4427,7 +4435,8 @@ if (cards.length > 1) {
             ease: "power4.in"
           },
 
-          "-=0.10"
+          /* 카드 3장이 다 펼쳐진 뒤 잠깐 쉬었다가 쾅 */
+          `+=${BEST_AFTER_CARDS}`
         );
 
 
