@@ -60,6 +60,38 @@
         document.querySelector('[data-craving-input]');
 
 
+    const cravingPlaceholders = [
+        'What about “Makgeolli”?',
+        'How about “Draft Makgeolli”?',
+        '“Rice Makgeolli” today?',
+        'Craving “Strawberry Makgeolli”?',
+        'How about “Bekseju”?',
+        '“Yedam” today?',
+        'What about “Ryeo Premium Soju”?',
+        'How about “Charmsoon Soju”?'
+    ];
+
+
+    function updateCravingPlaceholder() {
+        if (!searchInput) return;
+
+        const index = Math.floor(
+            Math.random() * cravingPlaceholders.length
+        );
+
+        searchInput.placeholder = cravingPlaceholders[index];
+    }
+
+
+    updateCravingPlaceholder();
+
+    window.addEventListener('pageshow', (event) => {
+        if (event.persisted) {
+            updateCravingPlaceholder();
+        }
+    });
+
+
     const emptyMessage =
         document.querySelector('[data-product-empty]');
 
@@ -138,7 +170,7 @@
 
 
     const state = {
-        category: 'makgeolli',
+        category: 'all',
         experience: '',
         keyword: ''
     };
@@ -147,7 +179,7 @@
     /* -----------------------------------------------------
        준비중 안내 (작은 반투명 팝업)
 
-       BEKSEJU / YEDAMCHEONG / SOJU / VIEW ALL 처럼
+       BEKSEJU & YEDAM / SOJU / VIEW ALL 처럼
        아직 보여줄 제품이 없는 버튼에서 부름
     ----------------------------------------------------- */
 
@@ -233,6 +265,7 @@
 
         if (
             state.category &&
+            state.category !== 'all' &&
             category !== state.category
         ) {
             return false;
@@ -1666,7 +1699,7 @@
         }
 
 
-        state.category = '';
+        state.category = 'all';
         state.experience = '';
         state.keyword = '';
 
@@ -1676,7 +1709,7 @@
 
                 setPressed(
                     item,
-                    false
+                    item.dataset.category === 'all'
                 );
 
             }
@@ -1754,27 +1787,51 @@
         if (!showcase) return;
 
 
-        const behavior =
+        const reduceMotion =
             window.matchMedia(
                 '(prefers-reduced-motion: reduce)'
-            ).matches
+            ).matches;
 
-                ? 'auto'
 
-                : 'smooth';
+        /*
+            도착 위치를 숫자로 직접 계산.
+
+            제품이 8개 → 3개로 줄면 페이지가 짧아져서
+            브라우저가 스크롤 위치를 순간 끌어올리는데,
+            Lenis 는 그걸 아직 모른 채 예전 위치로 계산해서
+            제품 목록보다 아래(제목이 잘린 곳)에 멈췄었음.
+
+            섹션 위 여백은 공통 CSS 의 scroll-margin-top
+            (고정 헤더 높이 + 여유) 을 그대로 따름.
+        */
+        const scrollMargin =
+            parseFloat(
+                getComputedStyle(showcase).scrollMarginTop
+            ) || 0;
+
+        const targetTop =
+            showcase.getBoundingClientRect().top +
+            window.scrollY -
+            scrollMargin;
 
 
         if (window.siteLenis) {
 
             window.siteLenis.scrollTo(
-                showcase
+                targetTop,
+                {
+                    immediate: reduceMotion,
+                    force: true
+                }
             );
 
         } else {
 
-            showcase.scrollIntoView({
-                behavior,
-                block: 'start'
+            window.scrollTo({
+                top: targetTop,
+                behavior: reduceMotion
+                    ? 'auto'
+                    : 'smooth'
             });
 
         }
@@ -2257,40 +2314,12 @@
     }
 
 
-    /* Splash */
-
-    if (!isMobileHero && splash) {
-
-        introTl.fromTo(
-            splash,
-
-            {
-                scale: 0.25,
-                opacity: 0
-            },
-
-            {
-                scale: 1,
-                opacity: 1,
-
-                duration: 0.8,
-
-                ease:
-                    'back.out(1.7)'
-            },
-
-            '-=0.3'
-        );
-
-    }
-
-
-
-
     /*
      * 백세주
      * CSS translate: -50% -50% 를 GSAP 이 transform 으로 합치면서 같은 문제가 생겨
      * (1536×864 같은 화면에서 병이 반 칸 아래로 내려앉음) 여기도 직접 알려 줌
+     *
+     * 물보다 백세주가 먼저 올라옴. 물은 병이 자리에 닿는 순간 튐 (아래 Splash)
      */
 
     if (center && !isMobileHero) {
@@ -2319,7 +2348,61 @@
                     'back.out(1.25)'
             },
 
-            '-=0.5'
+            '-=0.3'
+        );
+
+    }
+
+
+    /*
+     * Splash (물 튀김)
+     *
+     * 예전: 사진 한 장이 25% 크기에서 통째로 커지며 튕김 → 스티커처럼 보였음
+     * 지금: 사진 크기는 거의 그대로 두고, 병 몸통 쪽(가로 50%, 세로 78%)에서
+     *       바깥으로 퍼지듯이 드러남 (CSS 의 --splash_reveal 마스크).
+     *       처음엔 살짝 흐렸다가 선명해져서 빠르게 튀는 느낌을 줌.
+     *       튕김 없이 처음 빠르고 끝이 느린 곡선(power2.out).
+     *       너무 센 곡선(expo.out)은 퍼지는 게 안 보이고 한 번에 '팍' 나타나 보였음
+     *
+     * 시작 시점: 백세주가 올라오기 시작하고 0.45초 뒤
+     *           = 병이 처음 제자리에 닿는 순간 (back.out(1.25) 의 44% 지점)
+     *
+     * xPercent / yPercent 는 위 백세주와 같은 이유로 직접 알려 줌
+     */
+
+    if (!isMobileHero && splash) {
+
+        introTl.fromTo(
+            splash,
+
+            {
+                xPercent: -50,
+                yPercent: -50,
+                x: 0,
+                y: 0,
+                scale: 0.94,
+                opacity: 0,
+                filter: 'blur(8px)',
+                '--splash_reveal': '0%'
+            },
+
+            {
+                xPercent: -50,
+                yPercent: -50,
+                x: 0,
+                y: 0,
+                scale: 1,
+                opacity: 1,
+                filter: 'blur(0px)',
+                /* 125% 면 가장자리까지 다 보임 (부드러운 테두리 18% 포함) */
+                '--splash_reveal': '125%',
+
+                duration: 0.65,
+
+                ease: 'power2.out'
+            },
+
+            '<0.45'
         );
 
     }
@@ -2330,6 +2413,354 @@
      * 스크롤 잠금이 풀리는 기준이 곧 이 타임라인의 완료 시점
      */
     window.productsHeroIntro = introTl;
+
+})();
+
+
+
+/* =========================================================
+   3-1. Hero 옆 병 4개 : 둥실둥실 + 간지럼 (PC 전용)
+
+   메인 페이지 히어로·BEST 섹션의 병 움직임(main.js 의 data-momentum)과
+   같은 느낌을 이 페이지 히어로의 옆 병 4개에만 따로 만듦.
+   메인 파일은 건드리지 않음 (다른 사람 담당)
+
+   - 평소 : 병마다 주기·시작점이 다른 사인파로 제자리에서 천천히 떠다님
+            (메인처럼 커서 위치를 따라 밀리는 움직임은 정신없어서 뺐음)
+   - 호버 : 커서가 병을 스치는 속도·방향만큼 튕겼다가
+            스프링으로 출렁이며 제자리로 돌아옴 (간지럼)
+            가장자리를 스칠수록 많이 돌고, 가운데를 곧장 지나면 덜 돎
+
+   위치·회전은 등장 연출과 같은 GSAP 값(x, y, rotation)을 그대로 이어서 씀.
+   (CSS 의 translate(-50%, -50%) rotate(..) 기준이 깨지지 않게)
+   마우스가 있는 PC 에서만, 동작 줄이기 설정이면 켜지 않음
+========================================================= */
+
+(() => {
+
+    const hero =
+        document.querySelector(
+            '.products_hero'
+        );
+
+    if (!hero || typeof gsap === 'undefined') return;
+
+    const fineHover =
+        window.matchMedia(
+            '(hover: hover) and (pointer: fine)'
+        );
+
+    const reducedMotion =
+        window.matchMedia(
+            '(prefers-reduced-motion: reduce)'
+        );
+
+    const mobile =
+        window.matchMedia(
+            '(max-width: 767px)'
+        );
+
+    if (
+        !fineHover.matches ||
+        reducedMotion.matches ||
+        mobile.matches
+    ) {
+        return;
+    }
+
+
+    /* 튕김 / 스프링 값은 메인 페이지와 같음 */
+    const THROW_SCALE = 0.32;
+    const SPIN_SCALE = 0.16;
+    const MAX_THROW = 1600;
+    const MAX_SPIN = 320;
+    const STIFFNESS = 130;
+    const DAMPING = 15;
+    const REST_EPSILON = 0.08;
+
+    /* 튕기는 세기. 메인 BEST 섹션 병 카드와 같은 1 (0 ~ 1) */
+    const STRENGTH = 1;
+
+    /* 등장 연출이 끝난 뒤 떠다니는 움직임이 0 → 1 로 스며드는 시간(초) */
+    const EASE_IN_TIME = 1.2;
+
+    /*
+     * 병마다
+     * float  : 위아래로 떠다니는 폭(px)
+     * period : 한 번 오르내리는 데 걸리는 시간(초)
+     * phase  : 시작점. 서로 어긋나야 같이 움직이지 않음
+     */
+    const LAYERS = {
+        rice: {
+            float: 12,
+            period: 6.6,
+            phase: 0
+        },
+        draft: {
+            float: 16,
+            period: 7.4,
+            phase: 2.1
+        },
+        prebiotics: {
+            float: 10,
+            period: 6,
+            phase: 3.7
+        },
+        strawberry: {
+            float: 14,
+            period: 8.2,
+            phase: 1.2
+        }
+    };
+
+    const clamp = (value, limit) =>
+        Math.min(Math.max(value, -limit), limit);
+
+    const items =
+        Object.keys(LAYERS)
+            .map((name) => {
+
+                const element =
+                    hero.querySelector(
+                        '.hero_bottle_' + name
+                    );
+
+                if (!element) return null;
+
+                return {
+                    element,
+                    layer: LAYERS[name],
+                    baseRotation: 0,
+                    x: 0,
+                    y: 0,
+                    rotation: 0,
+                    velocityX: 0,
+                    velocityY: 0,
+                    velocityRotation: 0,
+                    awake: false,
+                    setX: null,
+                    setY: null,
+                    setRotation: null
+                };
+            })
+            .filter(Boolean);
+
+    if (!items.length) return;
+
+
+    /* 커서 상태 */
+    let pointerX = 0;
+    let pointerY = 0;
+    let pointerTime = 0;
+    let cursorVelocityX = 0;
+    let cursorVelocityY = 0;
+
+    let clock = 0;
+    let lastTime = 0;
+    let frame = 0;
+    let started = false;
+    let visible = true;
+    let easeIn = 0;
+
+
+    function render(item) {
+
+        const layer = item.layer;
+
+        const wave =
+            (clock / layer.period) * Math.PI * 2 +
+            layer.phase;
+
+        /* 가로는 세로보다 폭이 좁고 주기도 어긋나야
+           같은 자리를 왕복하지 않고 떠다니는 것처럼 보임 */
+        const ambientX =
+            Math.sin(wave * 0.73) * layer.float * 0.5 * easeIn;
+
+        const ambientY =
+            Math.sin(wave) * layer.float * easeIn;
+
+        item.setX(ambientX + item.x);
+        item.setY(ambientY + item.y);
+        item.setRotation(item.baseRotation + item.rotation);
+    }
+
+
+    function step(time) {
+
+        frame = 0;
+
+        const delta =
+            lastTime
+                ? Math.min((time - lastTime) / 1000, 0.04)
+                : 1 / 60;
+
+        lastTime = time;
+        clock += delta;
+        easeIn = Math.min(easeIn + delta / EASE_IN_TIME, 1);
+
+        items.forEach((item) => {
+
+            if (item.awake) {
+
+                item.velocityX +=
+                    (-STIFFNESS * item.x - DAMPING * item.velocityX) * delta;
+                item.velocityY +=
+                    (-STIFFNESS * item.y - DAMPING * item.velocityY) * delta;
+                item.velocityRotation +=
+                    (-STIFFNESS * item.rotation - DAMPING * item.velocityRotation) * delta;
+
+                item.x += item.velocityX * delta;
+                item.y += item.velocityY * delta;
+                item.rotation += item.velocityRotation * delta;
+
+                const settled =
+                    Math.abs(item.x) < REST_EPSILON &&
+                    Math.abs(item.velocityX) < REST_EPSILON &&
+                    Math.abs(item.y) < REST_EPSILON &&
+                    Math.abs(item.velocityY) < REST_EPSILON &&
+                    Math.abs(item.rotation) < REST_EPSILON &&
+                    Math.abs(item.velocityRotation) < REST_EPSILON;
+
+                if (settled) {
+                    item.awake = false;
+                    item.x = 0;
+                    item.y = 0;
+                    item.rotation = 0;
+                    item.velocityX = 0;
+                    item.velocityY = 0;
+                    item.velocityRotation = 0;
+                }
+            }
+
+            render(item);
+        });
+
+        /* 히어로가 화면 밖이면 쉼. 다시 보이면 이어서 */
+        if (visible) {
+            frame = window.requestAnimationFrame(step);
+        } else {
+            lastTime = 0;
+        }
+    }
+
+
+    function wake() {
+        if (!started || frame || !visible) return;
+        lastTime = 0;
+        frame = window.requestAnimationFrame(step);
+    }
+
+
+    function onPointerMove(event) {
+
+        const elapsed = event.timeStamp - pointerTime;
+
+        if (pointerTime && elapsed > 0) {
+
+            /* 순간 속도는 튀기 쉬워서 부드럽게 다듬음 */
+            const instantX =
+                ((event.clientX - pointerX) / elapsed) * 1000;
+            const instantY =
+                ((event.clientY - pointerY) / elapsed) * 1000;
+
+            cursorVelocityX = cursorVelocityX * 0.55 + instantX * 0.45;
+            cursorVelocityY = cursorVelocityY * 0.55 + instantY * 0.45;
+        }
+
+        pointerX = event.clientX;
+        pointerY = event.clientY;
+        pointerTime = event.timeStamp;
+    }
+
+
+    function onPointerLeave() {
+        pointerTime = 0;
+    }
+
+
+    /* 커서가 병에 들어오는 순간 튕김 */
+    function tickle(item, event) {
+
+        const bounds = item.element.getBoundingClientRect();
+
+        const offsetX =
+            event.clientX - (bounds.left + bounds.width / 2);
+        const offsetY =
+            event.clientY - (bounds.top + bounds.height / 2);
+
+        /* 중심에서 벗어난 정도 x 커서 속도 = 회전 방향과 세기 */
+        const cross =
+            offsetX * cursorVelocityY - offsetY * cursorVelocityX;
+
+        const distance =
+            Math.hypot(offsetX, offsetY) || 1;
+
+        item.velocityX =
+            clamp(cursorVelocityX * THROW_SCALE * STRENGTH, MAX_THROW * STRENGTH);
+        item.velocityY =
+            clamp(cursorVelocityY * THROW_SCALE * STRENGTH, MAX_THROW * STRENGTH);
+        item.velocityRotation =
+            clamp((cross / distance) * SPIN_SCALE * STRENGTH, MAX_SPIN * STRENGTH);
+
+        item.awake = true;
+    }
+
+
+    function start() {
+
+        if (started) return;
+        started = true;
+
+        items.forEach((item) => {
+
+            /* 등장 연출이 끝난 자리(기울기 포함)를 기준으로 삼음 */
+            item.baseRotation =
+                Number(gsap.getProperty(item.element, 'rotation')) || 0;
+
+            item.setX = gsap.quickSetter(item.element, 'x', 'px');
+            item.setY = gsap.quickSetter(item.element, 'y', 'px');
+            item.setRotation = gsap.quickSetter(item.element, 'rotation', 'deg');
+
+            item.element.addEventListener(
+                'pointerenter',
+                (event) => {
+                    if (event.pointerType && event.pointerType !== 'mouse') return;
+                    tickle(item, event);
+                }
+            );
+        });
+
+        /* 병이 커서를 받을 수 있게 (평소 무대는 pointer-events: none) */
+        hero.classList.add('is_bottle_playful');
+
+        hero.addEventListener('pointermove', onPointerMove, { passive: true });
+        hero.addEventListener('pointerleave', onPointerLeave);
+
+        new IntersectionObserver((entries) => {
+            /*
+             * 한 번에 여러 개가 올 수 있음 (등장 직후 ScrollTrigger 가 고정 위치를
+             * 다시 계산하면서 잠깐 화면 밖으로 잡혔다가 돌아옴). 가장 마지막 값을 씀
+             */
+            visible = entries[entries.length - 1].isIntersecting;
+            wake();
+        }).observe(hero);
+
+        wake();
+    }
+
+
+    const heroIntro = window.productsHeroIntro;
+
+    if (!heroIntro || heroIntro.progress() === 1) {
+        start();
+    } else {
+        /*
+         * 등장 연출이 끝나는 지점에 시작을 걸어 둠.
+         * then() 은 쓰지 않음: gsap 타임라인의 then 은 콜백을 하나만 기억해서
+         * 아래 4번(화면 잠금 풀기)의 then 이 이걸 덮어써 버림
+         */
+        heroIntro.call(start, null, heroIntro.duration());
+    }
 
 })();
 
@@ -2454,16 +2885,16 @@
        막는 방식으로 따로 둠
     ========================================= */
 
-    /* 스크롤하면 백세주가 커지는 배율 */
-    const BOTTLE_SCALE = 1.2;
+    /* 스크롤하면 백세주가 커지는 배율 (1.2 에서 조금 더 키움) */
+    const BOTTLE_SCALE = 1.25;
 
     /*
      * 백세주가 커지는 데 쓰는 스크롤 거리 (화면 높이 대비)
-     * 0.2 = 화면 높이의 20% ≒ 마우스 휠 한두 번 (피그마 메모 기준)
+     * 0.28 = 화면 높이의 28% ≒ 마우스 휠 두세 번 (예전 0.2 에서 조금 늘림)
      * 이 구간 동안은 다음 콘텐츠가 올라오지 않고 화면이 멈춰 있음
      * 더 천천히 커지게 하려면 숫자를 키우면 됨
      */
-    const BOTTLE_ZOOM_SCROLL = 0.2;
+    const BOTTLE_ZOOM_SCROLL = 0.28;
 
     let gateReleased = false;
 
@@ -2604,7 +3035,7 @@
     /* =========================================
        잠금이 풀린 뒤의 스크롤 연출
 
-       1) 화면은 멈춘 채 백세주만 스크롤에 맞춰 1 → 1.2배
+       1) 화면은 멈춘 채 백세주만 스크롤에 맞춰 1 → 1.25배 (병 아래쪽 기준)
        2) 그다음 Hero 를 고정한 채 다음 콘텐츠가
           아래에서 올라와 덮음
     ========================================= */
@@ -2688,9 +3119,20 @@
     /* =========================================
        1) 화면은 멈춘 채 백세주만 커짐
           스크롤을 올리면 다시 작아짐
+
+          병 아래쪽을 기준으로 커짐.
+          가운데 기준이면 아래로도 커져서 화면 밖으로 더 잘렸음.
+          아래 기준이면 위로만 커져서 살짝 떠오르는 것처럼 보임
     ========================================= */
 
     if (centerBottle) {
+
+        gsap.set(
+            centerBottle,
+            {
+                transformOrigin: '50% 100%'
+            }
+        );
 
         coverTl.fromTo(
             centerBottle,
@@ -3406,6 +3848,23 @@
   );
 
 
+  /*
+    섹션 전체(inner)도 등장 직전 상태로 미리 숨겨 둠.
+    (PC·태블릿은 아래 3번에서 오른쪽 → 왼쪽으로 싸악 들어옴)
+
+    예전엔 여기서 안 숨겨서, 스크롤로 섹션에 다가가는 동안
+    카드가 이미 보이고 있다가 → 등장 순간 확 사라졌다가 → 다시 들어와서
+    한 번 깜빡이고 두 번 등장하는 것처럼 보였음.
+    아래 3번 fromTo 의 시작값(x 180, 투명)과 꼭 같아야 함
+  */
+  if (inner && !isMobileLayout) {
+    gsap.set(inner, {
+      x: 180,
+      autoAlpha: 0
+    });
+  }
+
+
   if (cta) {
     gsap.set(cta, {
       autoAlpha: 0,
@@ -3418,14 +3877,22 @@
 
 
   /*
-    BEST는 원래 CSS에서 rotate(-12deg)이므로
-    최종 위치도 -12도로 맞춰줍니다.
+    BEST 도장의 최종 기울기 (CSS 의 .starter_kit_best 와 같아야 함)
+    - 태블릿·모바일: rotate(-12deg)
+    - PC: 피그마 글자 기울기 -23.9° 에서 딸기 카드(5°)를 뺀 -28.9°
   */
+  const bestRestRotation =
+    isMobileLayout || isTabletLayout
+      ? -12
+      : -28.9;
+
   if (best) {
     gsap.set(best, {
       autoAlpha: 0,
       scale: isMobileLayout ? 0.92 : 1.8,
-      rotation: isMobileLayout ? -12 : -35
+      rotation: isMobileLayout
+        ? bestRestRotation
+        : bestRestRotation - 23
     });
   }
 
@@ -3527,6 +3994,14 @@
       return;
     }
 
+    /*
+      PC : 딸기 카드는 CSS 에서 5° 기울어져 있음.
+      등장할 때 0° → 5° 로 살짝 기우는 맛을 살리려고 똑바로 세워 둠
+    */
+    gsap.set(strawberry, {
+      rotation: 0
+    });
+
     const strawberryRect =
       strawberry.getBoundingClientRect();
 
@@ -3538,13 +4013,17 @@
           card.getBoundingClientRect();
 
 
+        /*
+          카드마다 기울기가 달라서 바깥 상자 크기가 달라짐.
+          왼쪽 위 모서리가 아니라 중심끼리 맞춰야 딸기 바로 뒤에 겹침
+        */
         const x =
-          strawberryRect.left -
-          cardRect.left;
+          (strawberryRect.left + strawberryRect.width / 2) -
+          (cardRect.left + cardRect.width / 2);
 
         const y =
-          strawberryRect.top -
-          cardRect.top;
+          (strawberryRect.top + strawberryRect.height / 2) -
+          (cardRect.top + cardRect.height / 2);
 
 
         gsap.set(card, {
@@ -3847,11 +4326,11 @@ if (cards.length > 1) {
 
   } else {
 
-  /* 딸기 카드 */
+  /* 딸기 카드 (피그마 5°) */
   tl.to(
     cards[0],
     {
-      rotation: -5,
+      rotation: 5,
 
       duration: 0.18,
 
@@ -3862,16 +4341,16 @@ if (cards.length > 1) {
   );
 
 
-  /* 바나나 카드 */
+  /* 바나나 카드 (피그마 -7°. 자리는 CSS 가 정함) */
   tl.to(
     cards[1],
     {
       x: 0,
-      y: 8,
+      y: 0,
 
       scale: 1,
 
-      rotation: 7,
+      rotation: -7,
 
       duration: 0.28,
 
@@ -3882,16 +4361,16 @@ if (cards.length > 1) {
   );
 
 
-  /* 청포도 카드 */
+  /* 청포도 카드 (피그마 14°. 자리는 CSS 가 정함) */
   tl.to(
     cards[2],
     {
       x: 0,
-      y: 2,
+      y: 0,
 
       scale: 1,
 
-      rotation: -14,
+      rotation: 14,
 
       duration: 0.28,
 
@@ -3922,7 +4401,7 @@ if (cards.length > 1) {
 
             scale: 1,
 
-            rotation: -12,
+            rotation: bestRestRotation,
 
             duration: 0.22,
 
@@ -3941,7 +4420,7 @@ if (cards.length > 1) {
 
             scale: 0.82,
 
-            rotation: -5,
+            rotation: bestRestRotation + 7,
 
             duration: 0.13,
 
@@ -3957,7 +4436,7 @@ if (cards.length > 1) {
           {
             scale: 1.12,
 
-            rotation: -15,
+            rotation: bestRestRotation - 3,
 
             duration: 0.08,
 
@@ -3971,7 +4450,7 @@ if (cards.length > 1) {
           {
             scale: 1,
 
-            rotation: -12,
+            rotation: bestRestRotation,
 
             duration: 0.06
           }
@@ -3995,6 +4474,349 @@ if (cards.length > 1) {
 
     }
 
+    /* 카드가 다 펼쳐지고 BEST 도장까지 찍힌 다음부터 잔바람 흔들림 + 호버 */
+    tl.call(startCardPlay);
+
+  }
+
+
+
+  /* =====================================================
+     3-1. 카드 잔바람 흔들림 + 호버 (PC 전용)
+
+     - 평소 : 잔바람에 흔들리듯 아주 살짝만 움직임
+              (위아래 2px, 좌우 갸웃 0.5° 안쪽, 카드마다 박자 다름)
+     - 호버 : 바람이 잦아들듯 흔들림이 줄고
+              카드가 살짝 떠오르며(5px) 마우스 쪽으로 은은하게 기울어짐(최대 4°).
+              안쪽 병·캔·물 튀김도 마우스를 따라 1 ~ 3px 씩 다르게 움직여 깊이감.
+              마우스가 나가면 다시 부드럽게 잔바람으로
+
+     펼치기 연출이 끝난 자리(x, y, 기울기)를 기준으로 그 위에 더함.
+     숫자는 1920 화면 기준 px 이고, 화면이 작아지면 카드 크기에 맞춰 같이 줄어듦.
+     마우스가 있는 PC 에서만. 태블릿·모바일은 기존 그대로
+  ===================================================== */
+
+  /*
+   * 카드마다 잔바람 박자 (초).
+   * 서로 안 맞는 두 박자를 섞어서 기계적으로 반복되는 느낌을 없앰
+   */
+  const CARD_BREEZE = [
+    { bob: 6.4, sway: 5.3, flutter: 2.9, phase: 0 },
+    { bob: 7.1, sway: 5.9, flutter: 3.3, phase: 2.1 },
+    { bob: 6.8, sway: 5.6, flutter: 3.1, phase: 4.3 }
+  ];
+
+  /* 평소 위아래로 흔들리는 폭 (px) */
+  const CARD_BOB = 2;
+
+  /* 평소 좌우로 갸웃거리는 정도 (도) */
+  const CARD_SWAY = 0.5;
+
+  /* 호버 중에 남는 잔바람 비율 (0 = 멈춤, 1 = 그대로) */
+  const CARD_HOVER_CALM = 0.3;
+
+  /* 호버 때 떠오르는 높이 (px) */
+  const CARD_HOVER_LIFT = 5;
+
+  /* 호버 때 커지는 정도 (1.01 = 1%) */
+  const CARD_HOVER_SCALE = 1.01;
+
+  /* 호버 때 마우스 쪽으로 기울어지는 최대 각도 (도) */
+  const CARD_TILT = 4;
+
+  /* 호버 때 카드 안쪽이 마우스를 따라 움직이는 거리 (px, 가로 / 세로) */
+  const CARD_INNER_MOVE = {
+    bottle: [3, 2],
+    can: [2, 1.5],
+    splash: [-1.5, -1]
+  };
+
+  /* 호버 때 병이 살짝 올라오는 높이 (px) */
+  const CARD_BOTTLE_RISE = 3;
+
+  /* 호버로 바뀌는 속도 (클수록 빠름. 6 이면 약 0.4초) */
+  const CARD_HOVER_FOLLOW = 6;
+
+  /* 잔바람이 0 → 1 로 스며드는 시간 (초) */
+  const CARD_EASE_IN = 1;
+
+  function startCardPlay() {
+
+    const canHover =
+      window.matchMedia(
+        "(hover: hover) and (pointer: fine)"
+      ).matches;
+
+    if (
+      !canHover ||
+      isTabletLayout ||
+      isMobileLayout ||
+      cards.length === 0
+    ) return;
+
+    const list =
+      section.querySelector(".starter_kit_list") ||
+      cards[0].parentElement;
+
+    const items =
+      cards.map((card, index) => {
+
+        const item = {
+          card,
+          breeze: CARD_BREEZE[index % CARD_BREEZE.length],
+          baseX: Number(gsap.getProperty(card, "x")) || 0,
+          baseY: Number(gsap.getProperty(card, "y")) || 0,
+          baseRotation: Number(gsap.getProperty(card, "rotation")) || 0,
+
+          /* 앞뒤 순서 (CSS z-index). 겹친 곳에서는 앞 카드만 호버 */
+          layer: Number(getComputedStyle(card).zIndex) || 0,
+
+          /* 호버 정도 0 ~ 1, 카드 안 마우스 위치 -1 ~ 1 */
+          hover: 0,
+          targetHover: 0,
+          mouseX: 0,
+          mouseY: 0,
+          targetMouseX: 0,
+          targetMouseY: 0,
+
+          setY: gsap.quickSetter(card, "y", "px"),
+          setRotation: gsap.quickSetter(card, "rotation", "deg"),
+          /* quickSetter 는 scale 한 번에 못 받아서 가로·세로 따로 */
+          setScaleX: gsap.quickSetter(card, "scaleX"),
+          setScaleY: gsap.quickSetter(card, "scaleY"),
+          setTiltX: gsap.quickSetter(card, "rotationX", "deg"),
+          setTiltY: gsap.quickSetter(card, "rotationY", "deg")
+        };
+
+        /* 앞뒤 기울기가 입체로 보이게 원근 */
+        gsap.set(card, {
+          transformPerspective: 900
+        });
+
+        return item;
+      });
+
+    /*
+     * 어느 카드 위에 마우스가 있는지 계산.
+     * 카드 자체에 mouseenter 를 걸면 카드가 떠오르거나 기울 때
+     * 가장자리에서 마우스가 빠졌다 들어왔다 하며 떨리므로,
+     * 움직이기 전의 제자리(기울어진 사각형)를 기준으로 판단
+     */
+    let pointerX = 0;
+    let pointerY = 0;
+    let pointerInside = false;
+
+    function updateHover() {
+
+      let hovered = null;
+      let hoveredX = 0;
+      let hoveredY = 0;
+
+      if (pointerInside) {
+
+        const listRect = list.getBoundingClientRect();
+
+        items.forEach((item) => {
+
+          const card = item.card;
+          const halfW = card.offsetWidth / 2;
+          const halfH = card.offsetHeight / 2;
+
+          const centerX =
+            listRect.left + card.offsetLeft + halfW + item.baseX;
+          const centerY =
+            listRect.top + card.offsetTop + halfH + item.baseY;
+
+          /* 카드 기울기만큼 되돌려서 카드 기준 좌표로 */
+          const angle = -item.baseRotation * Math.PI / 180;
+          const dx = pointerX - centerX;
+          const dy = pointerY - centerY;
+          const localX = dx * Math.cos(angle) - dy * Math.sin(angle);
+          const localY = dx * Math.sin(angle) + dy * Math.cos(angle);
+
+          if (
+            Math.abs(localX) <= halfW &&
+            Math.abs(localY) <= halfH &&
+            (!hovered || item.layer > hovered.layer)
+          ) {
+            hovered = item;
+            hoveredX = localX / halfW;
+            hoveredY = localY / halfH;
+          }
+        });
+      }
+
+      items.forEach((item) => {
+
+        const isHovered = item === hovered;
+
+        item.targetHover = isHovered ? 1 : 0;
+
+        if (isHovered) {
+          item.targetMouseX = hoveredX;
+          item.targetMouseY = hoveredY;
+        } else {
+          item.targetMouseX = 0;
+          item.targetMouseY = 0;
+        }
+
+        item.card.classList.toggle("is_card_hover", isHovered);
+      });
+
+      wake();
+    }
+
+    section.addEventListener("pointermove", (event) => {
+
+      if (event.pointerType && event.pointerType !== "mouse") return;
+
+      pointerX = event.clientX;
+      pointerY = event.clientY;
+      pointerInside = true;
+
+      updateHover();
+    });
+
+    section.addEventListener("pointerleave", () => {
+      pointerInside = false;
+      updateHover();
+    });
+
+    /* 마우스는 가만히 있고 화면만 스크롤될 때도 다시 계산 */
+    window.addEventListener("scroll", () => {
+      if (pointerInside) updateHover();
+    }, { passive: true });
+
+    /*
+     * CSS 의 transform 전환(300ms)이 걸려 있으면
+     * 매 프레임 바꾸는 값이 한 박자씩 밀려서 굼떠 보임
+     */
+    section.classList.add("is_card_playing");
+
+    let clock = 0;
+    let lastTime = 0;
+    let frame = 0;
+    let visible = true;
+    let easeIn = 0;
+
+    function step(time) {
+
+      frame = 0;
+
+      const delta =
+        lastTime
+          ? Math.min((time - lastTime) / 1000, 0.04)
+          : 1 / 60;
+
+      lastTime = time;
+      clock += delta;
+      easeIn = Math.min(easeIn + delta / CARD_EASE_IN, 1);
+
+      const follow =
+        1 - Math.exp(-CARD_HOVER_FOLLOW * delta);
+
+      items.forEach((item) => {
+
+        const card = item.card;
+        const breeze = item.breeze;
+
+        /* 1920 화면에서 카드 폭 300 → 1, 화면이 작으면 그만큼 작아짐 */
+        const unit = card.offsetWidth / 300 || 1;
+
+        item.hover += (item.targetHover - item.hover) * follow;
+        item.mouseX += (item.targetMouseX - item.mouseX) * follow;
+        item.mouseY += (item.targetMouseY - item.mouseY) * follow;
+
+        const hover = item.hover;
+
+        /* 호버하면 잔바람이 잦아듦 */
+        const calm =
+          easeIn * (1 - (1 - CARD_HOVER_CALM) * hover);
+
+        const t = clock * Math.PI * 2;
+
+        const bob =
+          Math.sin(t / breeze.bob + breeze.phase);
+
+        const sway =
+          Math.sin(t / breeze.sway + breeze.phase) * 0.7 +
+          Math.sin(t / breeze.flutter + breeze.phase * 1.7) * 0.3;
+
+        item.setY(
+          item.baseY +
+          bob * CARD_BOB * unit * calm -
+          CARD_HOVER_LIFT * unit * hover
+        );
+
+        item.setRotation(
+          item.baseRotation +
+          sway * CARD_SWAY * calm
+        );
+
+        const scale =
+          1 + (CARD_HOVER_SCALE - 1) * hover;
+
+        item.setScaleX(scale);
+        item.setScaleY(scale);
+
+        /* 마우스가 있는 쪽이 살짝 눌리듯 기울어짐 */
+        item.setTiltY(item.mouseX * CARD_TILT);
+        item.setTiltX(-item.mouseY * CARD_TILT);
+
+        /* 안쪽 병·캔·물 튀김 (CSS 의 translate 가 이 값을 씀) */
+        const style = card.style;
+        const mx = item.mouseX;
+        const my = item.mouseY;
+
+        style.setProperty(
+          "--card_bottle_x",
+          (mx * CARD_INNER_MOVE.bottle[0]).toFixed(2)
+        );
+        style.setProperty(
+          "--card_bottle_y",
+          (my * CARD_INNER_MOVE.bottle[1] - CARD_BOTTLE_RISE * hover).toFixed(2)
+        );
+        style.setProperty(
+          "--card_can_x",
+          (mx * CARD_INNER_MOVE.can[0]).toFixed(2)
+        );
+        style.setProperty(
+          "--card_can_y",
+          (my * CARD_INNER_MOVE.can[1]).toFixed(2)
+        );
+        style.setProperty(
+          "--card_splash_x",
+          (mx * CARD_INNER_MOVE.splash[0]).toFixed(2)
+        );
+        style.setProperty(
+          "--card_splash_y",
+          (my * CARD_INNER_MOVE.splash[1]).toFixed(2)
+        );
+      });
+
+      if (visible) {
+        frame = window.requestAnimationFrame(step);
+      } else {
+        lastTime = 0;
+      }
+    }
+
+    function wake() {
+      if (visible && !frame) {
+        lastTime = 0;
+        frame = window.requestAnimationFrame(step);
+      }
+    }
+
+    /* 화면 밖이면 쉼 */
+    new IntersectionObserver((entries) => {
+
+      visible = entries[entries.length - 1].isIntersecting;
+
+      wake();
+    }).observe(section);
+
+    frame = window.requestAnimationFrame(step);
   }
 
 
@@ -4067,3 +4889,623 @@ if (cards.length > 1) {
 
 })();
 
+
+
+/* =========================================================
+   TOP 묶음(캐릭터 + TOP 버튼) 스크롤 따라오기 (PC 전용)
+
+   화면 오른쪽 아래 캐릭터와 TOP 버튼이 한 덩어리로
+   스크롤할 때 아주 살짝 뒤처졌다가 통- 하고 제자리로 돌아옴.
+
+   - 스크롤 속도만큼 반대쪽으로 밀림 (최대 위 8px / 아래 6px)
+   - 기울기 없이 위아래로만
+   - 스크롤이 멈추면 용수철처럼 한 번 살짝 넘쳤다가 0.5초 안에 제자리
+
+   마우스가 있는 PC 에서만. 태블릿·모바일, 동작 줄이기 설정이면 그대로.
+   위치는 CSS 의 --top_stack_lag 로 넘김
+========================================================= */
+
+(() => {
+
+  const stack =
+    document.querySelector(".products_top_stack");
+
+  if (!stack) return;
+
+
+  const canPlay =
+    window.matchMedia(
+      "(min-width: 1025px) and (hover: hover) and (pointer: fine)"
+    ).matches &&
+    !window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+  if (!canPlay) return;
+
+
+  /* 위로 밀리는 최대 거리 / 아래로 밀리는 최대 거리 (px) */
+  const LAG_UP = 8;
+  const LAG_DOWN = 6;
+
+  /* 이 정도 스크롤 속도(px/초)에서 최대 거리의 약 76% 만큼 밀림 */
+  const LAG_SPEED = 1800;
+
+  /* 용수철 세기 / 출렁임을 잡는 힘 (작을수록 더 통통 튐) */
+  const SPRING = 220;
+  const DAMPING = 10;
+
+  /*
+   * 관성. 스크롤이 갑자기 빨라지거나 멈출 때 한 번 더 툭 밀어 줌.
+   * 그래서 스크롤을 멈추면 제자리를 살짝 지나쳤다가 통- 하고 돌아옴
+   */
+  const INERTIA = 0.12;
+
+
+  let lastScroll = window.scrollY;
+  let lastTime = 0;
+  let speed = 0;
+  let offset = 0;
+  let offsetVelocity = 0;
+  let frame = 0;
+
+
+  function step(time) {
+
+    frame = 0;
+
+    const delta =
+      lastTime
+        ? Math.min((time - lastTime) / 1000, 0.05)
+        : 1 / 60;
+
+    lastTime = time;
+
+
+    /* 스크롤 속도 (px/초). 튀는 값은 부드럽게 */
+    const scroll = window.scrollY;
+    const rawSpeed = (scroll - lastScroll) / delta;
+
+    lastScroll = scroll;
+
+    const prevSpeed = speed;
+
+    speed += (rawSpeed - speed) * Math.min(delta * 12, 1);
+
+
+    /* 아래로 스크롤하면 위로, 위로 스크롤하면 아래로 살짝 밀림 */
+    const pull =
+      Math.tanh(speed / LAG_SPEED);
+
+    const target =
+      pull > 0
+        ? -pull * LAG_UP
+        : -pull * LAG_DOWN;
+
+
+    /* 용수철 */
+    const force =
+      (target - offset) * SPRING -
+      offsetVelocity * DAMPING;
+
+    offsetVelocity += force * delta;
+
+    /* 빨라지면 위로, 멈추면 아래로 툭 */
+    offsetVelocity -= (speed - prevSpeed) * INERTIA;
+
+    offset += offsetVelocity * delta;
+
+
+    /*
+     * 화면에 보이는 값은 최대 거리 안으로 부드럽게 눌러 담음.
+     * (딱 잘라 막으면 끝에서 멈칫해 보여서 tanh 로 점점 덜 밀리게)
+     */
+    const limit =
+      offset < 0
+        ? LAG_UP
+        : LAG_DOWN;
+
+    const shown =
+      Math.tanh(offset / limit) * limit;
+
+
+    stack.style.setProperty(
+      "--top_stack_lag",
+      `${shown.toFixed(2)}px`
+    );
+
+
+    /* 다 멈췄으면 쉼 (다음 스크롤 때 다시 깨움) */
+    const resting =
+      Math.abs(speed) < 1 &&
+      Math.abs(offset) < 0.02 &&
+      Math.abs(offsetVelocity) < 0.02;
+
+    if (resting) {
+
+      speed = 0;
+      offset = 0;
+      offsetVelocity = 0;
+      lastTime = 0;
+
+      stack.style.setProperty("--top_stack_lag", "0px");
+
+      return;
+    }
+
+    frame = window.requestAnimationFrame(step);
+  }
+
+
+  window.addEventListener(
+    "scroll",
+    () => {
+
+      if (frame) return;
+
+      lastTime = 0;
+      frame = window.requestAnimationFrame(step);
+    },
+    {
+      passive: true
+    }
+  );
+
+})();
+
+
+
+/* =========================================================
+   내 술 취향 결과 창
+
+   TOP 위 캐릭터를 누르면 화면 위에 창이 뜨고(페이지 이동 없음),
+   그 안에 테스트 페이지(test/test.html)를 그대로 보여 줌.
+
+   - 테스트 결과를 기억하고 있으면 그 결과 화면 (?result=result_x)
+   - 없으면 테스트 첫 화면 → 창 안에서 바로 해 볼 수 있고,
+     결과가 나오면 기억해 뒀다가 다음에 열 때 바로 보여 줌
+   - 결과는 localStorage 의 'kooksoondang_test_result' 에 저장
+     (테스트 페이지에서도 같은 이름으로 저장해 주면 처음부터 결과가 뜸)
+
+   창 안의 MAIN 같은 링크는 창 안에서 이동하지 않고
+   창을 닫은 뒤 바깥 페이지가 이동함. VIEW MORE 는 지금 페이지가
+   제품 페이지이므로 창만 닫고 제품 목록으로 스크롤.
+   테스트 페이지 파일(test 폴더)은 건드리지 않음.
+========================================================= */
+
+(() => {
+
+  const opener =
+    document.querySelector("[data-type-result-open]");
+
+  const modal =
+    document.querySelector("[data-type-result-modal]");
+
+  if (!opener || !modal) return;
+
+
+  const panel = modal.querySelector(".type_result_panel");
+  const backdrop = modal.querySelector(".type_result_backdrop");
+  const frame = modal.querySelector("[data-type-result-frame]");
+  const closeButton = modal.querySelector(".type_result_close");
+
+  if (!panel || !frame) return;
+
+
+  const STORAGE_KEY = "kooksoondang_test_result";
+  const TEST_URL = "../test/test.html";
+
+  /* PC 에서 테스트 화면을 이 크기로 그린 뒤 창에 맞게 줄임 */
+  const CANVAS_WIDTH = 1440;
+  const CANVAS_HEIGHT = 810;
+
+  const desktopQuery =
+    window.matchMedia("(min-width: 1025px)");
+
+  const reduceMotion =
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const canAnimate =
+    typeof window.gsap !== "undefined" && !reduceMotion;
+
+
+  let isOpen = false;
+  let lastFocus = null;
+  let resultObserver = null;
+  let inertItems = [];
+
+
+  /* ---------- 결과 기억 ---------- */
+
+  function isResultId(value) {
+    return /^result_[a-f]$/.test(value || "");
+  }
+
+  function readSavedResult() {
+    try {
+      const saved = window.localStorage.getItem(STORAGE_KEY);
+
+      return isResultId(saved) ? saved : null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function saveResult(id) {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, id);
+    } catch (error) {
+      /* 저장이 막힌 브라우저면 그냥 넘어감 */
+    }
+  }
+
+
+  /* ---------- 창 크기 (PC 는 1440 × 810 을 통째로 줄임) ---------- */
+
+  function fitPanel() {
+
+    if (!desktopQuery.matches) {
+      panel.style.removeProperty("--type_result_w");
+      panel.style.removeProperty("--type_result_h");
+      panel.style.removeProperty("--type_result_scale");
+      return;
+    }
+
+    const scale = Math.min(
+      (window.innerWidth * 0.9) / CANVAS_WIDTH,
+      (window.innerHeight * 0.88) / CANVAS_HEIGHT,
+      1
+    );
+
+    panel.style.setProperty("--type_result_w", `${CANVAS_WIDTH * scale}px`);
+    panel.style.setProperty("--type_result_h", `${CANVAS_HEIGHT * scale}px`);
+    panel.style.setProperty("--type_result_scale", scale.toFixed(4));
+  }
+
+
+  /* ---------- 창 밖으로 나가는 이동 ---------- */
+
+  function goTo(url) {
+
+    if (window.sitePageTransition) {
+      window.sitePageTransition.leaveTo(url);
+    } else {
+      window.location.assign(url);
+    }
+  }
+
+  function isProductsPage(url) {
+    return /\/products\/products\.html$/.test(url.pathname);
+  }
+
+  function scrollToProducts() {
+
+    const showcase =
+      document.getElementById("product_showcase");
+
+    if (!showcase) return;
+
+    const margin =
+      parseFloat(getComputedStyle(showcase).scrollMarginTop) || 0;
+
+    const top =
+      showcase.getBoundingClientRect().top + window.scrollY - margin;
+
+    if (window.siteLenis) {
+      window.siteLenis.scrollTo(top, {
+        immediate: reduceMotion,
+        force: true
+      });
+    } else {
+      window.scrollTo({
+        top,
+        behavior: reduceMotion ? "auto" : "smooth"
+      });
+    }
+  }
+
+
+  /* ---------- 창 안(테스트 페이지)과 이어 주기 ---------- */
+
+  function handleFrameClick(event) {
+
+    const target = event.target;
+
+    if (!target || typeof target.closest !== "function") return;
+
+
+    /* 문제 화면의 SKIP : 창 안에서는 그냥 창을 닫음 */
+    if (target.closest("#btn_skip")) {
+      event.preventDefault();
+      event.stopPropagation();
+      closeModal();
+      return;
+    }
+
+
+    const link = target.closest("a[href]");
+
+    if (!link) return;
+
+    /* 새 탭으로 여는 링크는 그대로 둠 */
+    if (link.target && link.target !== "_self") return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const url = new URL(
+      link.getAttribute("href"),
+      frame.contentWindow.location.href
+    );
+
+    if (isProductsPage(url)) {
+      closeModal(scrollToProducts);
+    } else {
+      closeModal(() => goTo(url.href));
+    }
+  }
+
+  function rememberShownResult() {
+
+    let doc = null;
+
+    try {
+      doc = frame.contentDocument;
+    } catch (error) {
+      return;
+    }
+
+    const shown =
+      doc && doc.querySelector(".screen_result.is_on");
+
+    if (shown && isResultId(shown.id)) {
+      saveResult(shown.id);
+    }
+  }
+
+  function connectFrame() {
+
+    let frameWindow = null;
+    let doc = null;
+
+    /* 주소가 다른 곳에서 열었거나(file:// 등) 막히면 이어 주기는 건너뜀 */
+    try {
+      frameWindow = frame.contentWindow;
+      doc = frame.contentDocument;
+    } catch (error) {
+      return;
+    }
+
+    if (!frameWindow || !doc) return;
+
+
+    const path = frameWindow.location.pathname;
+
+    /* 창 안이 테스트 페이지가 아닌 곳으로 넘어갔으면 → 창을 닫고 바깥에서 이동 */
+    if (!/\/test\/test\.html$/.test(path)) {
+
+      const url = new URL(frameWindow.location.href);
+
+      if (isProductsPage(url)) {
+        closeModal(scrollToProducts);
+      } else {
+        closeModal(() => goTo(url.href));
+      }
+
+      return;
+    }
+
+
+    frameWindow.addEventListener("click", handleFrameClick, true);
+    frameWindow.addEventListener("keydown", handleKeydown);
+
+
+    /* 창 안에서 테스트를 끝내면 결과를 기억 */
+    const test = doc.getElementById("test");
+
+    if (resultObserver) resultObserver.disconnect();
+
+    if (test) {
+      resultObserver = new MutationObserver(rememberShownResult);
+      resultObserver.observe(test, {
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["class"]
+      });
+    }
+
+    rememberShownResult();
+  }
+
+  frame.addEventListener("load", () => {
+
+    if (!isOpen) return;
+
+    let href = "";
+
+    try {
+      href = frame.contentWindow.location.href;
+    } catch (error) {
+      href = "";
+    }
+
+    if (href === "about:blank") return;
+
+    connectFrame();
+    frame.classList.add("is_loaded");
+  });
+
+
+  /* ---------- 뒤쪽 페이지 잠그기 ---------- */
+
+  function lockPage() {
+
+    document.documentElement.classList.add("is_type_result_open");
+    window.siteLenis?.stop();
+
+    /* 창 말고 나머지는 클릭·탭 이동이 안 되게 */
+    inertItems = [...document.body.children].filter((element) =>
+      element !== modal &&
+      element.tagName !== "SCRIPT" &&
+      !element.inert
+    );
+
+    inertItems.forEach((element) => {
+      element.inert = true;
+    });
+  }
+
+  function unlockPage() {
+
+    inertItems.forEach((element) => {
+      element.inert = false;
+    });
+
+    inertItems = [];
+
+    document.documentElement.classList.remove("is_type_result_open");
+    window.siteLenis?.start();
+  }
+
+
+  /* ---------- 열기 / 닫기 ---------- */
+
+  function openModal() {
+
+    if (isOpen) return;
+
+    isOpen = true;
+    lastFocus = document.activeElement;
+
+    fitPanel();
+
+    const saved = readSavedResult();
+
+    frame.classList.remove("is_loaded");
+    frame.src = saved
+      ? `${TEST_URL}?result=${saved}`
+      : TEST_URL;
+
+    modal.hidden = false;
+    opener.setAttribute("aria-expanded", "true");
+
+    lockPage();
+
+
+    if (canAnimate) {
+
+      /* 캐릭터 자리에서 창이 톡 커져 나오는 느낌 */
+      const from = opener.getBoundingClientRect();
+      const box = panel.getBoundingClientRect();
+
+      const originX = from.left + from.width / 2 - box.left;
+      const originY = from.top + from.height / 2 - box.top;
+
+      gsap.killTweensOf([panel, backdrop]);
+
+      gsap.fromTo(
+        backdrop,
+        { autoAlpha: 0 },
+        { autoAlpha: 1, duration: 0.3, ease: "power1.out" }
+      );
+
+      gsap.fromTo(
+        panel,
+        {
+          autoAlpha: 0,
+          scale: 0.12,
+          transformOrigin: `${originX}px ${originY}px`
+        },
+        {
+          autoAlpha: 1,
+          scale: 1,
+          duration: 0.5,
+          ease: "power3.out"
+        }
+      );
+    }
+
+    closeButton?.focus({ preventScroll: true });
+  }
+
+  function closeModal(afterClose) {
+
+    if (!isOpen) return;
+
+    isOpen = false;
+
+    if (resultObserver) {
+      resultObserver.disconnect();
+      resultObserver = null;
+    }
+
+    opener.setAttribute("aria-expanded", "false");
+
+
+    const finish = () => {
+
+      modal.hidden = true;
+
+      /* 안에서 돌던 애니메이션까지 멈추도록 비움. 다음에 열 때 새로 읽음 */
+      frame.classList.remove("is_loaded");
+      frame.src = "about:blank";
+
+      if (canAnimate) {
+        gsap.set([panel, backdrop], { clearProps: "all" });
+      }
+
+      unlockPage();
+
+      if (lastFocus && typeof lastFocus.focus === "function") {
+        lastFocus.focus({ preventScroll: true });
+      }
+
+      if (typeof afterClose === "function") afterClose();
+    };
+
+
+    if (!canAnimate) {
+      finish();
+      return;
+    }
+
+    gsap.killTweensOf([panel, backdrop]);
+
+    gsap.to(panel, {
+      autoAlpha: 0,
+      scale: 0.12,
+      duration: 0.28,
+      ease: "power2.in"
+    });
+
+    gsap.to(backdrop, {
+      autoAlpha: 0,
+      duration: 0.28,
+      ease: "power1.in",
+      onComplete: finish
+    });
+  }
+
+
+  /* ---------- 이벤트 ---------- */
+
+  function handleKeydown(event) {
+    if (isOpen && event.key === "Escape") {
+      event.preventDefault();
+      closeModal();
+    }
+  }
+
+  opener.addEventListener("click", openModal);
+
+  modal.querySelectorAll("[data-type-result-close]").forEach((button) => {
+    button.addEventListener("click", () => closeModal());
+  });
+
+  document.addEventListener("keydown", handleKeydown);
+
+  window.addEventListener("resize", () => {
+    if (isOpen) fitPanel();
+  });
+
+})();

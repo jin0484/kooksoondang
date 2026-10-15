@@ -235,7 +235,13 @@
           <ul class="product_category" data-product-category>
 
             <li>
-              <button class="category_button is_active" type="button" aria-pressed="true" data-category="makgeolli">
+              <button class="category_button is_active" type="button" aria-pressed="true" data-category="all">
+                ALL
+              </button>
+            </li>
+
+            <li>
+              <button class="category_button" type="button" aria-pressed="false" data-category="makgeolli">
                 MAKGEOLLI
               </button>
             </li>
@@ -245,15 +251,8 @@
 
             <li>
               <button class="category_button" type="button" aria-pressed="false" aria-disabled="true"
-                data-category="bekseju" data-coming-soon>
-                BEKSEJU
-              </button>
-            </li>
-
-            <li>
-              <button class="category_button" type="button" aria-pressed="false" aria-disabled="true"
-                data-category="yedamcheong" data-coming-soon>
-                YEDAMCHEONG
+                data-category="bekseju_yedam" data-coming-soon>
+                BEKSEJU &amp; YEDAM
               </button>
             </li>
 
@@ -560,7 +559,7 @@
           <div class="starter_kit_copy">
 
             <h2 class="starter_kit_title" id="starter_kit_title">
-              BEGINNER&rsquo;S STARTER KIT
+              BEGINNER'S STARTER KIT
             </h2>
 
             <p class="starter_kit_desc">
@@ -755,7 +754,12 @@
        캐릭터는 TOP 이 아닌 다른 버튼이라 button 밖에 둠 (눌러도 맨 위로 가지 않음) -->
   <div class="products_top_stack">
 
-    <img class="products_top_character" src="products_asset/img/topimg.png" alt="" aria-hidden="true">
+    <!-- 캐릭터를 누르면 '내 술 취향 테스트' 결과 창이 뜸 (페이지 이동 없음).
+         동작은 products.js 의 '내 술 취향 결과 창' 이 맡음 -->
+    <button class="products_top_character_button" type="button" aria-label="See my drinking type"
+      aria-haspopup="dialog" aria-controls="type_result_modal" data-type-result-open>
+      <img class="products_top_character" src="products_asset/img/topimg.png" alt="" aria-hidden="true">
+    </button>
 
     <!-- 세 페이지가 함께 쓰는 TOP 버튼. 모양은 common.css, 동작은 common.js 가 맡음 -->
     <button class="site_top_button" type="button" aria-label="Back to top" data-top-button>
@@ -813,6 +817,29 @@
       </div>
     </div>
   </footer>
+
+
+  <!-- ---------- 내 술 취향 결과 창 ----------
+       TOP 위 캐릭터를 누르면 뜨는 창.
+       안에는 테스트 페이지(test/test.html)를 그대로 띄움.
+       - 테스트를 한 적이 있으면 그 결과 화면
+       - 없으면 테스트 첫 화면 (창 안에서 바로 해 볼 수 있음)
+       테스트 페이지 파일은 건드리지 않고, 창을 여닫는 일만 products.js 가 맡음 -->
+  <div class="type_result_modal" id="type_result_modal" data-type-result-modal hidden>
+
+    <div class="type_result_backdrop" data-type-result-close></div>
+
+    <div class="type_result_panel" role="dialog" aria-modal="true" aria-label="My drinking type">
+
+      <button class="type_result_close" type="button" aria-label="Close" data-type-result-close>
+        <span aria-hidden="true"></span>
+      </button>
+
+      <iframe class="type_result_frame" title="My drinking type" data-type-result-frame></iframe>
+
+    </div>
+
+  </div>
 
 
 </body>
