@@ -327,20 +327,22 @@
     const footer = document.querySelector('.site_footer');
     const footerClearance = 0.0575;
 
+    // 화면에 고정된 상자: 대부분의 페이지는 버튼 자신이지만, 제품 페이지는 캐릭터와 버튼을 묶은 .products_top_stack 이 고정되고
+    // 버튼은 그 안에 흐름으로 들어 있음. 올림 값은 고정된 쪽의 bottom 에 더해야 하므로 그 상자에 넣음
+    const liftTarget = topButton.closest('.products_top_stack') || topButton;
+
     function updateLift() {
         if (!footer) return;
 
-        const root = document.documentElement;
-        const currentLift = parseFloat(topButton.style.getPropertyValue('--top-button-lift')) || 0;
-        const buttonHeight = topButton.offsetHeight;
-        // 올림이 없을 때 버튼 아랫변의 화면상 y 좌표
-        const restingBottom = window.innerHeight - (parseFloat(window.getComputedStyle(topButton).bottom) - currentLift);
+        const currentLift = parseFloat(liftTarget.style.getPropertyValue('--top-button-lift')) || 0;
+        const boxHeight = liftTarget.offsetHeight;
+        // 올림이 없을 때 상자 아랫변의 화면상 y 좌표
+        const restingBottom = window.innerHeight - (parseFloat(window.getComputedStyle(liftTarget).bottom) - currentLift);
         const limit = footer.getBoundingClientRect().top - window.innerWidth * footerClearance;
         const lift = Math.max(0, restingBottom - limit);
 
-        // 아래 변이 한계선에 닿기까지만 올림. 버튼이 화면 위로 밀려 나갈 만큼 올릴 필요는 없음
-        topButton.style.setProperty('--top-button-lift', `${Math.min(lift, window.innerHeight - buttonHeight)}px`);
-        void root;
+        // 아래 변이 한계선에 닿기까지만 올림. 상자가 화면 위로 밀려 나갈 만큼 올릴 필요는 없음
+        liftTarget.style.setProperty('--top-button-lift', `${Math.min(lift, window.innerHeight - boxHeight)}px`);
     }
 
     function updateTopButton() {

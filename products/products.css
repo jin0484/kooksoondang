@@ -474,6 +474,15 @@
 
 
 /*
+ * 공용 헤더(common.css)도 z-index: 50 이라, 같은 값이면 DOM 에서 뒤에 오는 콘텐츠 레이어가 헤더 위로 올라와
+ * 스크롤해서 레이어가 헤더 밑으로 들어오면 헤더가 가려졌습니다. 헤더를 레이어보다 위(55)로 올림.
+ * 서랍·검색 패널이 열릴 때의 70, TOP 버튼 묶음 100, 팝업 200 보다는 아래라 겹침 순서는 그대로임
+ */
+.site_header {
+  z-index: 55;
+}
+
+/*
  * 이 페이지만 콘텐츠 레이어가 z-index: 50 이라
  * 공용 푸터의 파도(.site_footer_wave, z-index: 0)가
  * 레이어의 불투명 배경에 가려져 푸터 윗변이 평평해 보였습니다.
@@ -3080,7 +3089,8 @@
   position: fixed;
 
   right: clamp(1rem, 2.1vw, 2.5rem);
-  bottom: clamp(1rem, 2.1vw, 2.5rem);
+  /* --top-button-lift: 푸터가 가까워지면 common.js 가 올려서 파도 위에 머물게 함 */
+  bottom: calc(clamp(1rem, 2.1vw, 2.5rem) + var(--top-button-lift, 0px));
 
   z-index: 100;
 
@@ -3164,7 +3174,7 @@
 @media (max-width: 80rem) {
   .products_top_stack {
     right: clamp(1.5rem, 3.5vw, 2.25rem);
-    bottom: clamp(1.5rem, 3.5vw, 2.25rem);
+    bottom: calc(clamp(1.5rem, 3.5vw, 2.25rem) + var(--top-button-lift, 0px));
     row-gap: 0.3rem;
     width: clamp(2.25rem, 4.8vw, 3rem);
   }
@@ -3179,7 +3189,7 @@
 @media (max-width: 48rem) {
   .products_top_stack {
     right: 1rem;
-    bottom: 1rem;
+    bottom: calc(1rem + var(--top-button-lift, 0px));
     row-gap: 0.24rem;
     width: clamp(1.95rem, 9vw, 2.25rem);
   }
