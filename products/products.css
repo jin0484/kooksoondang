@@ -2568,7 +2568,7 @@
     margin-top: clamp(3.75rem, 14.6vw, 5rem);
   }
 
-  .product_category li:not(:has(.is_active)) {
+  .product_category:not(.is_open) li:not(:has(.is_active)) {
     display: none;
   }
 
@@ -4857,4 +4857,222 @@ html.is_type_result_open {
     transform: rotate(-28.9deg);
   }
 
+}
+
+/* =========================================================
+   EXTENDED PRODUCT CATALOG
+   Figma image crops stay inside their original bottle slots.
+========================================================= */
+
+.product_bottle_frame {
+  display: block;
+
+  width: auto;
+  height: calc(100% * var(--bottle_scale, 1));
+  aspect-ratio: var(--bottle_ratio);
+
+  overflow: hidden;
+}
+
+.product_bottle_image {
+  position: absolute;
+
+  top: var(--bottle_crop_y, 0%);
+  left: var(--bottle_crop_x, 0%);
+
+  width: var(--bottle_crop_width, 100%);
+  max-width: none;
+  height: var(--bottle_crop_height, 100%);
+
+  pointer-events: none;
+}
+
+.product_card_new .product_name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-width: 0;
+  min-height: 2.6em;
+
+  text-wrap: balance;
+}
+
+.product_card[data-product="woogukseng"] {
+  --bottle_ratio: 85 / 272;
+  --bottle_scale: 1.00000000;
+  --bottle_crop_width: 214.43%;
+  --bottle_crop_height: 100.86%;
+  --bottle_crop_x: -57.21%;
+  --bottle_crop_y: -0.51%;
+}
+
+.product_card[data-product="old_style"] {
+  --bottle_ratio: 83 / 270;
+  --bottle_scale: 0.99264706;
+  --bottle_crop_width: 223.32%;
+  --bottle_crop_height: 102.62%;
+  --bottle_crop_x: -61.66%;
+  --bottle_crop_y: -1.15%;
+}
+
+.product_card[data-product="probiotics"] {
+  --bottle_ratio: 82 / 272;
+  --bottle_scale: 1.00000000;
+  --bottle_crop_width: 208.87%;
+  --bottle_crop_height: 101.49%;
+  --bottle_crop_x: -54.44%;
+  --bottle_crop_y: -0.75%;
+}
+
+.product_card[data-product="cream_cheese"] {
+  --bottle_ratio: 89 / 272;
+  --bottle_scale: 1.00000000;
+  --bottle_crop_width: 160.3%;
+  --bottle_crop_height: 106%;
+  --bottle_crop_x: -30.15%;
+  --bottle_crop_y: -4.81%;
+}
+
+.product_card[data-product="red_bean"] {
+  --bottle_ratio: 82 / 272;
+  --bottle_scale: 1.00000000;
+  --bottle_crop_width: 236.54%;
+  --bottle_crop_height: 107.27%;
+  --bottle_crop_x: -68.27%;
+  --bottle_crop_y: -3.49%;
+}
+
+.product_card[data-product="jayang_bekseju"] {
+  --bottle_ratio: 108 / 272;
+  --bottle_scale: 1.00000000;
+  --bottle_crop_width: 253.28%;
+  --bottle_crop_height: 100.98%;
+  --bottle_crop_x: -76.64%;
+  --bottle_crop_y: -0.33%;
+}
+
+.product_card[data-product="kangjang_bekseju"] {
+  --bottle_ratio: 112 / 272;
+  --bottle_scale: 1.00000000;
+  --bottle_crop_width: 244.88%;
+  --bottle_crop_height: 100.65%;
+  --bottle_crop_x: -72.44%;
+  --bottle_crop_y: -0.32%;
+}
+
+.product_card[data-product="yedam"] {
+  --bottle_ratio: 87 / 272;
+  --bottle_scale: 1.00000000;
+  --bottle_crop_width: 213.56%;
+  --bottle_crop_height: 103%;
+  --bottle_crop_x: -56.78%;
+  --bottle_crop_y: -1.36%;
+}
+
+.product_card[data-product="ryeo_premium"] {
+  --bottle_ratio: 66 / 272;
+  --bottle_scale: 1.00000000;
+  --bottle_crop_width: 283.02%;
+  --bottle_crop_height: 103.69%;
+  --bottle_crop_x: -91.51%;
+  --bottle_crop_y: -1.84%;
+}
+
+.product_card[data-product="ryeo_sweet_potato"] {
+  --bottle_ratio: 65 / 272;
+  --bottle_scale: 1.00000000;
+  --bottle_crop_width: 289.86%;
+  --bottle_crop_height: 104.65%;
+  --bottle_crop_x: -94.93%;
+  --bottle_crop_y: -2.09%;
+}
+
+.product_card[data-product="charmsoon"] {
+  --bottle_ratio: 79 / 260;
+  --bottle_scale: 0.95588235;
+  --bottle_crop_width: 246.34%;
+  --bottle_crop_height: 111.76%;
+  --bottle_crop_x: -73.17%;
+  --bottle_crop_y: -6.65%;
+}
+
+.product_card[data-product="korean_ginseng"] {
+  --bottle_ratio: 79 / 272;
+  --bottle_scale: 1.00000000;
+  --bottle_crop_width: 331.25%;
+  --bottle_crop_height: 125.43%;
+  --bottle_crop_x: -116.96%;
+  --bottle_crop_y: -11.94%;
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .product_bottle_frame {
+    height: calc(15.625rem * var(--bottle_scale, 1));
+  }
+
+  .product_card_new .product_name {
+    top: 17rem;
+
+    width: auto;
+    min-height: 2.5rem;
+
+    font-size: 1rem;
+    line-height: 1.25;
+    white-space: normal;
+    text-overflow: clip;
+  }
+
+  .product_card_new .product_taste {
+    top: 19.875rem;
+
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+}
+
+@media (max-width: 767px) {
+  .product_category {
+    position: relative;
+    z-index: 4;
+
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 0.375rem;
+
+    width: clamp(12rem, 52vw, 14rem);
+    max-width: 100%;
+    height: clamp(2.5rem, 9.85vw, 3.375rem);
+    margin-inline: auto;
+  }
+
+  .product_category li {
+    flex: 0 0 auto;
+    width: 100%;
+  }
+
+  .product_category li:has(.is_active) {
+    order: -1;
+  }
+
+  .product_category .category_button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .product_category.is_open .category_button.is_active::after {
+    transform: translateY(0.1rem) rotate(225deg);
+  }
+
+  .product_card_new .product_name {
+    display: block;
+
+    width: auto;
+    min-height: 0;
+
+    text-wrap: wrap;
+  }
 }
