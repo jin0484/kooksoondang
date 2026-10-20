@@ -120,287 +120,116 @@
 
     <div id="track">
 
-
         <!-- =====================================
-             01. HERO - GREEN
+             01. BANNER (초록 배너)
         ====================================== -->
 
-        <section class="product_hero" id="product_hero">
-
-
-            <!-- =================================
-                 FLOATING DECO
-            ================================== -->
-
-            <div class="hero_deco" aria-hidden="true">
-
-
-                <img src="./product_detail_asset/icon/deco1.svg" alt="" class="hero_deco_item hero_deco_01">
-
-
-                <img src="./product_detail_asset/icon/deco2.svg" alt="" class="hero_deco_item hero_deco_02">
-
-
-                <img src="./product_detail_asset/icon/deco3.svg" alt="" class="hero_deco_item hero_deco_03">
-
-
-                <img src="./product_detail_asset/icon/deco4.svg" alt="" class="hero_deco_item hero_deco_04">
-
-
-                <img src="./product_detail_asset/icon/deco5.svg" alt="" class="hero_deco_item hero_deco_05">
-
-
+        <section class="pd_banner">
+            <!-- 1920 x 880 시안 위에 놓인 조각들. 하나씩 따로 움직일 수 있게 이미지를 나눠 둠 -->
+            <div class="pd_banner_stage">
+                <img class="pd_banner_item pd_bn_big_bottle" style="--x:82.0313%;--y:29.3182%;--w:19.2708%" src="./product_detail_asset/new/banner_big_bottle.svg" alt="" width="370" height="686">
+                <img class="pd_banner_item pd_bn_bottle_right" style="--x:82.4479%;--y:43.0682%;--w:7.6042%" src="./product_detail_asset/new/banner_bottle_right.svg" alt="" width="146" height="249">
+                <img class="pd_banner_item pd_bn_bottle_lying" style="--x:64.6875%;--y:54.3182%;--w:17.8646%" src="./product_detail_asset/new/banner_bottle_lying.svg" alt="" width="343" height="126">
+                <img class="pd_banner_item pd_bn_bottle_mid" style="--x:30.9896%;--y:45.5682%;--w:12.7083%" src="./product_detail_asset/new/banner_bottle_mid.svg" alt="" width="244" height="306">
+                <img class="pd_banner_item pd_bn_bottle_left" style="--x:9.8958%;--y:33.75%;--w:7.7604%" src="./product_detail_asset/new/banner_bottle_left.svg" alt="" width="149" height="340">
+                <img class="pd_banner_item pd_bn_bottle_small" style="--x:0.7813%;--y:34.3182%;--w:3.9583%" src="./product_detail_asset/new/banner_bottle_small.svg" alt="" width="76" height="229">
+                <img class="pd_banner_item pd_bn_blob" style="--x:17.5521%;--y:58.6364%;--w:25.2083%" src="./product_detail_asset/new/banner_blob.svg" alt="" width="484" height="366">
+                <img class="pd_banner_item pd_bn_bowl" style="--x:58.4896%;--y:62.3864%;--w:25.2083%" src="./product_detail_asset/new/banner_bowl.svg" alt="" width="484" height="392">
+                <img class="pd_banner_item pd_bn_ring" style="--x:43.0729%;--y:69.5455%;--w:14.9479%" src="./product_detail_asset/new/banner_ring.svg" alt="" width="287" height="287">
+                <img class="pd_banner_item pd_bn_can_big" style="--x:1.0938%;--y:55.3409%;--w:17.9167%" src="./product_detail_asset/new/banner_can_big.svg" alt="" width="344" height="440">
+                <img class="pd_banner_item pd_bn_can_small" style="--x:50.9375%;--y:48.5227%;--w:8.9063%" src="./product_detail_asset/new/banner_can_small.svg" alt="" width="171" height="188">
             </div>
-
-
-
-            <!-- =================================
-                 THREE.JS BOTTLE AREA
-            ================================== -->
-
-            <div class="product_hero_bottle_area"></div>
-
-
         </section>
 
 
-
         <!-- =====================================
-             02. PRODUCT INTRO - WHITE
+             02. PRODUCT INFO + FEATURES
+             피그마 1920px 시안 기준 좌표를 --u(= 화면폭/1920)로 줄여 배치함
         ====================================== -->
 
-        <section class="product_intro" id="product_intro">
+        <section class="pd_stage" id="product_info">
+
+            <img class="pd_wave" src="./product_detail_asset/new/wave.svg" alt="" aria-hidden="true">
+
+            <!-- 양옆 슬라이드 힌트 -->
+            <img class="pd_abs pd_side pd_side_left" style="--x:-50.5;--y:246;--w:143;--h:448" src="./product_detail_asset/new/side_left.png" alt="" aria-hidden="true">
+            <img class="pd_abs pd_side pd_side_right" style="--x:1828.5;--y:247;--w:138;--h:447" src="./product_detail_asset/new/side_right.png" alt="" aria-hidden="true">
+            <img class="pd_abs pd_arrow" style="--x:200;--y:443.5;--w:28;--h:53" src="./product_detail_asset/new/arrow_l.svg" alt="" aria-hidden="true">
+            <img class="pd_abs pd_arrow pd_arrow_right" style="--x:1693;--y:443.5;--w:28;--h:53" src="./product_detail_asset/new/arrow_r.svg" alt="" aria-hidden="true">
+
+            <!-- 병 옆 장식 -->
+            <img class="pd_abs pd_deco" style="--x:1437.5;--y:527;--w:90;--h:300" src="./product_detail_asset/new/pet.svg" alt="" aria-hidden="true">
+            <img class="pd_abs pd_deco" style="--x:1332.5;--y:691;--w:71;--h:136" src="./product_detail_asset/new/union.svg" alt="" aria-hidden="true">
 
 
-            <div class="product_intro_inner">
+            <!-- 제품 소개 -->
+            <div class="pd_product">
 
-
-                <h1 class="product_intro_title">
-                    Original Makgeolli
-                </h1>
-
-
-                <p class="product_intro_desc">
-
-                    It is a traditional Makgeolli made with clean water,<br>
-                    carefully selected rice, and nuruk.
-
-                </p>
-
-
-            </div>
-
-
-        </section>
-
-
-
-        <!-- =====================================
-             03. FRESHNESS
-        ====================================== -->
-
-        <section class="product_freshness" id="product_freshness">
-
-
-            <div class="product_detail_inner">
-
-
-                <!-- Three.js 병 위치 영역 -->
-
-                <div class="product_detail_visual"></div>
-
-
-
-                <div class="product_detail_copy">
-
-
-                    <span class="product_detail_number">
-                        01. FRESHNESS
-                    </span>
-
-
-                    <h2 class="product_detail_title">
-
-                        "Double Fermented,<br>
-                        Modern Fresh"
-
-                    </h2>
-
-
-                    <p class="product_detail_desc">
-
-                        We enhanced the freshness of Makgeolli<br>
-                        by combining the pleasant acidity<br>
-                        from lactic acid fermentation<br>
-                        with our specially cultivated yeast.
-
-                    </p>
-
-
+                <div class="pd_product_bottle">
+                    <img src="./product_detail_asset/new/draft_bottle.png" alt="Original Draft Makgeolli bottle">
                 </div>
 
-
-            </div>
-
-
-        </section>
-
-
-
-        <!-- =====================================
-     04. FERMENTATION MESSAGE
-====================================== -->
-
-        <section class="product_fermentation" id="product_fermentation">
-
-            <div class="product_fermentation_inner">
-
-
-                <!-- 병 뒤쪽 글자 -->
-                <h2 class="fermentation_text fermentation_text_back">
-                    Dual Fermented
-                </h2>
-
-
-                <!-- Three.js 병이 지나가는 영역 -->
-                <div class="product_fermentation_bottle_area"></div>
-
-
-                <!-- 병 앞쪽 글자 -->
-                <h2 class="fermentation_text fermentation_text_front">
-                    Triple Lactic
-                </h2>
-
-
-            </div>
-
-        </section>
-
-
-
-        <!-- =====================================
-             05. HEALTHY CHOICE
-        ====================================== -->
-
-        <section class="product_health" id="product_health">
-
-
-            <div class="product_detail_inner">
-
-
-                <div class="product_detail_copy">
-
-
-                    <span class="product_detail_number">
-                        02. HEALTHY CHOICE
-                    </span>
-
-
-                    <h2 class="product_detail_title">
-
-                        Healthier Benefits<br>
-                        Dual Fermented
-
-                    </h2>
-
-
-                    <p class="product_detail_desc">
-
-                        It is richly packed with beneficial components,<br>
-                        including lactic acid bacteria generated<br>
-                        during the rice and lactic acid fermentation.
-
-                    </p>
-
-
-                </div>
-
-
-
-                <!-- Three.js 병 위치 영역 -->
-
-                <div class="product_detail_visual"></div>
-
-
-            </div>
-
-
-        </section>
-
-
-
-        <section class="product_design" id="product_design">
-
-
-            <div class="product_detail_inner">
-
-
-                <!-- 기존 제품 이미지 + Three.js 병 영역 -->
-
-                <div class="product_detail_visual product_design_visual"></div>
-
-
-
-                <div class="product_detail_copy">
-
-
-                    <span class="product_detail_number">
-                        03. INNOVATIVE DESIGN
-                    </span>
-
-
-                    <h2 class="product_detail_title">
-
-                        Preserving Quality<br>
-                        Through New Design
-
-                    </h2>
-
-
-                    <p class="product_detail_desc">
-
-                        The full-shrink label wrapping the entire bottle<br>
-                        locks in and maintains<br>
-                        the fresh state of freshly brewed Makgeolli.
-
-                    </p>
-
-
-
-                    <!-- Vector 1 ~ 7 -->
-
-                    <div class="product_design_vectors">
-
-                        <img src="./product_detail_asset/icon/Vector1.svg" alt="">
-
-                        <img src="./product_detail_asset/icon/Vector2.svg" alt="">
-
-                        <img src="./product_detail_asset/icon/Vector3.svg" alt="">
-
-                        <img src="./product_detail_asset/icon/Vector4.svg" alt="">
-
-                        <img src="./product_detail_asset/icon/Vector5.svg" alt="">
-
-                        <img src="./product_detail_asset/icon/Vector6.svg" alt="">
-
-                        <img src="./product_detail_asset/icon/Vector7.svg" alt="">
-
+                <div class="pd_product_copy">
+
+                    <div class="pd_product_head">
+                        <p class="pd_product_brand">Kooksoondang</p>
+                        <h1 class="pd_product_title">Original Makgeolli</h1>
                     </div>
 
+                    <div class="pd_product_body">
+                        <p class="pd_product_desc">
+                            Kooksoondang Original Draft Makgeolli pairs the soft sweetness of rice with gentle fruity notes reminiscent of banana and melon. Live yeast creates a light fizz that tickles the tongue, while a mild tang keeps it easy to enjoy, even for first-timers. It goes down creamy yet light, finishing clean with a subtle, nutty hint of rice.
+                        </p>
+                        <p class="pd_product_meta">
+                            <span>ABV: 6%</span>
+                            <span>Volume: 500ml</span>
+                        </p>
+                    </div>
 
                 </div>
-
 
             </div>
 
 
+            <!-- Features of Our Makgeolli -->
+            <div class="pd_features">
+
+                <div class="pd_features_copy">
+                    <h2 class="pd_features_title">Features of<br>Our Makgeolli</h2>
+                    <p class="pd_features_desc">Our makgeolli is a traditional Korean rice wine, brewed with nuruk for a soft, naturally sweet taste.</p>
+                </div>
+
+                <!-- 사발 + 두 장의 카드 -->
+                <div class="pd_bowl">
+                    <img class="pd_bowl_back" src="./product_detail_asset/new/cup_back.svg" alt="" aria-hidden="true">
+                    <div class="pd_bowl_text pd_bowl_text_back">
+                        <h3>Deep Flavor from Nuruk</h3>
+                        <p>Makgeolli is Korea's traditional rice wine. We brew ours with nuruk, a natural fermentation starter, for a rich and nutty depth.</p>
+                    </div>
+
+                    <img class="pd_bowl_mid" src="./product_detail_asset/new/cup_mid.svg" alt="" aria-hidden="true">
+                    <div class="pd_bowl_text pd_bowl_text_mid">
+                        <h3>Alive with Natural Yeast</h3>
+                        <p>Our fresh, unpasteurized makgeolli carries live yeast in every bottle. The yeast keeps fermenting gently, creating a light, natural fizz. Each sip feels lively, with a bright and refreshing tang.</p>
+                    </div>
+
+                    <img class="pd_bowl_front" src="./product_detail_asset/new/cup_front.svg" alt="" aria-hidden="true">
+                    <div class="pd_bowl_text pd_bowl_text_front">
+                        <h3>Gently Sweet from Rice</h3>
+                        <p>Milky white and silky smooth, our makgeolli gets its soft, natural sweetness from slowly fermented rice. It's sweet without ever feeling heavy. The finish is clean, with a light hint of rice that lingers.</p>
+                    </div>
+                </div>
+
+            </div>
+
         </section>
 
 
+        <!-- =====================================
+             03. MORE PRODUCTS (기존 그대로)
+        ====================================== -->
 
         <section class="more_products" id="more_products">
-
-
     <div class="more_products_inner">
 
 
