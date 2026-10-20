@@ -190,43 +190,53 @@
 
             </div>
 
+        </section>
 
-            <!-- Features of Our Makgeolli -->
-            <div class="pd_features">
+
+        <!-- =====================================
+             03. FEATURES (스티키: 글은 고정, 스크롤하면 오른쪽 조각이 한 장씩 포개짐)
+        ====================================== -->
+
+        <section class="pd_features" id="product_features">
+            <div class="pd_features_sticky">
 
                 <div class="pd_features_copy">
                     <h2 class="pd_features_title">Features of<br>Our Makgeolli</h2>
                     <p class="pd_features_desc">Our makgeolli is a traditional Korean rice wine, brewed with nuruk for a soft, naturally sweet taste.</p>
                 </div>
 
-                <!-- 사발 + 두 장의 카드 -->
-                <div class="pd_bowl">
-                    <img class="pd_bowl_back" src="./product_detail_asset/new/cup_back.svg" alt="" aria-hidden="true">
-                    <div class="pd_bowl_text pd_bowl_text_back">
-                        <h3>Deep Flavor from Nuruk</h3>
-                        <p>Makgeolli is Korea's traditional rice wine. We brew ours with nuruk, a natural fermentation starter, for a rich and nutty depth.</p>
+                <div class="pd_bowl" aria-label="Features of our makgeolli">
+                    <div class="pd_card pd_card_back">
+                        <img src="./product_detail_asset/new/cup_back.svg" alt="" aria-hidden="true">
+                        <div class="pd_card_text">
+                            <h3>Deep Flavor from Nuruk</h3>
+                            <p>Makgeolli is Korea's traditional rice wine. We brew ours with nuruk, a natural fermentation starter, for a rich and nutty depth.</p>
+                        </div>
                     </div>
 
-                    <img class="pd_bowl_mid" src="./product_detail_asset/new/cup_mid.svg" alt="" aria-hidden="true">
-                    <div class="pd_bowl_text pd_bowl_text_mid">
-                        <h3>Alive with Natural Yeast</h3>
-                        <p>Our fresh, unpasteurized makgeolli carries live yeast in every bottle. The yeast keeps fermenting gently, creating a light, natural fizz. Each sip feels lively, with a bright and refreshing tang.</p>
+                    <div class="pd_card pd_card_mid">
+                        <img src="./product_detail_asset/new/cup_mid.svg" alt="" aria-hidden="true">
+                        <div class="pd_card_text">
+                            <h3>Alive with Natural Yeast</h3>
+                            <p>Our fresh, unpasteurized makgeolli carries live yeast in every bottle. The yeast keeps fermenting gently, creating a light, natural fizz. Each sip feels lively, with a bright and refreshing tang.</p>
+                        </div>
                     </div>
 
-                    <img class="pd_bowl_front" src="./product_detail_asset/new/cup_front.svg" alt="" aria-hidden="true">
-                    <div class="pd_bowl_text pd_bowl_text_front">
-                        <h3>Gently Sweet from Rice</h3>
-                        <p>Milky white and silky smooth, our makgeolli gets its soft, natural sweetness from slowly fermented rice. It's sweet without ever feeling heavy. The finish is clean, with a light hint of rice that lingers.</p>
+                    <div class="pd_card pd_card_front">
+                        <img src="./product_detail_asset/new/cup_front.svg" alt="" aria-hidden="true">
+                        <div class="pd_card_text">
+                            <h3>Gently Sweet from Rice</h3>
+                            <p>Milky white and silky smooth, our makgeolli gets its soft, natural sweetness from slowly fermented rice. It's sweet without ever feeling heavy. The finish is clean, with a light hint of rice that lingers.</p>
+                        </div>
                     </div>
                 </div>
 
             </div>
-
         </section>
 
 
         <!-- =====================================
-             03. MORE PRODUCTS (기존 그대로)
+             04. MORE PRODUCTS (기존 그대로)
         ====================================== -->
 
         <section class="more_products" id="more_products">
@@ -376,6 +386,7 @@
     <!-- 배너 조각이 위에서 떨어져 부딪히게 하는 물리엔진 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js" defer></script>
     <script src="./banner_physics.js" defer></script>
+    <script src="./features_stack.js" defer></script>
 
     <!-- 태블릿·모바일에서 한 줄 슬라이드가 된 more products 목록을 마우스로도 끌어서 넘길 수 있게 함.
          손가락(터치)은 브라우저 기본 가로 스크롤이 처리하므로 마우스일 때만 가로챔.

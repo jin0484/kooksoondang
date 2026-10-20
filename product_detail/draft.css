@@ -151,7 +151,7 @@ section {
     --u: calc(min(100vw, 1920px) / 1920);
 
     position: relative;
-    height: calc(2591 * var(--u));
+    height: calc(1180 * var(--u));
     background: #faf8f7;
     color: #232323;
     font-family: var(--font-Albert_Sans, 'Albert Sans', sans-serif);
@@ -294,13 +294,41 @@ section {
 
 
 /* ---------------------------------------------------------
-   Features of Our Makgeolli
+   Features of Our Makgeolli (스티키 + 스크롤로 한 장씩 포개짐)
+
+   .pd_features 가 스크롤 길이를 만들고, 안쪽 .pd_features_sticky 가 화면에 고정됨.
+   features_stack.js 가 스크롤 진행도를 --e1 --e2 --e3 (0 → 1) 으로 .pd_bowl 에 넣어 주고,
+   카드(뒤) → 카드(가운데) → 그릇(앞) 순으로 위에서 내려와 쌓임
 --------------------------------------------------------- */
+
+.pd_features {
+    --u: calc(min(100vw, 1920px) / 1920);
+    /* 화면 정중앙보다 얼마나 위로 올릴지 (고정 헤더 아래 공간에 맞춤) */
+    --lift: 0vh;
+
+    position: relative;
+    /* 고정되어 있는 동안 스크롤할 길이: 화면 높이의 3배 + 고정 화면 1개 */
+    height: 400vh;
+    background: #faf8f7;
+    color: #232323;
+    font-family: var(--font-Albert_Sans, 'Albert Sans', sans-serif);
+}
+
+.pd_features_sticky {
+    position: sticky;
+    top: 0;
+    width: calc(1920 * var(--u));
+    max-width: 100%;
+    height: 100vh;
+    margin: 0 auto;
+    overflow: visible;
+}
 
 .pd_features_copy {
     position: absolute;
     left: calc(247.5 * var(--u));
-    top: calc(1327 * var(--u));
+    /* 그릇 묶음의 맨 위(.pd_bowl 의 top)에 글 맨 위를 맞춤 */
+    top: calc(50% - 370 * var(--u) - var(--lift));
     z-index: 3;
     display: flex;
     flex-direction: column;
@@ -326,88 +354,108 @@ section {
     letter-spacing: -0.02em;
 }
 
-/* 사발과 카드 세 장. 왼쪽 위 모서리가 시안의 (969, 1327) */
+/* 사발과 카드 두 장. 안쪽 좌표는 시안(705 x 740) 기준 */
 .pd_bowl {
+    --e1: 0;
+    --e2: 0;
+    --e3: 0;
+
     position: absolute;
     left: calc(969 * var(--u));
-    top: calc(1327 * var(--u));
+    top: 50%;
     z-index: 3;
     width: calc(705 * var(--u));
     height: calc(740 * var(--u));
+    margin-top: calc(-370 * var(--u) - var(--lift));
     font-family: var(--font-Albert_Sans, 'Albert Sans', sans-serif);
 }
 
-.pd_bowl img {
+/* 조각 하나: 그림 + 그 안의 글. 각각 따로 움직이도록 묶어 둠 */
+.pd_card {
     position: absolute;
+    /* 자기 진행도 --e 에 따라 아래에서 올라오고(기울기는 최종 각도로 수렴) 나타남 */
+    opacity: clamp(0, calc(var(--e) * 8), 1);
+    transform:
+        translateY(calc((1 - var(--e)) * 90vh))
+        rotate(calc(var(--angle) + (1 - var(--e)) * var(--spin)));
+    will-change: transform, opacity;
+}
+
+.pd_card > img {
+    display: block;
+    width: 100%;
+    height: 100%;
     max-width: none;
     pointer-events: none;
 }
 
-.pd_bowl_back {
+.pd_card_back {
+    --e: var(--e1);
+    --angle: 7.21deg;
+    --spin: -10deg;
     left: calc(23.3 * var(--u));
     top: calc(35.1 * var(--u));
     width: calc(584.6 * var(--u));
     height: calc(401 * var(--u));
-    transform: rotate(7.21deg);
 }
 
-.pd_bowl_mid {
+.pd_card_mid {
+    --e: var(--e2);
+    --angle: -6.22deg;
+    --spin: 10deg;
     left: calc(43.1 * var(--u));
     top: calc(136.5 * var(--u));
     width: calc(632.5 * var(--u));
     height: calc(442.4 * var(--u));
-    transform: rotate(-6.22deg) skewX(1.17deg);
 }
 
-.pd_bowl_front {
+.pd_card_mid > img {
+    transform: skewX(1.17deg);
+}
+
+.pd_card_front {
+    --e: var(--e3);
+    --angle: 0deg;
+    --spin: 0deg;
     left: calc(5.6 * var(--u));
     top: calc(257.9 * var(--u));
     width: calc(697 * var(--u));
     height: calc(478 * var(--u));
 }
 
-.pd_bowl_text {
+.pd_card_text {
     position: absolute;
+    left: 50%;
     display: flex;
     flex-direction: column;
     gap: calc(32 * var(--u));
     text-align: center;
     color: #272625;
+    transform: translate(-50%, -50%);
 }
 
-.pd_bowl_text h3 {
+.pd_card_text h3 {
     font-size: calc(40 * var(--u));
     font-weight: 400;
     line-height: 0.9;
     letter-spacing: -0.02em;
 }
 
-.pd_bowl_text p {
+.pd_card_text p {
     font-family: Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
     font-size: calc(24 * var(--u));
     line-height: 1.3;
     letter-spacing: -0.02em;
 }
 
-.pd_bowl_text_back {
-    left: calc(321.8 * var(--u));
-    top: calc(181.5 * var(--u));
-    width: calc(423 * var(--u));
-    transform: translate(-50%, -50%) rotate(7.21deg);
-}
+/* 글의 위치는 각 그림의 가운데 기준(기울기를 뺀 좌표) */
+.pd_card_back .pd_card_text  { top: calc(50% - 54.5 * var(--u)); width: calc(423 * var(--u)); }
+.pd_card_mid .pd_card_text   { top: calc(50% - 59.7 * var(--u)); width: calc(482 * var(--u)); }
+.pd_card_front .pd_card_text { top: calc(50.1 * var(--u)); width: calc(537 * var(--u)); color: #fff; transform: translateX(-50%); }
 
-.pd_bowl_text_mid {
-    left: calc(352.7 * var(--u));
-    top: calc(298.4 * var(--u));
-    width: calc(482 * var(--u));
-    transform: translate(-50%, -50%) rotate(-6.22deg);
-}
-
-.pd_bowl_text_front {
-    left: calc(85.5 * var(--u));
-    top: calc(308 * var(--u));
-    width: calc(537 * var(--u));
-    color: #fff;
+@media (prefers-reduced-motion: reduce) {
+    .pd_bowl { --e1: 1 !important; --e2: 1 !important; --e3: 1 !important; }
+    .pd_card { transform: rotate(var(--angle)); opacity: 1; }
 }
 
 
@@ -421,7 +469,7 @@ section {
         --bowl-u: calc(min(100vw - 3rem, 705px) / 705);
 
         height: auto;
-        padding: 3rem 1.5rem 5rem;
+        padding: 3rem 1.5rem 3rem;
     }
 
     .pd_side,
@@ -430,9 +478,7 @@ section {
         display: none;
     }
 
-    .pd_product,
-    .pd_features_copy,
-    .pd_bowl {
+    .pd_product {
         position: relative;
         left: auto;
         top: auto;
@@ -470,18 +516,40 @@ section {
     .pd_product_desc { max-width: 40rem; font-size: 1rem; }
     .pd_product_meta { font-size: 1.125rem; }
 
-    .pd_features_copy {
-        align-items: center;
-        gap: 1rem;
-        margin: 5rem 0 3rem;
-        text-align: center;
+    /* 화면에 고정된 한 장 안에서 글은 위, 그릇은 아래 */
+    .pd_features {
+        --bowl-u: calc(min(100vw - 3rem, 705px) / 705);
     }
 
-    .pd_features_title { font-size: clamp(2rem, 7vw, 3rem); white-space: normal; }
-    .pd_features_desc { width: auto; max-width: 28rem; font-size: 1rem; }
+    .pd_features_sticky {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+        width: 100%;
+        /* 위쪽은 고정 헤더(약 100px)에 가리지 않게 비움 */
+        padding: 7rem 1.5rem 1.5rem;
+    }
+
+    .pd_features_copy {
+        position: relative;
+        left: auto;
+        top: auto;
+        align-items: center;
+        gap: 0.75rem;
+        text-align: center;
+        transform: none;
+    }
+
+    .pd_features_title { font-size: clamp(1.75rem, 7vw, 3rem); white-space: normal; }
+    .pd_features_desc { width: auto; max-width: 28rem; font-size: 0.9375rem; }
 
     .pd_bowl {
         --u: var(--bowl-u);
+        position: relative;
+        left: auto;
+        top: auto;
         margin: 0 auto;
     }
 }
