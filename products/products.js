@@ -3881,7 +3881,10 @@
 
                     duration: 0.28,
 
-                    stagger: 0.04
+                    stagger: 0.04,
+
+                    /* 끝나면 transform 을 지움. 남겨 두면 CSS 의 hover(떠오름)·active(눌림) 가 덮여 안 먹음 */
+                    clearProps: 'transform'
                 },
 
                 0.08

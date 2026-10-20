@@ -823,13 +823,13 @@
   transition:
     background-color 200ms ease,
     color 200ms ease,
-    transform 150ms ease;
+    transform 180ms ease;
 }
 
 
 /*
  * 눌러도 되는 버튼처럼 보이게:
- * 마우스를 올리면 색만 한 톤 바뀜 (그림자·떠오름 없음)
+ * 마우스를 올리면 색이 한 톤 바뀜 (그림자 없음. 떠오르는 움직임은 아래 규칙)
  * (마우스가 있는 기기에서만. 터치에서는 hover 가 눌린 채 남아서)
  */
 @media (hover: hover) {
@@ -847,6 +847,19 @@
   .category_button.is_active:hover {
     background:
       var(--bekseju_dark1);
+  }
+
+}
+
+
+/*
+ * 마우스를 올리면 메인 페이지 버튼(.pill / .btn_pill)처럼 살짝 떠오름.
+ * 메인과 같이 태블릿 크기부터만 (모바일 카테고리는 펼침 목록이라 떠오를 뜻이 없음)
+ */
+@media (hover: hover) and (min-width: 48rem) {
+
+  .category_button:hover {
+    transform: translateY(-0.15rem);
   }
 
 }
