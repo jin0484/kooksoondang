@@ -1,17 +1,18 @@
 @charset "UTF-8";
 
 .pairing_page {
-    --pairing-content-width: 1720px;
-    --pairing-content-inset: clamp(1.5rem, 5.208vw, 6.25rem);
-    --pairing-heading-inset: clamp(0rem, 2.604vw, 3.125rem);
-    --pairing-text: #232323;
-    --pairing-copy: #5d504a;
-    --pairing-paper: #fbf8f3;
-    --pairing-line: #ded7ca;
-    --pairing-orange: #f29556;
+    --pairing-content-width: 1320px;
+    --pairing-content-inset: clamp(1.5rem, 6.944vw, 6.25rem);
+    --pairing-heading-inset: 0rem;
+    --pairing-text: var(--bekseju_darker_cold);
+    --pairing-copy: var(--bekseju_dark2);
+    --pairing-paper: var(--makgeolli_light4);
+    --pairing-line: var(--makgeolli_light1);
+    --pairing-orange: var(--kooksoondang_orange);
     --pairing-yellow: #fdda37;
     --pairing-lime: #d4e20f;
-    --pairing-green: #0a663f;
+    --pairing-accent: var(--bekseju_dark2);
+    --pairing-bowl-radius: 0.25rem 0.25rem 2rem 2rem;
     background: var(--makgeolli_White);
     color: var(--pairing-text);
 }
@@ -27,25 +28,29 @@
 
 .pairing_page .pairing_hero {
     position: relative;
-    min-height: clamp(36rem, 45vw, 49rem);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(2rem, 5vw, 5rem);
+    min-height: min(100svh, 56rem);
+    box-sizing: border-box;
+    padding: clamp(8rem, 10vw, 10rem) var(--pairing-content-inset) 4rem;
     overflow: hidden;
-    background: #eee1cc url("./pairing_asset/img/hero_pairing.png") center 48% / cover no-repeat;
+    background: var(--pairing-paper);
 }
 
-.pairing_page .pairing_hero::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, rgba(251, 248, 239, 0.97), rgba(251, 248, 239, 0.85) 31%, rgba(251, 248, 239, 0) 68%);
-    pointer-events: none;
+.pairing_page .pairing_hero_media {
+    height: clamp(27rem, 42vw, 38rem);
+    overflow: hidden;
+    border-radius: 0.25rem 0.25rem 5rem 5rem;
 }
+.pairing_page .pairing_hero_media img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 60% center; }
 
 .pairing_page .pairing_hero_content {
     position: relative;
     z-index: 1;
-    width: min(100%, var(--pairing-content-width));
-    margin: 0 auto;
-    padding: clamp(10rem, 12vw, 13rem) clamp(1.5rem, 7.5vw, 9rem) 4rem;
+    min-width: 0;
+    padding: 0;
 }
 
 .pairing_page .pairing_hero_title {
@@ -53,21 +58,22 @@
     flex-direction: column;
     align-items: flex-start;
     margin: 0;
-    color: #173f2e;
+    color: var(--pairing-text);
     font-family: var(--font-Pretendard);
-    font-size: clamp(2rem, 3vw, 3.5rem);
-    line-height: 1.11;
-    letter-spacing: -0.02em;
+    font-size: clamp(2.75rem, 5.2vw, 6rem);
+    line-height: 1.02;
+    letter-spacing: -0.045em;
+    text-transform: uppercase;
 }
 
 .pairing_page .pairing_hero_title span {
-    font-weight: 300;
+    font-weight: 400;
 }
 
 .pairing_page .pairing_hero_title strong {
-    font-size: clamp(5rem, 8.5vw, 10rem);
-    font-weight: 600;
-    letter-spacing: -0.065em;
+    font-size: inherit;
+    font-weight: 700;
+    letter-spacing: inherit;
     line-height: 1.05;
 }
 
@@ -76,10 +82,10 @@
 .pairing_page .pairing_eyebrow,
 .pairing_page .pairing_section_heading .pairing_eyebrow {
     margin: 0 0 1.125rem;
-    color: var(--pairing-green);
+color: var(--pairing-accent);
     font-size: 0.75rem;
     font-weight: 600;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.08em;
     line-height: 1.6;
     text-transform: uppercase;
 }
@@ -98,14 +104,15 @@
     gap: 2.5rem;
     min-height: 3.5rem;
     padding: 0.875rem 1.5rem;
-    border-radius: 0.25rem 0.25rem 1.5rem 0.25rem;
-    background: var(--pairing-green);
-    color: white;
-    font-size: 1rem;
-    font-weight: 600;
+    border-radius: var(--pairing-bowl-radius);
+    background: var(--pairing-orange);
+    color: var(--bekseju_dark1);
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-transform: uppercase;
     transition: background 180ms ease, transform 180ms ease;
 }
-.pairing_page .pairing_primary_link:hover { background: #164934; transform: translateY(-2px); }
+.pairing_page .pairing_primary_link:hover { background: var(--kooksoondang_lighter); transform: translateY(-2px); }
 .pairing_page .pairing_primary_link span { font-size: 1.5rem; }
 .pairing_page .pairing_hero_note { color: var(--pairing-copy); font-size: 0.8125rem; line-height: 1.5; }
 
@@ -129,6 +136,7 @@
     color: var(--pairing-copy);
     text-decoration: none;
     border-radius: 0.375rem;
+    transition: color 180ms ease;
 }
 .pairing_page .pairing_nav_cup {
     position: absolute;
@@ -139,15 +147,14 @@
     stroke: #8c7960;
     stroke-width: 1.25px;
     stroke-linejoin: round;
-    filter: drop-shadow(0 2px 3px rgba(76, 59, 51, 0.1));
     transition: fill 180ms ease, stroke 180ms ease;
 }
 .pairing_page .pairing_nav_number { position: relative; margin-top: -0.125rem; font-size: 0.875rem; font-weight: 700; font-variant-numeric: tabular-nums; }
-.pairing_page .pairing_section_nav a:hover .pairing_nav_cup { fill: #e5eee5; stroke: var(--pairing-green); }
+.pairing_page .pairing_section_nav a:hover .pairing_nav_cup { fill: var(--kooksoondang_lighter); stroke: var(--pairing-accent); }
 .pairing_page .pairing_section_nav a[aria-current="location"] { color: white; }
-.pairing_page .pairing_section_nav a[aria-current="location"] .pairing_nav_cup { fill: var(--pairing-green); stroke: var(--pairing-green); }
-.pairing_page .pairing_section_nav a[aria-current="location"]::after { content: ""; position: absolute; right: -0.1875rem; top: 50%; width: 0.25rem; height: 0.25rem; border-radius: 50%; background: var(--pairing-green); }
-.pairing_page .pairing_section_nav a:focus-visible { outline: 2px solid var(--pairing-green); outline-offset: 3px; }
+.pairing_page .pairing_section_nav a[aria-current="location"] .pairing_nav_cup { fill: var(--pairing-accent); stroke: var(--pairing-accent); }
+.pairing_page .pairing_section_nav a[aria-current="location"]::after { content: ""; position: absolute; right: -0.1875rem; top: 50%; width: 0.25rem; height: 0.25rem; border-radius: 50%; background: var(--pairing-accent); }
+.pairing_page .pairing_section_nav a:focus-visible { outline: 2px solid var(--pairing-accent); outline-offset: 3px; }
 .pairing_page .pairing_nav_tooltip {
     position: absolute;
     right: calc(100% + 0.625rem);
@@ -217,11 +224,11 @@
 .pairing_page .pairing_section_heading h2 {
     margin: 0;
     color: var(--pairing-text);
-    font-family: var(--font-Pretendard);
-    font-size: clamp(2.25rem, 3.5vw, 4.25rem);
-    font-weight: 700;
-    line-height: 1.05;
-    letter-spacing: -0.045em;
+    font-family: var(--font-Albert_Sans);
+    font-size: clamp(2.25rem, 3.333vw, 4rem);
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
 }
 
 .pairing_page .pairing_section_heading p {
@@ -236,15 +243,14 @@
     --pairing-question-tab-width: clamp(5.25rem, 7.813vw, 9.375rem);
     display: flex;
     align-items: stretch;
-    width: min(90%, 96.75rem);
+    width: 100%;
     min-height: clamp(29rem, 35.208vw, 42.25rem);
     margin: clamp(2.5rem, 3.125vw, 3.75rem) auto 0;
     overflow: hidden;
     overflow-anchor: none;
     border: 1px solid var(--pairing-line);
-    border-radius: clamp(1.75rem, 2.604vw, 3.125rem);
-    background: var(--pairing-paper);
-    box-shadow: 0 1.5rem 4rem rgba(76, 59, 51, 0.05);
+    border-radius: var(--pairing-bowl-radius);
+    background: white;
 }
 
 .pairing_page .pairing_question_panel {
@@ -263,7 +269,7 @@
 
 .pairing_page .pairing_question_panel.is_open {
     flex-basis: calc(100% - var(--pairing-question-tab-width) - var(--pairing-question-tab-width) - var(--pairing-question-tab-width));
-    background: var(--pairing-paper);
+    background: white;
 }
 
 .pairing_page .pairing_question_panel.is_collapsed {
@@ -348,8 +354,8 @@
     padding: clamp(0.875rem, 1.042vw, 1.25rem) clamp(1rem, 1.302vw, 1.563rem);
     overflow: hidden;
     border: 1px solid var(--makgeolli_light1);
-    border-radius: 0.75rem;
-    background: var(--makgeolli_White);
+    border-radius: 0.375rem;
+    background: var(--pairing-paper);
     color: var(--pairing-copy);
     text-align: left;
     transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease, color 180ms ease, transform 180ms ease;
@@ -357,7 +363,6 @@
 
 .pairing_page .pairing_question_option:hover {
     border-color: var(--pairing-question-color);
-    transform: translateX(0.25rem);
 }
 
 .pairing_page .pairing_question_option.is_selected {
@@ -389,7 +394,7 @@
 
 .pairing_page .pairing_question_option_text {
     font-size: clamp(1rem, 1.25vw, 1.5rem);
-    font-weight: 600;
+    font-weight: 500;
     line-height: 1.3;
 }
 
@@ -408,7 +413,7 @@
     min-height: clamp(2.5rem, 2.604vw, 3rem);
     padding: 0.625rem 1rem;
     border: 1px solid var(--pairing-question-color);
-    border-radius: 0.5rem 0.5rem 1.25rem 1.25rem;
+    border-radius: var(--pairing-bowl-radius);
     background: var(--makgeolli_White);
     color: var(--pairing-question-selected-color, var(--pairing-question-color));
     font-size: clamp(0.875rem, 1.042vw, 1.125rem);
@@ -430,7 +435,6 @@
     border-color: var(--pairing-orange);
     background: var(--pairing-orange);
     color: #3c3028;
-    box-shadow: 0 0.25rem 0.75rem rgba(242, 149, 86, 0.24);
 }
 
 .pairing_page .pairing_question_nav_button:disabled {
@@ -500,20 +504,21 @@
 
 .pairing_page .pairing_food_tab {
     padding: 1rem 1.5rem;
-    border: 1px solid var(--pairing-line);
-    border-radius: 999px;
-    background: var(--pairing-paper);
+    border: 1px solid transparent;
+    border-radius: var(--pairing-bowl-radius);
+    background: var(--makgeolli_light2);
     color: var(--pairing-copy);
     font-size: 0.875rem;
-    font-weight: 600;
+    font-weight: 700;
+    text-transform: uppercase;
     line-height: 1;
     transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease;
 }
 
 .pairing_page .pairing_food_tab:hover,
 .pairing_page .pairing_food_tab.is_active {
-    border-color: var(--pairing-green);
-    background: var(--pairing-green);
+    border-color: var(--pairing-accent);
+    background: var(--pairing-accent);
     color: var(--makgeolli_White);
 }
 
@@ -523,11 +528,13 @@
 
 .pairing_page .pairing_food_carousel {
     display: grid;
-    grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem;
+    grid-template-columns: minmax(0, 1fr) 2.75rem 2.75rem;
     align-items: center;
-    gap: 1.875rem;
+    gap: 1.25rem 0.75rem;
     margin-top: 1.25rem;
 }
+.pairing_page .pairing_food_previous { grid-column: 2; grid-row: 2; }
+.pairing_page .pairing_food_next { grid-column: 3; grid-row: 2; }
 
 .pairing_page .pairing_food_carousel.is_all_visible {
     grid-template-columns: minmax(0, 1fr);
@@ -566,6 +573,8 @@
 
 .pairing_page .pairing_food_track {
     display: grid;
+    grid-column: 1 / -1;
+    grid-row: 1;
     grid-auto-columns: 16.875rem;
     grid-auto-flow: column;
     gap: 1.875rem;
@@ -600,11 +609,11 @@
     flex-direction: column;
     gap: 0.9375rem;
     min-height: 21.125rem;
-    padding: 1.25rem;
+    padding: 0;
     overflow: hidden;
-    border: 1px solid var(--pairing-line);
-    border-radius: 1.125rem;
-    background: white;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
     scroll-snap-align: start;
 }
 
@@ -612,8 +621,8 @@
     display: block;
     flex: 0 0 auto;
     width: 100%;
-    height: 11.25rem;
-    border-radius: 0.75rem;
+    height: 13rem;
+    border-radius: var(--pairing-bowl-radius);
     object-fit: cover;
     object-position: var(--pairing-food-image-position, center);
 }
@@ -621,9 +630,9 @@
 .pairing_page .pairing_food_card h3 {
     margin: 0;
     color: #4c3b33;
-    font-family: var(--font-Pretendard);
-    font-size: 1.25rem;
-    font-weight: 600;
+    font-family: var(--font-Albert_Sans);
+    font-size: 1.5rem;
+    font-weight: 400;
     line-height: 1.4;
 }
 
@@ -641,9 +650,9 @@
     margin: auto 0 0;
     padding: 0.625rem 0 0;
     border-top: 1px solid var(--pairing-line);
-    color: var(--pairing-green);
+    color: var(--pairing-accent);
     font-size: 0.875rem;
-    font-weight: 300;
+    font-weight: 400;
     line-height: 1.7;
 }
 
@@ -651,7 +660,7 @@
     --recipe-surface: #ede7da;
     --recipe-ink: #403d33;
     --recipe-accent: #62563b;
-    background: #f3f0e9;
+    background: var(--makgeolli_light2);
     padding-bottom: calc(clamp(7.5rem, 10vw, 12rem) + 150px);
 }
 
@@ -755,7 +764,7 @@
     min-height: 0;
     overflow: hidden;
     border: 1px solid var(--recipe-line);
-    border-radius: 1.5rem;
+    border-radius: var(--pairing-bowl-radius);
     background: var(--recipe-surface);
     color: var(--recipe-ink);
 }
@@ -840,7 +849,7 @@
 
 .pairing_page .pairing_recipe_meta_item.is_feature {
     padding: clamp(0.313rem, 0.309cqw, 0.313rem) clamp(0.5rem, 0.619cqw, 0.625rem);
-    border-radius: 999px;
+    border-radius: 0.25rem 0.25rem 0.75rem 0.75rem;
     background: rgba(255, 255, 255, 0.28);
     color: var(--recipe-accent);
 }
@@ -873,12 +882,11 @@
 .pairing_page .pairing_recipe_columns h4 {
     margin: 0 0 0.75rem;
     color: var(--recipe-accent);
-    font-size: clamp(1rem, 1.485cqw, 1.5rem);
+    font-size: clamp(0.875rem, 0.99cqw, 1rem);
     font-weight: 700;
     line-height: 1.3;
-    text-decoration: underline;
-    text-decoration-thickness: 0.08em;
-    text-underline-offset: 0.25em;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
 }
 
 .pairing_page .pairing_recipe_ingredient_list,
@@ -888,7 +896,7 @@
     padding-inline-start: clamp(1.125rem, 1.485cqw, 1.5rem);
     color: var(--recipe-ink);
     font-size: clamp(0.875rem, 0.99cqw, 1rem);
-    font-weight: 300;
+    font-weight: 400;
     line-height: 1.7;
 }
 
@@ -910,10 +918,11 @@
     display: grid;
     gap: 0;
     margin: 0;
-    padding-inline: clamp(0.5rem, 0.743cqw, 0.75rem);
+    padding-top: 1rem;
+    border-top: 1px solid var(--recipe-line);
     color: var(--recipe-accent);
-    font-family: var(--font-ROH_HOE-CHAN);
-    font-size: clamp(0.875rem, 1.238cqw, 1.25rem);
+    font-family: var(--font-Pretendard);
+    font-size: clamp(0.875rem, 0.99cqw, 1rem);
     font-weight: 400;
     line-height: 1.7;
 }
@@ -922,6 +931,7 @@
 .pairing_page .pairing_recipe_tip_copy {
     margin: 0;
 }
+.pairing_page .pairing_recipe_tip_title { margin-bottom: 0.375rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 
 .pairing_page .pairing_recipe_tip_copy {
     display: grid;
@@ -1050,7 +1060,7 @@
     padding: 0;
     overflow: auto;
     border: 0;
-    border-radius: 2rem;
+    border-radius: var(--pairing-bowl-radius);
     background: var(--makgeolli_White);
     color: var(--pairing-text);
     overscroll-behavior: contain;
@@ -1062,7 +1072,7 @@
     padding: 1.5rem clamp(1.5rem, 4vw, 4rem) 2.5rem;
     overflow: visible;
     border: 0;
-    border-radius: 2rem;
+    border-radius: 0;
     background: var(--makgeolli_White);
     animation: pairing_modal_in 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -1474,17 +1484,15 @@
 
     .pairing_page .pairing_hero {
         min-height: clamp(36rem, 54vw, 44rem);
-        background-position: 58% center;
     }
 
     .pairing_page .pairing_hero_content {
-        padding-top: clamp(9rem, 13vw, 11rem);
-        padding-left: clamp(2.5rem, 8vw, 6rem);
+        padding: 0;
     }
 
     .pairing_page .pairing_questionnaire {
         --pairing-question-tab-width: clamp(4.25rem, 7.25vw, 5.5rem);
-        width: min(92%, 58rem);
+        width: 100%;
         min-height: clamp(26rem, 44vw, 30rem);
         margin-top: clamp(1.5rem, 2.5vw, 2rem);
     }
@@ -1591,7 +1599,7 @@
     display: grid;
     gap: 0.625rem;
     box-sizing: border-box;
-    width: min(90%, 96.75rem);
+    width: 100%;
     margin: 1.5rem auto 0;
     padding: 0;
     color: var(--pairing-copy);
@@ -1602,7 +1610,7 @@
 .pairing_page .pairing_question_progress p { margin: 0; }
 .pairing_page .pairing_question_hint { line-height: 1.6; }
 .pairing_page .pairing_progress_heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; }
-.pairing_page .pairing_progress_title { font-weight: 700; color: var(--pairing-green); }
+.pairing_page .pairing_progress_title { font-weight: 700; color: var(--pairing-accent); }
 .pairing_page #pairing_question_status { font-weight: 600; font-variant-numeric: tabular-nums; }
 .pairing_page .pairing_progress_steps {
     display: grid;
@@ -1622,8 +1630,8 @@
 }
 .pairing_page .pairing_progress_step_label { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.5rem; align-items: center; font-weight: 700; }
 .pairing_page .pairing_progress_step_name { font-weight: 400; }
-.pairing_page .pairing_progress_step[aria-current="step"] { border-color: var(--pairing-green); color: var(--pairing-green); }
-.pairing_page .pairing_progress_step.is_answered { border-color: var(--pairing-green); color: var(--pairing-green); }
+.pairing_page .pairing_progress_step[aria-current="step"] { border-color: var(--pairing-accent); color: var(--pairing-accent); }
+.pairing_page .pairing_progress_step.is_answered { border-color: var(--pairing-accent); color: var(--pairing-accent); }
 
 .pairing_page .pairing_question_complete {
     position: absolute;
@@ -1657,10 +1665,10 @@
 .pairing_page .pairing_food_match {
     margin: 1.5rem 0 0;
     padding: 1rem 1.25rem;
-    border-left: 3px solid var(--pairing-green);
+    border-left: 3px solid var(--pairing-accent);
     border-radius: 0.25rem 0.75rem 0.75rem 0.25rem;
-    background: #eef2e8;
-    color: var(--pairing-green);
+    background: var(--makgeolli_light2);
+    color: var(--pairing-accent);
     font-size: 0.9375rem;
     line-height: 1.6;
 }
@@ -1668,8 +1676,8 @@
     align-self: flex-start;
     padding: 0.25rem 0.5rem;
     border-radius: 0.375rem;
-    background: #eef2e8;
-    color: var(--pairing-green);
+    background: var(--makgeolli_light2);
+    color: var(--pairing-accent);
     font-size: 0.75rem;
     line-height: 1.5;
     font-weight: 600;
@@ -1703,7 +1711,7 @@
 .pairing_page .pairing_recipe_picker_list::-webkit-scrollbar { display: none; }
 
 @media (min-width: 768px) and (max-width: 1100px) {
-    .pairing_page .pairing_question_progress { width: min(92%, 58rem); }
+    .pairing_page .pairing_question_progress { width: 100%; }
     .pairing_page .pairing_recipe_content {
         --pairing-recipe-inline-padding: 1.5rem;
     }
@@ -1725,22 +1733,20 @@
         --pairing-heading-inset: 0;
     }
     .pairing_page .pairing_hero {
-        min-height: 40rem;
-        background-color: #fbf7ed;
-        background-size: auto 70%;
-        background-position: 68% bottom;
-    }
-    .pairing_page .pairing_hero::before {
-        background: linear-gradient(180deg, #fbf7ed 0%, #fbf7ed 30%, rgba(251, 247, 237, 0.94) 43%, rgba(251, 247, 237, 0.25) 69%, transparent 100%);
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        min-height: 0;
+        padding: 7rem 1.25rem 2rem;
     }
     .pairing_page .pairing_hero_content {
-        padding: 7.5rem 1.25rem 13rem;
+        padding: 0;
     }
+    .pairing_page .pairing_hero_media { height: clamp(16rem, 72vw, 26rem); border-radius: 0.25rem 0.25rem 3rem 3rem; }
     .pairing_page .pairing_hero_title {
-        font-size: clamp(1.75rem, 7.5vw, 2.5rem);
-        line-height: 1.15;
+        font-size: clamp(2.75rem, 12vw, 4.5rem);
+        line-height: 1.02;
     }
-    .pairing_page .pairing_hero_title strong { font-size: clamp(4.75rem, 21vw, 7rem); }
+    .pairing_page .pairing_hero_title strong { font-size: inherit; }
     .pairing_page .pairing_hero_description {
         max-width: 21rem;
         font-size: 0.9375rem;
@@ -1769,7 +1775,7 @@
         width: 100%;
         min-height: 0;
         margin-top: 1rem;
-        border-radius: 1.25rem;
+        border-radius: var(--pairing-bowl-radius);
     }
     .pairing_page .pairing_question_panel {
         display: block;
@@ -1848,7 +1854,7 @@
     .pairing_page .pairing_food_card {
         min-height: 0;
         gap: 0.625rem;
-        padding: 1rem;
+        padding: 0;
     }
     .pairing_page .pairing_food_card_image { height: clamp(11rem, 52vw, 16rem); }
     .pairing_page .pairing_food_card h3 { font-size: 1.25rem; line-height: 1.4; }
@@ -1883,15 +1889,8 @@
         height: clamp(15rem, 80vw, 23rem);
         position: relative;
     }
-    .pairing_page .pairing_recipe_media::after {
-        content: "";
-        position: absolute;
-        inset: 65% 0 0;
-        background: linear-gradient(transparent, var(--recipe-surface));
-        pointer-events: none;
-    }
     .pairing_page .pairing_recipe_image { object-position: center 65%; }
-    .pairing_page .pairing_recipe_content { padding: 0.5rem 1.25rem 1.75rem; }
+    .pairing_page .pairing_recipe_content { padding: 1.5rem 1.25rem 1.75rem; }
     .pairing_page .pairing_recipe_inner,
     .pairing_page .pairing_recipe_details { gap: 1.5rem; }
     .pairing_page .pairing_recipe_title { font-size: clamp(1.75rem, 7vw, 2.125rem); line-height: 1.25; }
@@ -1912,7 +1911,7 @@
         font-size: 0.9375rem;
         line-height: 1.65;
     }
-    .pairing_page .pairing_recipe_tip { padding: 0; font-size: 0.9375rem; line-height: 1.65; }
+    .pairing_page .pairing_recipe_tip { padding-top: 1rem; font-size: 0.9375rem; line-height: 1.65; }
     .pairing_page .pairing_result_modal {
         width: calc(100% - 1rem);
         max-height: calc(100dvh - 1rem);
@@ -2038,16 +2037,11 @@
 
     @media (hover: hover) and (pointer: fine) {
         .pairing_page .pairing_question_option:hover {
-            box-shadow: 0 0.5rem 1rem rgba(93, 80, 74, 0.08);
-        }
-
-        .pairing_page .pairing_food_card:hover {
-            transform: translateY(-0.375rem);
-            box-shadow: 0 0.875rem 1.75rem rgba(93, 80, 74, 0.12);
+            box-shadow: none;
         }
 
         .pairing_page .pairing_food_card:hover .pairing_food_card_image {
-            transform: scale(1.035);
+            transform: none;
             filter: saturate(1.06);
         }
 

@@ -55,8 +55,8 @@
             label: 'Q4',
             shortLabel: 'Explore',
             prompt: 'What would you like to explore?',
-            color: '#0a663f',
-            tint: 'rgba(10, 102, 63, 0.16)',
+            color: '#5d504a',
+            tint: 'rgba(93, 80, 74, 0.10)',
             options: [
                 { id: 'traditional', label: 'Traditional Makgeolli', icon: 'icon/question/q4_traditional.png' },
                 { id: 'fruit', label: 'Fruit Makgeolli', icon: 'icon/question/q4_fruit.png' },
