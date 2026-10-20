@@ -91,6 +91,7 @@ section {
 
 /* 시안(1920 x 880) 비율을 유지하는 판. 아래 가운데를 기준으로 두어 좁아지면 위쪽과 양옆만 잘림 */
 .pd_banner_stage {
+    touch-action: pan-y;
     position: absolute;
     left: 50%;
     bottom: 0;
@@ -109,6 +110,23 @@ section {
     max-width: none;
 }
 
+/* 조각은 banner_physics.js 가 위에서 떨어뜨림(Matter.js). 준비되기 전에는 숨겨 두고,
+   스크립트를 못 쓰는 경우(is_static)에는 시안 자리에 그대로 보여 줌 */
+.pd_banner_item {
+    visibility: hidden;
+    will-change: transform;
+    /* 마우스로 끌 수 있음. 브라우저 기본 이미지 끌기와 글자 선택은 막음 */
+    cursor: grab;
+    -webkit-user-drag: none;
+    user-select: none;
+}
+
+.pd_banner.is_physics .pd_banner_item,
+.pd_banner.is_static .pd_banner_item {
+    visibility: visible;
+}
+
+
 /* 메인(glass_divider)과 같은 Figma 노이즈. 조각 위까지 덮고, 클릭은 통과시킴 */
 .pd_banner::after {
     content: "";
@@ -118,7 +136,7 @@ section {
     pointer-events: none;
     /* 알갱이 굵기와 밀도가 화면 크기에 따라 달라지지 않게 작은 타일(시안의 약 0.47배)을 반복함 */
     background: url("./product_detail_asset/new/banner_noise.svg") 0 0 / 900px 412px repeat;
-    opacity: 0.5;
+    opacity: 0.15;
 }
 
 
@@ -771,3 +789,9 @@ section {
 }
 
 
+
+
+.pd_banner_stage.is_dragging,
+.pd_banner_stage.is_dragging .pd_banner_item {
+    cursor: grabbing;
+}

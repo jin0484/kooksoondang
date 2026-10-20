@@ -127,17 +127,17 @@
         <section class="pd_banner">
             <!-- 1920 x 880 시안 위에 놓인 조각들. 하나씩 따로 움직일 수 있게 이미지를 나눠 둠 -->
             <div class="pd_banner_stage">
-                <img class="pd_banner_item pd_bn_big_bottle" style="--x:82.0313%;--y:29.3182%;--w:19.2708%" src="./product_detail_asset/new/banner_big_bottle.svg" alt="" width="370" height="686">
-                <img class="pd_banner_item pd_bn_bottle_right" style="--x:82.4479%;--y:43.0682%;--w:7.6042%" src="./product_detail_asset/new/banner_bottle_right.svg" alt="" width="146" height="249">
-                <img class="pd_banner_item pd_bn_bottle_lying" style="--x:64.6875%;--y:54.3182%;--w:17.8646%" src="./product_detail_asset/new/banner_bottle_lying.svg" alt="" width="343" height="126">
-                <img class="pd_banner_item pd_bn_bottle_mid" style="--x:30.9896%;--y:45.5682%;--w:12.7083%" src="./product_detail_asset/new/banner_bottle_mid.svg" alt="" width="244" height="306">
-                <img class="pd_banner_item pd_bn_bottle_left" style="--x:9.8958%;--y:33.75%;--w:7.7604%" src="./product_detail_asset/new/banner_bottle_left.svg" alt="" width="149" height="340">
-                <img class="pd_banner_item pd_bn_bottle_small" style="--x:0.7813%;--y:34.3182%;--w:3.9583%" src="./product_detail_asset/new/banner_bottle_small.svg" alt="" width="76" height="229">
-                <img class="pd_banner_item pd_bn_blob" style="--x:17.5521%;--y:58.6364%;--w:25.2083%" src="./product_detail_asset/new/banner_blob.svg" alt="" width="484" height="366">
-                <img class="pd_banner_item pd_bn_bowl" style="--x:58.4896%;--y:62.3864%;--w:25.2083%" src="./product_detail_asset/new/banner_bowl.svg" alt="" width="484" height="392">
-                <img class="pd_banner_item pd_bn_ring" style="--x:43.0729%;--y:69.5455%;--w:14.9479%" src="./product_detail_asset/new/banner_ring.svg" alt="" width="287" height="287">
-                <img class="pd_banner_item pd_bn_can_big" style="--x:1.0938%;--y:55.3409%;--w:17.9167%" src="./product_detail_asset/new/banner_can_big.svg" alt="" width="344" height="440">
-                <img class="pd_banner_item pd_bn_can_small" style="--x:50.9375%;--y:48.5227%;--w:8.9063%" src="./product_detail_asset/new/banner_can_small.svg" alt="" width="171" height="188">
+                <img draggable="false" class="pd_banner_item pd_bn_big_bottle" style="--x:82.0313%;--y:29.3182%;--w:19.2708%" src="./product_detail_asset/new/banner_big_bottle.svg" alt="" width="370" height="686">
+                <img draggable="false" class="pd_banner_item pd_bn_bottle_right" style="--x:82.4479%;--y:43.0682%;--w:7.6042%" src="./product_detail_asset/new/banner_bottle_right.svg" alt="" width="146" height="249">
+                <img draggable="false" class="pd_banner_item pd_bn_bottle_lying" style="--x:64.6875%;--y:54.3182%;--w:17.8646%" src="./product_detail_asset/new/banner_bottle_lying.svg" alt="" width="343" height="126">
+                <img draggable="false" class="pd_banner_item pd_bn_bottle_mid" style="--x:30.9896%;--y:45.5682%;--w:12.7083%" src="./product_detail_asset/new/banner_bottle_mid.svg" alt="" width="244" height="306">
+                <img draggable="false" class="pd_banner_item pd_bn_bottle_left" style="--x:9.8958%;--y:33.75%;--w:7.7604%" src="./product_detail_asset/new/banner_bottle_left.svg" alt="" width="149" height="340">
+                <img draggable="false" class="pd_banner_item pd_bn_bottle_small" style="--x:0.7813%;--y:34.3182%;--w:3.9583%" src="./product_detail_asset/new/banner_bottle_small.svg" alt="" width="76" height="229">
+                <img draggable="false" class="pd_banner_item pd_bn_blob" style="--x:17.5521%;--y:58.6364%;--w:25.2083%" src="./product_detail_asset/new/banner_blob.svg" alt="" width="484" height="366">
+                <img draggable="false" class="pd_banner_item pd_bn_bowl" style="--x:58.4896%;--y:62.3864%;--w:25.2083%" src="./product_detail_asset/new/banner_bowl.svg" alt="" width="484" height="392">
+                <img draggable="false" class="pd_banner_item pd_bn_ring" style="--x:43.0729%;--y:69.5455%;--w:14.9479%" src="./product_detail_asset/new/banner_ring.svg" alt="" width="287" height="287">
+                <img draggable="false" class="pd_banner_item pd_bn_can_big" style="--x:1.0938%;--y:55.3409%;--w:17.9167%" src="./product_detail_asset/new/banner_can_big.svg" alt="" width="344" height="440">
+                <img draggable="false" class="pd_banner_item pd_bn_can_small" style="--x:50.9375%;--y:48.5227%;--w:8.9063%" src="./product_detail_asset/new/banner_can_small.svg" alt="" width="171" height="188">
             </div>
         </section>
 
@@ -372,6 +372,10 @@
     <!-- =========================================
          JAVASCRIPT
     ========================================== -->
+
+    <!-- 배너 조각이 위에서 떨어져 부딪히게 하는 물리엔진 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js" defer></script>
+    <script src="./banner_physics.js" defer></script>
 
     <!-- 태블릿·모바일에서 한 줄 슬라이드가 된 more products 목록을 마우스로도 끌어서 넘길 수 있게 함.
          손가락(터치)은 브라우저 기본 가로 스크롤이 처리하므로 마우스일 때만 가로챔.
