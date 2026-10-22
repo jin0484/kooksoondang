@@ -37,7 +37,8 @@ body {
     /* hidden 은 body 를 스크롤 컨테이너로 만들어 sticky 와 스크롤을 꼬이게 해서 clip 으로(다른 페이지와 같음) */
     overflow-x: clip;
 
-    background: var(--white);
+    /* 푸터 물결 위 여백(margin-top)에 흰색이 비치지 않도록 페이지 배경색과 맞춤 */
+    background: #faf8f7;
     color: var(--ink);
 
     font-family:
@@ -57,903 +58,503 @@ img {
 
 
 /* =========================================================
-   THREE.JS CANVAS
-========================================================= */
-
-#scene {
-    position: fixed;
-    inset: 0;
-
-    width: 100%;
-    height: 100%;
-
-    z-index: 2;
-
-    pointer-events: none;
-}
-
-
-/* =========================================================
    PAGE TRACK
 ========================================================= */
 
 #track {
     position: relative;
-
     width: 100%;
-
-    background: var(--white);
+    background: #faf8f7;
 }
-
-
-/* =========================================================
-   COMMON SECTION
-========================================================= */
 
 section {
     position: relative;
-
     width: 100%;
 }
 
 
 /* =========================================================
-   01. HERO
-   GREEN AREA
+   01. BANNER
+   1920 x 880 초록 배너. 폭에 맞춰 늘어나고, 좁아지면 높이만 줄여 가운데를 보여 줌
 ========================================================= */
 
-.product_hero {
+.pd_banner {
+    /* 쌓임 맥락을 만들어 노이즈가 아래 흰 곡선(.pd_wave) 위로 올라오지 않게 함 */
     position: relative;
-
-    width: 100%;
-    height: 700px;
-    min-height: 0;
-
-    overflow: hidden;
-
-    background: var(--green);
-    color: var(--white);
-}
-
-
-/* Three.js 병 기준 영역 */
-
-.product_hero_bottle_area {
-    position: absolute;
-    inset: 0;
-
-    width: 100%;
-    height: 100%;
-
-    pointer-events: none;
-}
-
-
-/* =========================================================
-   HERO DECO
-========================================================= */
-
-.hero_deco {
-    position: absolute;
-    inset: 0;
-
-    width: 100%;
-    height: 100%;
-
-    overflow: hidden;
-
-    z-index: 1;
-
-    pointer-events: none;
-}
-
-
-.hero_deco_item {
-    position: absolute;
-
-    display: block;
-
-    height: auto;
-
-    pointer-events: none;
-    user-select: none;
-
-    transform-origin: center center;
-
-    will-change: transform;
-}
-
-
-/* =========================================================
-   HERO DECO POSITION
-   1920px 기준
-========================================================= */
-
-.hero_deco_01 {
-    width: 150px;
-
-    left: 49%;
-    top: 39%;
-}
-
-
-.hero_deco_02 {
-    width: 155px;
-
-    left: 65%;
-    top: 28%;
-}
-
-
-.hero_deco_03 {
-    width: 68px;
-
-    left: 61%;
-    top: 51%;
-}
-
-
-.hero_deco_04 {
-    width: 70px;
-
-    left: 54%;
-    top: 65%;
-}
-
-
-.hero_deco_05 {
-    width: 150px;
-
-    right: 4%;
-    top: 44%;
-}
-
-
-/* =========================================================
-   02. PRODUCT INTRO
-   ORIGINAL MAKGEOLLI
-========================================================= */
-
-.product_intro {
-    position: relative;
-
-    width: 100%;
-    height: 560px;
-
-    padding:
-        40px
-        8vw
-        80px;
-
-    background: var(--white);
-    color: var(--green);
-
-    margin-top: -70px;
-}
-
-
-/* =========================================================
-   ROUND WHITE TOP
-========================================================= */
-
-.product_intro::before {
-    content: "";
-
-    position: absolute;
-
-    left: 50%;
-    top: -90px;
-
-    transform:
-        translateX(-50%);
-
-    width: 115%;
-    height: 180px;
-
-    background: var(--white);
-
-    border-radius:
-        50% 50% 0 0 /
-        100% 100% 0 0;
-
     z-index: 0;
-}
+    --banner-h: clamp(260px, 45.83vw, 880px);
 
-
-/* =========================================================
-   INTRO CONTENT
-========================================================= */
-
-.product_intro_inner {
-    position: relative;
-
-    width: 100%;
-    max-width: 1660px;
-
-    margin: 0 auto;
-
-    z-index: 1;
-}
-
-
-/* =========================================================
-   ORIGINAL MAKGEOLLI
-========================================================= */
-
-.product_intro_title {
-    position: relative;
-
-    margin:
-        0
-        0
-        28px;
-
-    font-size:
-        clamp(
-            3.5rem,
-            5.5vw,
-            6.5rem
-        );
-
-    font-weight: 600;
-
-    line-height: 0.95;
-
-    letter-spacing: -0.055em;
-
-    color: var(--green);
-}
-
-
-.product_intro_desc {
-    margin: 0;
-
-    font-size:
-        clamp(
-            1rem,
-            1.15vw,
-            1.25rem
-        );
-
-    line-height: 1.7;
-
-    color: var(--green);
-
-    opacity: 1;
-}
-
-
-/* =========================================================
-   PRODUCT DETAIL
-   FIGMA LAYOUT FINAL PATCH
-
-   ★ Three.js 이동/회전 JS 건드리지 않음
-   ★ 가운데 통과 기능 건드리지 않음
-   ★ 01 / 02 / 03 레이아웃만 수정
-========================================================= */
-
-
-/* =========================================================
-   01 / 02 / 03 COMMON
-========================================================= */
-
-#product_freshness,
-#product_health,
-#product_design {
-    position: relative;
-
-    width: 100%;
-    min-height: 100vh;
-
+    height: var(--banner-h);
     overflow: hidden;
+    background: #349169;
+}
+
+/* 시안(1920 x 880) 비율을 유지하는 판. 아래 가운데를 기준으로 두어 좁아지면 위쪽과 양옆만 잘림 */
+.pd_banner_stage {
+    touch-action: pan-y;
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: max(100%, calc(var(--banner-h) * 1920 / 880));
+    aspect-ratio: 1920 / 880;
+    transform: translateX(-50%);
+}
+
+/* 조각 하나하나. 위치와 너비는 판 크기에 대한 % (style 의 --x --y --w) */
+.pd_banner_item {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: var(--w);
+    height: auto;
+    max-width: none;
+}
+
+/* 조각은 banner_physics.js 가 위에서 떨어뜨림(Matter.js). 준비되기 전에는 숨겨 두고,
+   스크립트를 못 쓰는 경우(is_static)에는 시안 자리에 그대로 보여 줌 */
+.pd_banner_item {
+    visibility: hidden;
+    will-change: transform;
+    /* 마우스로 끌 수 있음. 브라우저 기본 이미지 끌기와 글자 선택은 막음 */
+    cursor: grab;
+    -webkit-user-drag: none;
+    user-select: none;
+}
+
+.pd_banner.is_physics .pd_banner_item,
+.pd_banner.is_static .pd_banner_item {
+    visibility: visible;
 }
 
 
-/* =========================================================
-   INNER
-
-   Figma처럼 화면을 정확히 반으로 사용
-========================================================= */
-
-#product_freshness .product_detail_inner,
-#product_health .product_detail_inner,
-#product_design .product_detail_inner {
-    position: relative;
-
-    display: grid;
-
-    grid-template-columns:
-        50% 50%;
-
-    align-items: center;
-
-    width: 100%;
-    max-width: 1440px;
-
-    min-height: 100vh;
-
-    margin: 0 auto;
-
-    padding:
-        0
-        clamp(48px, 5vw, 80px);
-
-    box-sizing: border-box;
+/* 메인(glass_divider)과 같은 Figma 노이즈. 조각 위까지 덮고, 클릭은 통과시킴 */
+.pd_banner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    /* 알갱이 굵기와 밀도가 화면 크기에 따라 달라지지 않게 작은 타일(시안의 약 0.47배)을 반복함 */
+    background: url("./product_detail_asset/new/banner_noise.svg") 0 0 / 900px 412px repeat;
+    opacity: 0.15;
 }
 
 
-/* =========================================================
-   BOTTLE AREA
 
-   병 자체 위치는 Three.js가 담당
+/* =========================================================
+   02. STAGE
+   --u : 시안(1920px) 1px 이 화면에서 차지하는 길이
+   .pd_abs 는 style="--x --y --w --h" 로 시안 좌표를 그대로 받음
 ========================================================= */
 
-#product_freshness .product_detail_visual,
-#product_health .product_detail_visual,
-#product_design .product_detail_visual {
+.pd_stage {
+    --u: calc(min(100vw, 1920px) / 1920);
+
     position: relative;
+    height: calc(1180 * var(--u));
+    background: #faf8f7;
+    color: #232323;
+    font-family: var(--font-Albert_Sans, 'Albert Sans', sans-serif);
+}
 
-    width: 100%;
-    height: 100vh;
-
+/* 배너 아래쪽을 둥글게 덮는 타원 */
+.pd_wave {
+    position: absolute;
+    top: calc(-130 * var(--u));
+    left: 50%;
+    z-index: 1;
+    width: calc(2325 * var(--u));
+    max-width: none;
+    height: calc(366 * var(--u));
+    transform: translateX(-50%);
     pointer-events: none;
 }
 
+.pd_abs {
+    position: absolute;
+    left: calc(var(--x) * var(--u));
+    top: calc(var(--y) * var(--u));
+    width: calc(var(--w) * var(--u));
+    height: calc(var(--h) * var(--u));
+    max-width: none;
+    pointer-events: none;
+}
 
-/* =========================================================
-   TEXT COMMON
-========================================================= */
+.pd_side {
+    z-index: 1;
+    object-fit: cover;
+    opacity: 0.4;
+}
 
-#product_freshness .product_detail_copy,
-#product_health .product_detail_copy,
-#product_design .product_detail_copy {
-    position: relative;
+.pd_side_right {
+    object-fit: fill;
+}
 
-    z-index: 10;
+.pd_arrow {
+    z-index: 2;
+}
 
-    display: flex;
+.pd_arrow_right {
+    transform: scaleX(-1);
+}
 
-    flex-direction: column;
-
-    align-items: flex-start;
-
-    justify-content: center;
-
-    width: 100%;
-    max-width: 470px;
-
-    margin: 0;
-    padding: 0;
-
-    text-align: left;
+.pd_deco {
+    z-index: 2;
 }
 
 
-/* =========================================================
-   NUMBER
+/* ---------------------------------------------------------
+   제품 소개 (병 + 글)
+--------------------------------------------------------- */
 
-   01. FRESHNESS
-   02. HEALTHY CHOICE
-   03. INNOVATIVE DESIGN
-========================================================= */
+.pd_product {
+    position: absolute;
+    top: calc(27 * var(--u));
+    left: calc(392.5 * var(--u));
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: calc(100 * var(--u));
+    width: calc(1100 * var(--u));
+}
 
-#product_freshness .product_detail_number,
-#product_health .product_detail_number,
-#product_design .product_detail_number {
-    display: block;
+/* 시안의 병 그림은 큰 그림의 일부만 잘라 쓰는 방식이라 그대로 잘라 놓음 */
+.pd_product_bottle {
+    position: relative;
+    flex: 0 0 calc(248 * var(--u));
+    height: calc(800 * var(--u));
+    overflow: hidden;
+    pointer-events: none;
+}
 
-    margin:
-        0
-        0
-        14px;
+.pd_product_bottle img {
+    position: absolute;
+    left: -67.55%;
+    top: -3.59%;
+    width: 227.7%;
+    height: 105.94%;
+    max-width: none;
+}
 
-    color:
-        #16865f;
+.pd_product_copy {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: calc(40 * var(--u));
+    flex: 1 1 0;
+    min-width: 0;
+}
 
-    font-size:
-        clamp(10px, 0.65vw, 13px);
+.pd_product_head {
+    display: flex;
+    flex-direction: column;
+    gap: calc(8 * var(--u));
+}
 
-    font-weight: 500;
-
+.pd_product_brand {
+    color: #349169;
+    font-family: var(--font-ROH_HOE-CHAN, 'ROH HOE-CHAN', serif);
+    font-size: max(1.125rem, calc(28 * var(--u)));
     line-height: 1;
+}
 
+.pd_product_title {
+    color: #232323;
+    font-size: max(2rem, calc(80 * var(--u)));
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.pd_product_body {
+    display: flex;
+    flex-direction: column;
+    gap: calc(20 * var(--u));
+    color: #349169;
+    font-family: Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    line-height: 1.5;
+}
+
+.pd_product_desc {
+    max-width: calc(752 * var(--u));
+    font-size: max(0.875rem, calc(20 * var(--u)));
     letter-spacing: -0.02em;
 }
 
-
-/* =========================================================
-   TITLE
-
-   피그마처럼 과하게 크지 않게
-========================================================= */
-
-#product_freshness .product_detail_title,
-#product_health .product_detail_title,
-#product_design .product_detail_title {
-    width: 100%;
-
-    margin: 0;
-    padding: 0;
-
-    color:
-        #16865f;
-
-    font-size:
-        clamp(32px, 2.5vw, 46px);
-
-    font-weight: 700;
-
-    line-height: 1.08;
-
-    letter-spacing: -0.05em;
-
+.pd_product_meta {
+    display: flex;
+    gap: calc(20 * var(--u));
+    font-size: max(1rem, calc(28 * var(--u)));
+    font-weight: 600;
+    letter-spacing: -0.02em;
     white-space: nowrap;
 }
 
 
-/* =========================================================
-   DESCRIPTION
-========================================================= */
+/* ---------------------------------------------------------
+   Features of Our Makgeolli (스티키 + 스크롤로 한 장씩 포개짐)
 
-#product_freshness .product_detail_desc,
-#product_health .product_detail_desc,
-#product_design .product_detail_desc {
-    width: 100%;
+   .pd_features 가 스크롤 길이를 만들고, 안쪽 .pd_features_sticky 가 화면에 고정됨.
+   features_stack.js 가 스크롤 진행도를 --e1 --e2 --e3 (0 → 1) 으로 .pd_bowl 에 넣어 주고,
+   카드(뒤) → 카드(가운데) → 그릇(앞) 순으로 위에서 내려와 쌓임
+--------------------------------------------------------- */
 
-    margin:
-        18px
-        0
-        0;
+.pd_features {
+    --u: calc(min(100vw, 1920px) / 1920);
+    /* 화면 정중앙보다 얼마나 위로 올릴지 (고정 헤더 아래 공간에 맞춤) */
+    --lift: 0vh;
 
-    color:
-        #292929;
+    position: relative;
+    /* 고정되어 있는 동안 스크롤할 길이: 화면 높이의 3배 + 고정 화면 1개 */
+    height: 400vh;
+    background: #faf8f7;
+    color: #232323;
+    font-family: var(--font-Albert_Sans, 'Albert Sans', sans-serif);
+}
 
-    font-size:
-        clamp(11px, 0.72vw, 14px);
+.pd_features_sticky {
+    position: sticky;
+    top: 0;
+    width: calc(1920 * var(--u));
+    max-width: 100%;
+    height: 100vh;
+    margin: 0 auto;
+    overflow: visible;
+}
 
+.pd_features_copy {
+    position: absolute;
+    left: calc(247.5 * var(--u));
+    /* 그릇 묶음의 맨 위(.pd_bowl 의 top)에 글 맨 위를 맞춤 */
+    top: calc(50% - 370 * var(--u) - var(--lift));
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    gap: calc(20 * var(--u));
+}
+
+.pd_features_title {
+    color: #232323;
+    font-size: max(2rem, calc(60 * var(--u)));
     font-weight: 400;
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+}
 
-    line-height: 1.45;
-
+.pd_features_desc {
+    width: calc(477 * var(--u));
+    min-width: 14rem;
+    color: #8d7e77;
+    font-family: Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    font-size: max(0.875rem, calc(20 * var(--u)));
+    line-height: 1.7;
     letter-spacing: -0.02em;
 }
 
+/* 사발과 카드 두 장. 안쪽 좌표는 시안(705 x 740) 기준 */
+.pd_bowl {
+    --e1: 0;
+    --e2: 0;
+    --e3: 0;
 
-/* =========================================================
-   01. FRESHNESS
-
-        병      |      TEXT
-
-   Figma처럼 텍스트가 화면 중앙 높이에 위치
-========================================================= */
-
-#product_freshness .product_detail_visual {
-    grid-column: 1;
-    grid-row: 1;
+    position: absolute;
+    left: calc(969 * var(--u));
+    top: 50%;
+    z-index: 3;
+    width: calc(705 * var(--u));
+    height: calc(740 * var(--u));
+    margin-top: calc(-370 * var(--u) - var(--lift));
+    font-family: var(--font-Albert_Sans, 'Albert Sans', sans-serif);
 }
 
-
-#product_freshness .product_detail_copy {
-    grid-column: 2;
-    grid-row: 1;
-
-    justify-self: start;
-
-    /*
-        피그마:
-        화면 가운데 세로선을 기준으로
-        오른쪽에서 조금 안쪽
-    */
-
-    padding-left:
-        clamp(20px, 2vw, 38px);
-
-    /*
-        지금 코딩 화면은 너무 아래였기 때문에
-        위쪽으로 이동
-    */
-
+/* 조각 하나: 그림 + 그 안의 글. 각각 따로 움직이도록 묶어 둠 */
+.pd_card {
+    position: absolute;
+    /* 자기 진행도 --e 에 따라 아래에서 올라오고(기울기는 최종 각도로 수렴) 나타남 */
+    opacity: clamp(0, calc(var(--e) * 8), 1);
     transform:
-        translateY(-3vh);
+        translateY(calc((1 - var(--e)) * 90vh))
+        rotate(calc(var(--angle) + (1 - var(--e)) * var(--spin)));
+    will-change: transform, opacity;
 }
 
-
-/* =========================================================
-   02. HEALTHY CHOICE
-
-        TEXT     |       병
-========================================================= */
-
-#product_health .product_detail_copy {
-    grid-column: 1;
-    grid-row: 1;
-
-    justify-self: end;
-
-    padding-right:
-        clamp(20px, 2vw, 38px);
-
-    /*
-        피그마 02 위치
-    */
-
-    transform:
-        translateY(2vh);
-}
-
-
-#product_health .product_detail_visual {
-    grid-column: 2;
-    grid-row: 1;
-}
-
-
-/* =========================================================
-   03. INNOVATIVE DESIGN
-
-        병       |       TEXT
-                           ↓
-                      Vector 1~7
-========================================================= */
-
-#product_design .product_detail_visual {
-    grid-column: 1;
-    grid-row: 1;
-}
-
-
-#product_design .product_detail_copy {
-    grid-column: 2;
-    grid-row: 1;
-
-    justify-self: start;
-
-    padding-left:
-        clamp(20px, 2vw, 38px);
-
-    /*
-        Vector가 아래 들어가기 때문에
-        전체 블록을 조금 위쪽에 둠
-    */
-
-    transform:
-        translateY(-2vh);
-}
-
-
-/* =========================================================
-   03 VECTOR 1 ~ 7
-========================================================= */
-
-.product_design_vectors {
-    display: flex;
-
-    align-items: flex-end;
-
-    justify-content: flex-start;
-
-    width: 100%;
-    max-width: 500px;
-
-    margin-top:
-        clamp(24px, 2.5vw, 38px);
-
-    gap:
-        clamp(8px, 1vw, 16px);
-}
-
-
-.product_design_vectors img {
+.pd_card > img {
     display: block;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    pointer-events: none;
+}
 
-    width: auto;
+.pd_card_back {
+    --e: var(--e1);
+    --angle: 7.21deg;
+    --spin: -10deg;
+    left: calc(23.3 * var(--u));
+    top: calc(35.1 * var(--u));
+    width: calc(584.6 * var(--u));
+    height: calc(401 * var(--u));
+}
 
-    height:
-        clamp(46px, 4.3vw, 72px);
+.pd_card_mid {
+    --e: var(--e2);
+    --angle: -6.22deg;
+    --spin: 10deg;
+    left: calc(43.1 * var(--u));
+    top: calc(136.5 * var(--u));
+    width: calc(632.5 * var(--u));
+    height: calc(442.4 * var(--u));
+}
 
-    max-width:
-        clamp(42px, 4vw, 68px);
+.pd_card_mid > img {
+    transform: skewX(1.17deg);
+}
 
-    object-fit: contain;
+.pd_card_front {
+    --e: var(--e3);
+    --angle: 0deg;
+    --spin: 0deg;
+    left: calc(5.6 * var(--u));
+    top: calc(257.9 * var(--u));
+    width: calc(697 * var(--u));
+    height: calc(478 * var(--u));
+}
 
-    flex:
-        0 1 auto;
+.pd_card_text {
+    position: absolute;
+    left: 50%;
+    display: flex;
+    flex-direction: column;
+    gap: calc(32 * var(--u));
+    text-align: center;
+    color: #272625;
+    transform: translate(-50%, -50%);
+}
+
+.pd_card_text h3 {
+    font-size: calc(40 * var(--u));
+    font-weight: 400;
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+}
+
+.pd_card_text p {
+    font-family: Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    font-size: calc(24 * var(--u));
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+}
+
+/* 글의 위치는 각 그림의 가운데 기준(기울기를 뺀 좌표) */
+.pd_card_back .pd_card_text  { top: calc(50% - 54.5 * var(--u)); width: calc(423 * var(--u)); }
+.pd_card_mid .pd_card_text   { top: calc(50% - 59.7 * var(--u)); width: calc(482 * var(--u)); }
+.pd_card_front .pd_card_text { top: calc(50.1 * var(--u)); width: calc(537 * var(--u)); color: #fff; transform: translateX(-50%); }
+
+@media (prefers-reduced-motion: reduce) {
+    .pd_bowl { --e1: 1 !important; --e2: 1 !important; --e3: 1 !important; }
+    .pd_card { transform: rotate(var(--angle)); opacity: 1; }
 }
 
 
 /* =========================================================
-   03 VECTOR
-   각 실루엣 크기 미세조정
+   1024px 이하: 시안에 없는 크기라 세로로 쌓음
 ========================================================= */
 
-.product_design_vectors img:nth-child(1) {
-    transform: scale(0.72);
-    transform-origin: bottom center;
-}
+@media (max-width: 1024px) {
+    .pd_stage {
+        --u: calc(100vw / 1920);
+        --bowl-u: calc(min(100vw - 3rem, 705px) / 705);
 
-
-.product_design_vectors img:nth-child(2) {
-    transform: scale(0.88);
-    transform-origin: bottom center;
-}
-
-
-.product_design_vectors img:nth-child(3) {
-    transform: scale(0.94);
-    transform-origin: bottom center;
-}
-
-
-.product_design_vectors img:nth-child(4) {
-    transform: scale(1);
-    transform-origin: bottom center;
-}
-
-
-.product_design_vectors img:nth-child(5) {
-    transform: scale(0.95);
-    transform-origin: bottom center;
-}
-
-
-.product_design_vectors img:nth-child(6) {
-    transform: scale(1.08);
-    transform-origin: bottom center;
-}
-
-
-.product_design_vectors img:nth-child(7) {
-    transform: scale(1);
-    transform-origin: bottom center;
-}
-
-
-/* =========================================================
-   MOBILE
-========================================================= */
-
-@media (max-width: 900px) {
-
-    #product_freshness .product_detail_inner,
-    #product_health .product_detail_inner,
-    #product_design .product_detail_inner {
-        grid-template-columns:
-            1fr;
-
-        padding:
-            40px
-            24px;
+        height: auto;
+        padding: 3rem 1.5rem 3rem;
     }
 
-
-    #product_freshness .product_detail_visual,
-    #product_health .product_detail_visual,
-    #product_design .product_detail_visual {
-        grid-column: 1;
-
-        height: 52vh;
+    .pd_side,
+    .pd_arrow,
+    .pd_deco {
+        display: none;
     }
 
+    .pd_product {
+        position: relative;
+        left: auto;
+        top: auto;
+    }
 
-    #product_freshness .product_detail_copy,
-    #product_health .product_detail_copy,
-    #product_design .product_detail_copy {
-        grid-column: 1;
+    .pd_product {
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+        width: 100%;
+        text-align: center;
+    }
 
-        max-width: none;
+    .pd_product_bottle {
+        flex: none;
+        width: clamp(7.5rem, 32vw, 12rem);
+        height: auto;
+        aspect-ratio: 248 / 800;
+    }
 
-        padding:
-            24px
-            0
-            60px;
+    .pd_product_copy {
+        align-self: auto;
+        align-items: center;
+        gap: 1.5rem;
+    }
 
+    .pd_product_head {
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .pd_product_brand { font-size: 1.25rem; }
+    .pd_product_title { font-size: clamp(2rem, 8vw, 3.5rem); white-space: normal; }
+    .pd_product_body { align-items: center; gap: 1rem; }
+    .pd_product_desc { max-width: 40rem; font-size: 1rem; }
+    .pd_product_meta { font-size: 1.125rem; }
+
+    /* 화면에 고정된 한 장 안에서 글은 위, 그릇은 아래 */
+    .pd_features {
+        --bowl-u: calc(min(100vw - 3rem, 705px) / 705);
+    }
+
+    .pd_features_sticky {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+        width: 100%;
+        /* 위쪽은 고정 헤더(약 100px)에 가리지 않게 비움 */
+        padding: 7rem 1.5rem 1.5rem;
+    }
+
+    .pd_features_copy {
+        position: relative;
+        left: auto;
+        top: auto;
+        align-items: center;
+        gap: 0.75rem;
+        text-align: center;
         transform: none;
     }
 
+    .pd_features_title { font-size: clamp(1.75rem, 7vw, 3rem); white-space: normal; }
+    .pd_features_desc { width: auto; max-width: 28rem; font-size: 0.9375rem; }
 
-    #product_freshness .product_detail_title,
-    #product_health .product_detail_title,
-    #product_design .product_detail_title {
-        white-space: normal;
-
-        font-size:
-            clamp(30px, 8vw, 44px);
+    .pd_bowl {
+        --u: var(--bowl-u);
+        position: relative;
+        left: auto;
+        top: auto;
+        margin: 0 auto;
     }
-
 }
 
 
-/* =========================================================
-   04. DUAL FERMENTED / TRIPLE LACTIC
-
-   Dual Fermented = 병 뒤
-   Three.js 병     = 가운데
-   Triple Lactic  = 병 앞
-========================================================= */
-
-.product_fermentation {
-    position: relative;
-
-    width: 100%;
-    height: 850px;
-
-    overflow: hidden;
-
-    background: var(--white);
-}
-
-
-/* =========================================================
-   FERMENTATION INNER
-========================================================= */
-
-.product_fermentation_inner {
-    position: relative;
-
-    width: 100%;
-    max-width: 1660px;
-    height: 100%;
-
-    margin: 0 auto;
-}
-
-
-/* =========================================================
-   TEXT COMMON
-========================================================= */
-
-.fermentation_text {
-    position: absolute;
-
-    left: 50%;
-
-    width: 100%;
-
-    margin: 0;
-
-    transform: translateX(-50%);
-
-    text-align: center;
-
-    font-size:
-        clamp(
-            4.5rem,
-            7vw,
-            8.5rem
-        );
-
-    font-weight: 600;
-
-    line-height: 1;
-
-    letter-spacing: -0.065em;
-
-    pointer-events: none;
-}
-
-
-/* =========================================================
-   DUAL FERMENTED
-
-   병보다 뒤
-========================================================= */
-
-.fermentation_text_back {
-    top: 27%;
-
-    color: var(--green);
-
-    z-index: 1;
-}
-
-
-/* =========================================================
-   TRIPLE LACTIC
-
-   ★ 병보다 앞
-========================================================= */
-
-.fermentation_text_front {
-    top: 57%;
-
-    color: #232323;
-
-    z-index: 10;
-
-    pointer-events: none;
-}
-
-
-/* =========================================================
-   THREE.JS BOTTLE AREA
-========================================================= */
-
-.product_fermentation_bottle_area {
-    position: absolute;
-
-    inset: 0;
-
-    width: 100%;
-    height: 100%;
-
-    pointer-events: none;
-}
-
-
-/* =========================================================
-   05. HEALTHY CHOICE
-
-   글자 = 왼쪽
-   병 = 오른쪽
-========================================================= */
-
-.product_health {
-    height: 900px;
-}
-
-
-.product_health .product_detail_inner {
-    grid-template-columns:
-        1fr
-        1fr;
-}
-
-
-/* HTML에서는 copy가 먼저 있으므로 왼쪽 */
-
-.product_health .product_detail_copy {
-    grid-column: 1;
-
-    justify-self: start;
-
-    transform:
-        translateY(10px);
-}
-
-
-.product_health .product_detail_visual {
-    grid-column: 2;
-}
-
-
-/* =========================================================
-   06. INNOVATIVE DESIGN
-
-   병 = 왼쪽
-   글자 = 오른쪽
-========================================================= */
-
-.product_design {
-    position: relative;
-
-    height: 1050px;
-
-    background: var(--white);
-}
-
-
-.product_design .product_detail_inner {
-    grid-template-columns:
-        1fr
-        1fr;
-
-    align-items: center;
-}
-
-
-.product_design .product_detail_visual {
-    grid-column: 1;
-}
-
-
-.product_design .product_detail_copy {
-    grid-column: 2;
-
-    justify-self: start;
-
-    transform:
-        translateY(-40px);
-}
 
 
 /* =========================================================
@@ -1181,1278 +782,6 @@ section {
 
 
 /* =========================================================
-   TABLET
-========================================================= */
-
-@media (
-    max-width: 1024px
-) {
-
-    .product_detail_inner {
-        padding:
-            0
-            6vw;
-
-        column-gap: 5vw;
-    }
-
-
-    .product_freshness,
-    .product_health {
-        height: 800px;
-    }
-
-
-    .product_fermentation {
-        height: 750px;
-    }
-
-
-    .product_design {
-        height: 900px;
-    }
-
-
-    .more_products_list {
-        grid-template-columns:
-            repeat(
-                3,
-                1fr
-            );
-    }
-
-}
-
-
-/* =========================================================
-   MOBILE
-========================================================= */
-
-@media (
-    max-width: 767px
-) {
-
-    .product_hero {
-        height: 600px;
-    }
-
-
-    .product_intro {
-        height: auto;
-        min-height: 420px;
-
-        padding:
-            60px
-            24px;
-    }
-
-
-    .product_intro_title {
-        font-size: 3rem;
-    }
-
-
-    .product_intro_desc {
-        font-size: 15px;
-    }
-
-
-    .product_detail_inner {
-        padding:
-            80px
-            24px;
-
-        grid-template-columns:
-            1fr;
-
-        display: flex;
-        flex-direction: column;
-    }
-
-
-    .product_freshness,
-    .product_health,
-    .product_design {
-        height: auto;
-        min-height: 850px;
-    }
-
-
-    .product_detail_visual {
-        width: 100%;
-        min-height: 420px;
-
-        order: 1;
-    }
-
-
-    .product_detail_copy {
-        width: 100%;
-
-        transform: none !important;
-
-        order: 2;
-    }
-
-
-    .product_fermentation {
-        height: 700px;
-    }
-
-
-    .product_fermentation_title {
-        font-size: 3.6rem;
-    }
-
-
-    .more_products {
-        padding:
-            180px
-            24px
-            80px;
-    }
-
-
-    .more_products_list {
-        grid-template-columns:
-            repeat(
-                2,
-                1fr
-            );
-    }
-
-
-    .hero_deco_01 {
-        width: 100px;
-    }
-
-
-    .hero_deco_02 {
-        width: 105px;
-    }
-
-
-    .hero_deco_03 {
-        width: 45px;
-    }
-
-
-    .hero_deco_04 {
-        width: 48px;
-    }
-
-
-    .hero_deco_05 {
-        width: 100px;
-    }
-
-}
-
-
-/* =========================================================
-   REDUCED MOTION
-========================================================= */
-
-/* =========================================================
-   PRODUCT DETAIL
-   PDF 50 : 50 SPLIT LAYOUT
-========================================================= */
-
-
-/* ---------------------------------------------------------
-   공통
---------------------------------------------------------- */
-
-#product_freshness,
-#product_health,
-#product_design {
-    position: relative;
-
-    width: 100%;
-
-    min-height: 100vh;
-}
-
-
-#product_freshness .product_detail_inner,
-#product_health .product_detail_inner,
-#product_design .product_detail_inner {
-    width: 100%;
-
-    min-height: 100vh;
-
-    display: grid;
-
-    grid-template-columns:
-        minmax(0, 1fr)
-        minmax(0, 1fr);
-
-    align-items: center;
-
-    position: relative;
-}
-
-
-/* Three.js 병이 움직이는 자리 */
-#product_freshness .product_detail_visual,
-#product_health .product_detail_visual,
-#product_design .product_detail_visual {
-    width: 100%;
-
-    height: 100%;
-
-    min-height: 100vh;
-}
-
-
-/* 공통 텍스트 */
-#product_freshness .product_detail_copy,
-#product_health .product_detail_copy,
-#product_design .product_detail_copy {
-    width: 100%;
-
-    max-width:
-        clamp(
-            28rem,
-            35vw,
-            42rem
-        );
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: flex-start;
-
-    text-align: left;
-
-    position: relative;
-
-    z-index: 2;
-}
-
-
-/* ---------------------------------------------------------
-   NUMBER
---------------------------------------------------------- */
-
-#product_freshness .product_detail_number,
-#product_health .product_detail_number,
-#product_design .product_detail_number {
-    display: block;
-
-    margin-bottom:
-        clamp(
-            0.75rem,
-            1vw,
-            1.25rem
-        );
-
-    font-size:
-        clamp(
-            0.75rem,
-            0.8vw,
-            1rem
-        );
-
-    line-height: 1.3;
-}
-
-
-/* ---------------------------------------------------------
-   TITLE
---------------------------------------------------------- */
-
-#product_freshness .product_detail_title,
-#product_health .product_detail_title,
-#product_design .product_detail_title {
-    margin: 0;
-
-    font-size:
-        clamp(
-            2.5rem,
-            4vw,
-            5rem
-        );
-
-    font-weight: 700;
-
-    line-height: 1.05;
-
-    letter-spacing: -0.055em;
-}
-
-
-/* ---------------------------------------------------------
-   DESCRIPTION
---------------------------------------------------------- */
-
-#product_freshness .product_detail_desc,
-#product_health .product_detail_desc,
-#product_design .product_detail_desc {
-    margin-top:
-        clamp(
-            1.25rem,
-            1.8vw,
-            2rem
-        );
-
-    font-size:
-        clamp(
-            0.95rem,
-            1.05vw,
-            1.25rem
-        );
-
-    line-height: 1.55;
-
-    letter-spacing: -0.02em;
-}
-
-
-
-/* =========================================================
-   01. FRESHNESS
-
-   LEFT  : BOTTLE
-   RIGHT : TEXT
-========================================================= */
-
-#product_freshness .product_detail_visual {
-    grid-column: 1;
-    grid-row: 1;
-}
-
-
-#product_freshness .product_detail_copy {
-    grid-column: 2;
-    grid-row: 1;
-
-    justify-self: start;
-
-    padding-left:
-        clamp(
-            2rem,
-            4vw,
-            5rem
-        );
-
-    padding-right:
-        clamp(
-            2rem,
-            5vw,
-            6rem
-        );
-}
-
-
-
-/* =========================================================
-   02. HEALTHY CHOICE
-
-   LEFT  : TEXT
-   RIGHT : BOTTLE
-========================================================= */
-
-#product_health .product_detail_copy {
-    grid-column: 1;
-    grid-row: 1;
-
-    justify-self: end;
-
-    padding-left:
-        clamp(
-            2rem,
-            5vw,
-            6rem
-        );
-
-    padding-right:
-        clamp(
-            2rem,
-            4vw,
-            5rem
-        );
-}
-
-
-#product_health .product_detail_visual {
-    grid-column: 2;
-    grid-row: 1;
-}
-
-
-
-/* =========================================================
-   03. INNOVATIVE DESIGN
-
-   LEFT  : BOTTLE
-   RIGHT : TEXT
-========================================================= */
-
-#product_design .product_detail_visual {
-    grid-column: 1;
-    grid-row: 1;
-}
-
-
-#product_design .product_detail_copy {
-    grid-column: 2;
-    grid-row: 1;
-
-    justify-self: start;
-
-    padding-left:
-        clamp(
-            2rem,
-            4vw,
-            5rem
-        );
-
-    padding-right:
-        clamp(
-            2rem,
-            5vw,
-            6rem
-        );
-}
-
-
-
-/* =========================================================
-   TABLET / MOBILE
-========================================================= */
-
-@media (max-width: 900px) {
-
-    #product_freshness .product_detail_inner,
-    #product_health .product_detail_inner,
-    #product_design .product_detail_inner {
-        grid-template-columns: 1fr;
-
-        min-height: 100vh;
-    }
-
-
-    #product_freshness .product_detail_visual,
-    #product_health .product_detail_visual,
-    #product_design .product_detail_visual {
-        grid-column: 1;
-        grid-row: 1;
-
-        min-height: 50vh;
-    }
-
-
-    #product_freshness .product_detail_copy,
-    #product_health .product_detail_copy,
-    #product_design .product_detail_copy {
-        grid-column: 1;
-        grid-row: 2;
-
-        justify-self: start;
-
-        max-width: none;
-
-        padding:
-            2rem
-            1.5rem
-            5rem;
-    }
-
-
-    #product_freshness .product_detail_title,
-    #product_health .product_detail_title,
-    #product_design .product_detail_title {
-        font-size:
-            clamp(
-                2rem,
-                8vw,
-                3.5rem
-            );
-    }
-
-}
-
-/* =========================================================
-   PRODUCT DETAIL
-   REFERENCE LAYOUT PATCH
-
-   ★ JS / THREE.JS 기능 수정 없음
-   ★ 병 이동 경로 수정 없음
-   ★ 가운데 통과 기능 수정 없음
-
-   레이아웃만 수정
-========================================================= */
-
-
-/* =========================================================
-   01 / 02 / 03 SECTION COMMON
-========================================================= */
-
-#product_freshness,
-#product_health,
-#product_design {
-    position: relative;
-
-    width: 100%;
-    min-height: 100vh;
-
-    box-sizing: border-box;
-}
-
-
-/* =========================================================
-   INNER
-
-   화면을 정확히 LEFT / RIGHT
-   두 영역으로 나눔
-========================================================= */
-
-#product_freshness .product_detail_inner,
-#product_health .product_detail_inner,
-#product_design .product_detail_inner {
-    position: relative;
-
-    width: min(100%, 1600px);
-    min-height: 100vh;
-
-    margin: 0 auto;
-
-    padding:
-        0
-        clamp(
-            60px,
-            6vw,
-            120px
-        );
-
-    box-sizing: border-box;
-
-    display: grid;
-
-    grid-template-columns:
-        minmax(0, 1fr)
-        minmax(0, 1fr);
-
-    align-items: center;
-}
-
-
-/* =========================================================
-   THREE.JS BOTTLE AREA
-
-   병 자체를 움직이는 것은 JS가 담당.
-   여기서는 공간만 확보.
-========================================================= */
-
-#product_freshness .product_detail_visual,
-#product_health .product_detail_visual,
-#product_design .product_detail_visual {
-    position: relative;
-
-    width: 100%;
-    height: 100vh;
-
-    min-height: 100vh;
-
-    pointer-events: none;
-}
-
-
-/* =========================================================
-   TEXT COMMON
-
-   01
-   TITLE
-   DESCRIPTION
-
-   모두 같은 세로선에서 시작
-========================================================= */
-
-#product_freshness .product_detail_copy,
-#product_health .product_detail_copy,
-#product_design .product_detail_copy {
-    position: relative;
-
-    z-index: 10;
-
-    width: 100%;
-    max-width: 620px;
-
-    margin: 0;
-    padding: 0;
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: flex-start;
-
-    justify-content: center;
-
-    text-align: left;
-
-    box-sizing: border-box;
-}
-
-
-/* =========================================================
-   01 / 02 / 03 SMALL TITLE
-========================================================= */
-
-#product_freshness .product_detail_number,
-#product_health .product_detail_number,
-#product_design .product_detail_number {
-    display: block;
-
-    width: 100%;
-
-    margin:
-        0
-        0
-        16px;
-
-    padding: 0;
-
-    color:
-        #16865f;
-
-    font-size:
-        clamp(
-            11px,
-            0.72vw,
-            14px
-        );
-
-    font-weight: 500;
-
-    line-height: 1;
-
-    letter-spacing: -0.02em;
-
-    text-align: left;
-}
-
-
-/* =========================================================
-   MAIN TITLE
-
-   HTML에 넣어둔 <br>에서만 줄바꿈
-
-   01
-   "Double Fermented,
-   Modern Fresh"
-
-   02
-   Healthier Benefits
-   Dual Fermented
-
-   03
-   Preserving Quality
-   Through New Design
-========================================================= */
-
-#product_freshness .product_detail_title,
-#product_health .product_detail_title,
-#product_design .product_detail_title {
-    width: 100%;
-
-    margin: 0;
-    padding: 0;
-
-    color:
-        #16865f;
-
-    font-size:
-        clamp(
-            42px,
-            3.35vw,
-            64px
-        );
-
-    font-weight: 700;
-
-    line-height: 1.07;
-
-    letter-spacing: -0.055em;
-
-    text-align: left;
-
-    /*
-        브라우저가 제목을 제멋대로
-        3~4줄로 나누는 것 방지
-    */
-    white-space: nowrap;
-}
-
-
-/* =========================================================
-   DESCRIPTION
-========================================================= */
-
-#product_freshness .product_detail_desc,
-#product_health .product_detail_desc,
-#product_design .product_detail_desc {
-    width: 100%;
-
-    margin:
-        24px
-        0
-        0;
-
-    padding: 0;
-
-    color:
-        #292929;
-
-    font-size:
-        clamp(
-            13px,
-            0.9vw,
-            17px
-        );
-
-    font-weight: 400;
-
-    line-height: 1.5;
-
-    letter-spacing: -0.025em;
-
-    text-align: left;
-}
-
-
-/* =========================================================
-   01. FRESHNESS
-
-   LEFT  : 병 영역
-   RIGHT : 글 영역
-========================================================= */
-
-#product_freshness .product_detail_visual {
-    grid-column: 1;
-    grid-row: 1;
-}
-
-
-#product_freshness .product_detail_copy {
-    grid-column: 2;
-    grid-row: 1;
-
-    justify-self: start;
-
-    /*
-        레퍼런스에서 글자가
-        화면 중앙선 바로 오른쪽에서 시작
-    */
-
-    padding-left:
-        clamp(
-            30px,
-            3vw,
-            58px
-        );
-
-    /*
-        01부터 설명 마지막까지
-        병 중심과 비슷한 높이에 배치
-    */
-
-    transform:
-        translateY(
-            -18px
-        );
-}
-
-
-/* =========================================================
-   02. HEALTHY CHOICE
-
-   LEFT  : 글 영역
-   RIGHT : 병 영역
-========================================================= */
-
-#product_health .product_detail_copy {
-    grid-column: 1;
-    grid-row: 1;
-
-    justify-self: start;
-
-    padding-right:
-        clamp(
-            30px,
-            3vw,
-            58px
-        );
-
-    /*
-        레퍼런스 Healthy 영역은
-        텍스트가 살짝 아래쪽에 있음
-    */
-
-    transform:
-        translateY(
-            20px
-        );
-}
-
-
-#product_health .product_detail_visual {
-    grid-column: 2;
-    grid-row: 1;
-}
-
-
-/* =========================================================
-   03. INNOVATIVE DESIGN
-
-   LEFT  : 병 영역
-   RIGHT : 글 + 도자기 영역
-========================================================= */
-
-#product_design .product_detail_visual {
-    grid-column: 1;
-    grid-row: 1;
-}
-
-
-#product_design .product_detail_copy {
-    grid-column: 2;
-    grid-row: 1;
-
-    justify-self: start;
-
-    padding-left:
-        clamp(
-            30px,
-            3vw,
-            58px
-        );
-
-    /*
-        도자기 이미지 영역까지 생각해서
-        전체 블록을 살짝 위로
-    */
-
-    transform:
-        translateY(
-            -35px
-        );
-}
-
-
-/* =========================================================
-   03. INNOVATIVE
-
-   도자기 이미지 넣을 공간
-
-   HTML을 아직 추가하지 않았다면
-   이 부분은 아무 영향 없음.
-========================================================= */
-
-.product_design_pottery {
-    position: relative;
-
-    width: 100%;
-    max-width: 600px;
-
-    min-height: 125px;
-
-    margin-top:
-        clamp(
-            30px,
-            3vw,
-            48px
-        );
-
-    display: flex;
-
-    align-items: flex-end;
-
-    justify-content: flex-start;
-}
-
-
-.product_design_pottery img {
-    display: block;
-
-    width: 100%;
-
-    max-width: 570px;
-
-    height: auto;
-
-    object-fit: contain;
-}
-
-
-/* =========================================================
-   FERMENTATION
-
-   ★ 가운데 통과 영역은 레이아웃 수정하지 않음
-
-   기존 HTML/JS/CSS 기능 보존
-========================================================= */
-
-#product_fermentation {
-    position: relative;
-}
-
-
-/* =========================================================
-   LARGE DESKTOP
-
-   1600px 이상
-========================================================= */
-
-@media (min-width: 1600px) {
-
-    #product_freshness .product_detail_inner,
-    #product_health .product_detail_inner,
-    #product_design .product_detail_inner {
-        width: min(
-            100%,
-            1720px
-        );
-    }
-
-
-    #product_freshness .product_detail_copy,
-    #product_health .product_detail_copy,
-    #product_design .product_detail_copy {
-        max-width: 660px;
-    }
-
-}
-
-
-/* =========================================================
-   1200 ~ 1500
-========================================================= */
-
-@media (max-width: 1500px) {
-
-    #product_freshness .product_detail_title,
-    #product_health .product_detail_title,
-    #product_design .product_detail_title {
-        font-size:
-            clamp(
-                38px,
-                3.4vw,
-                56px
-            );
-    }
-
-
-    #product_freshness .product_detail_copy,
-    #product_health .product_detail_copy,
-    #product_design .product_detail_copy {
-        max-width: 560px;
-    }
-
-}
-
-
-/* =========================================================
-   TABLET
-========================================================= */
-
-@media (max-width: 1100px) {
-
-    #product_freshness .product_detail_inner,
-    #product_health .product_detail_inner,
-    #product_design .product_detail_inner {
-        padding:
-            0
-            40px;
-    }
-
-
-    #product_freshness .product_detail_title,
-    #product_health .product_detail_title,
-    #product_design .product_detail_title {
-        font-size:
-            clamp(
-                34px,
-                4vw,
-                48px
-            );
-    }
-
-
-    #product_freshness .product_detail_desc,
-    #product_health .product_detail_desc,
-    #product_design .product_detail_desc {
-        font-size: 14px;
-    }
-
-}
-
-
-/* =========================================================
-   MOBILE
-========================================================= */
-
-@media (max-width: 900px) {
-
-    #product_freshness .product_detail_inner,
-    #product_health .product_detail_inner,
-    #product_design .product_detail_inner {
-        grid-template-columns:
-            1fr;
-
-        padding:
-            40px
-            24px;
-    }
-
-
-    #product_freshness .product_detail_visual,
-    #product_health .product_detail_visual,
-    #product_design .product_detail_visual {
-        grid-column: 1;
-
-        width: 100%;
-
-        height: 52vh;
-
-        min-height: 52vh;
-    }
-
-
-    #product_freshness .product_detail_copy,
-    #product_health .product_detail_copy,
-    #product_design .product_detail_copy {
-        grid-column: 1;
-
-        width: 100%;
-
-        max-width: none;
-
-        padding:
-            30px
-            0
-            60px;
-
-        transform: none;
-    }
-
-
-    #product_freshness .product_detail_title,
-    #product_health .product_detail_title,
-    #product_design .product_detail_title {
-        font-size:
-            clamp(
-                32px,
-                8vw,
-                46px
-            );
-
-        white-space: normal;
-    }
-
-
-    #product_freshness .product_detail_desc,
-    #product_health .product_detail_desc,
-    #product_design .product_detail_desc {
-        font-size: 14px;
-    }
-
-
-    .product_design_pottery {
-        min-height: 90px;
-
-        margin-top: 28px;
-    }
-
-}
-
-/* =========================================================
-   02 / 03 FIGMA POSITION PATCH
-   기존 기능은 건드리지 않고 위치/크기만 보정
-========================================================= */
-
-
-/* =========================================================
-   공통 폰트 크기
-========================================================= */
-
-#product_freshness .product_detail_title,
-#product_health .product_detail_title,
-#product_design .product_detail_title {
-    font-size:
-        clamp(
-            30px,
-            2.25vw,
-            44px
-        );
-
-    line-height: 1.08;
-}
-
-
-#product_freshness .product_detail_number,
-#product_health .product_detail_number,
-#product_design .product_detail_number {
-    font-size:
-        clamp(
-            10px,
-            0.62vw,
-            12px
-        );
-
-    margin-bottom: 12px;
-}
-
-
-#product_freshness .product_detail_desc,
-#product_health .product_detail_desc,
-#product_design .product_detail_desc {
-    font-size:
-        clamp(
-            11px,
-            0.72vw,
-            14px
-        );
-
-    line-height: 1.45;
-
-    margin-top: 18px;
-}
-
-
-
-/* =========================================================
-   02. HEALTHY CHOICE
-
-   피그마처럼
-   왼쪽 텍스트를 조금 안쪽 + 위쪽으로
-========================================================= */
-
-#product_health .product_detail_copy {
-    grid-column: 1;
-    grid-row: 1;
-
-    justify-self: start;
-
-    width: 100%;
-    max-width: 520px;
-
-    padding-left:
-        clamp(
-            55px,
-            6vw,
-            105px
-        );
-
-    padding-right: 0;
-
-    transform:
-        translateY(-2vh);
-}
-
-
-
-/* =========================================================
-   03. INNOVATIVE DESIGN
-
-   오른쪽 텍스트를 피그마 위치에 맞춤
-========================================================= */
-
-#product_design .product_detail_copy {
-    grid-column: 2;
-    grid-row: 1;
-
-    justify-self: start;
-
-    width: 100%;
-    max-width: 560px;
-
-    padding-left:
-        clamp(
-            25px,
-            3vw,
-            48px
-        );
-
-    transform:
-        translateY(-3vh);
-}
-
-
-
-/* =========================================================
-   03 VECTOR
-========================================================= */
-
-.product_design_vectors {
-    display: flex;
-
-    align-items: flex-end;
-
-    justify-content: flex-start;
-
-    width: 100%;
-    max-width: 520px;
-
-    gap:
-        clamp(
-            8px,
-            0.9vw,
-            14px
-        );
-
-    margin-top:
-        clamp(
-            24px,
-            2.4vw,
-            38px
-        );
-}
-
-
-.product_design_vectors img {
-    display: block;
-
-    width: auto;
-
-    height:
-        clamp(
-            45px,
-            4vw,
-            68px
-        );
-
-    object-fit: contain;
-
-    transform-origin:
-        bottom center;
-}
-
-
-/* =========================================================
-   MORE PRODUCTS VIDEO
-========================================================= */
-
-.more_product_image {
-    width: 100%;
-    height: 100%;
-
-    overflow: hidden;
-}
-
-
-.more_product_image video {
-    display: block;
-
-    width: 100%;
-    height: 100%;
-
-    object-fit: cover;
-}
-
-/* =========================================================
    MORE PRODUCT LIST - 태블릿·모바일은 한 줄 슬라이드
    (1024px 이하) 3열 / 2열로 여러 줄이 되던 것을 한 줄로 두고 옆으로 넘겨 봄.
    손가락은 브라우저 기본 가로 스크롤 + 스냅이 맡고, 마우스로 끄는 건 이 페이지 아래쪽의 인라인 스크립트(draft.html)가 받아 줌
@@ -2507,4 +836,30 @@ section {
         /* 한 장이 화면의 약 62% 를 차지하고 다음 장이 오른쪽에 걸쳐 보여 "더 있다"는 걸 알 수 있게 함 */
         flex: 0 0 min(62vw, 14rem);
     }
+}
+
+/* =========================================================
+   더 보기 목록 위아래 여백 (병 착지 공간은 이제 필요 없음)
+========================================================= */
+
+.more_products {
+    background: #faf8f7;
+    padding-top: 5rem;
+    padding-bottom: 7.5rem;
+}
+
+@media (max-width: 1024px) {
+    .more_products { padding-top: 3rem; }
+}
+
+@media (max-width: 767px) {
+    .more_products { padding-top: 2.5rem; }
+}
+
+
+
+
+.pd_banner_stage.is_dragging,
+.pd_banner_stage.is_dragging .pd_banner_item {
+    cursor: grabbing;
 }
