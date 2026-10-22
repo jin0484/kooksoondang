@@ -30,7 +30,6 @@
     const PRODUCTS = [
         {
             slug: 'draft',
-            tone: '#2C8B62', // 상품 목록 카드의 배경색
             name: 'Original Makgeolli',
             img: IMG + 'draft_bottle.png',
             crop: [-67.55, -3.59, 227.7, 105.94],
@@ -39,7 +38,6 @@
         },
         {
             slug: 'banana',
-            tone: '#F2D757', // 상품 목록 카드의 배경색
             name: 'Banana Makgeolli',
             img: IMG + 'banana.png',
             crop: [-62.94, -1.72, 223.46, 103.45],
@@ -48,7 +46,6 @@
         },
         {
             slug: 'peach',
-            tone: '#F5B4C1', // 상품 목록 카드의 배경색
             name: 'Peach Makgeolli',
             img: IMG + 'peach.png',
             crop: [-62.94, -1.79, 223.46, 103.93],
@@ -57,7 +54,6 @@
         },
         {
             slug: 'whitegrape',
-            tone: '#B3C643', // 상품 목록 카드의 배경색
             name: 'White Grape Makgeolli',
             img: IMG + 'white_grape.png',
             crop: [-61.76, -1.79, 220.59, 103.93],
@@ -66,7 +62,6 @@
         },
         {
             slug: 'strawberry',
-            tone: '#F28E8E', // 상품 목록 카드의 배경색
             name: 'Strawberry Makgeolli',
             img: IMG + 'strawberry.png',
             crop: [-62.64, -1.72, 223.05, 103.45],
@@ -75,7 +70,6 @@
         },
         {
             slug: 'rice',
-            tone: '#B0916E', // 상품 목록 카드의 배경색
             name: 'Rice Makgeolli',
             img: IMG + 'rice.png',
             crop: [-64.62, -2.63, 223.46, 105.2],
@@ -84,7 +78,6 @@
         },
         {
             slug: 'prebiotics',
-            tone: '#272625', // warm black (bekseju_darker_warm). 카드 색(#FBF7F2)은 너무 밝아 배너에는 쓰지 않음
             name: '100 Billion Prebiotics',
             img: IMG + 'prebiotics.png',
             crop: [-63.38, -1.84, 223.05, 103.69],
@@ -93,7 +86,6 @@
         },
         {
             slug: 'chestnut',
-            tone: '#845C42', // 상품 목록 카드의 배경색
             name: 'Chestnut Makgeolli',
             img: IMG + 'chestnut.png',
             crop: [-61.58, -1.72, 220.59, 103.45],
@@ -128,9 +120,12 @@
         }
         return 'rgb(35,35,35)';
     };
+    // 제품 색은 product_tones.js (window.PD_TONES) 한 곳에서 관리
+    const toneOf = (p) => (window.PD_TONES && window.PD_TONES[p.slug]) || '#349169';
+
     const tint = (el, p) => {
-        el.style.setProperty('--tone', p.tone);
-        el.style.setProperty('--ink', inkFor(p.tone));
+        el.style.setProperty('--tone', toneOf(p));
+        el.style.setProperty('--ink', inkFor(toneOf(p)));
     };
 
     const setCrop = (img, crop) => {
@@ -184,6 +179,28 @@
         return slide;
     };
 
+    // 제품 이름이 글 영역(복사 칸)보다 길면 글자 크기만 줄여 한 줄로 맞춤.
+    // 태블릿·모바일은 줄바꿈을 허용하므로 건드리지 않음
+    const fitTitle = (slide) => {
+        const title = slide.querySelector('.pd_product_title');
+        const copy = slide.querySelector('.pd_product_copy');
+        if (!title || !copy) return;
+
+        title.style.removeProperty('--fit');
+        if (getComputedStyle(title).whiteSpace !== 'nowrap') return;
+
+        const need = title.scrollWidth;
+        const have = copy.clientWidth;
+        if (need > have && need > 0) {
+            title.style.setProperty('--fit', (80 * (have / need) * 0.98).toFixed(2));
+        }
+    };
+
+    const fitAll = () => product.querySelectorAll('[data-pd-slide]').forEach(fitTitle);
+    window.addEventListener('resize', fitAll);
+    // 웹 폰트가 늦게 도착하면 글자 폭이 달라지므로 폰트가 준비된 뒤 한 번 더 맞춤
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitAll);
+
     const paintSides = () => {
         [['prev', -1], ['next', 1]].forEach(([key, dir]) => {
             const p = PRODUCTS[wrap(index + dir)];
@@ -195,7 +212,7 @@
 
     // 배너 배경색을 제품 색으로 (CSS 가 색이 서서히 바뀌게 함)
     const paintTone = (i) => {
-        if (banner) banner.style.setProperty('--pd-tone', PRODUCTS[i].tone);
+        if (banner) banner.style.setProperty('--pd-tone', toneOf(PRODUCTS[i]));
     };
 
     const reduce = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -213,6 +230,7 @@
         const nextIndex = wrap(index + dir);
         const incoming = buildSlide(PRODUCTS[nextIndex]);
         product.appendChild(incoming);
+        fitTitle(incoming);
 
         let done = false;
         const finish = () => {
@@ -268,7 +286,11 @@
         document.title = 'KOOKSOONDANG — ' + PRODUCTS[index].name;
     }
 
+    fitAll();
     paintSides();
     paintTone(index);
     tint(product.querySelector('[data-pd-slide]'), PRODUCTS[index]);
+
+    // 선택한 제품으로 모두 준비됐으니 보이게 함
+    document.documentElement.classList.remove('pd_pending');
 })();
