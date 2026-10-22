@@ -89,7 +89,9 @@ section {
     /* 처음 화면은 배너만 꽉 채워서 아래 병뚜껑이 보이지 않게 함 (판은 아래 기준이라 위쪽은 초록 바탕) */
     height: max(var(--banner-h), 100vh);
     overflow: hidden;
-    background: #349169;
+    /* 배경색은 제품마다 다름: 상품 목록 카드 색(product_switch.js 가 --pd-tone 을 넣음) */
+    background: var(--pd-tone, #349169);
+    transition: background-color 0.7s ease;
 }
 
 /* 시안(1920 x 880) 비율을 유지하는 판. 아래 가운데를 기준으로 두어 좁아지면 위쪽과 양옆만 잘림 */
@@ -234,15 +236,23 @@ section {
 .pd_arrow_btn:focus-visible { outline: 2px solid #349169; outline-offset: -4px; }
 
 
-/* 병 옆 장식: 슬라이드 안에 있어서 슬라이드와 함께 돌아 넘어감 */
+/* 병 옆 장식: 슬라이드 안에 있어서 슬라이드와 함께 돌아 넘어감.
+   그림은 모양(mask)만 쓰고 색은 제품 색(--tone)으로 칠함 */
 .pd_slide_deco {
     position: absolute;
     left: calc(var(--x) * var(--u));
     top: calc(var(--y) * var(--u));
     width: calc(var(--w) * var(--u));
     height: calc(var(--h) * var(--u));
-    max-width: none;
+    background: var(--tone, #349169);
+    -webkit-mask: var(--mask) center / 100% 100% no-repeat;
+    mask: var(--mask) center / 100% 100% no-repeat;
     pointer-events: none;
+}
+
+/* 캔은 제품과 상관없이 원래 색(베이지) 그대로 */
+.pd_slide_deco_can {
+    background: #EADFD8;
 }
 
 
@@ -292,6 +302,16 @@ section {
     max-width: none;
 }
 
+/* 잘려 있지 않은 병 그림(시안 이미지가 아직 없는 제품): 상자 안에 비율대로 넣음 */
+.pd_product_bottle img.is_plain,
+.pd_side img.is_plain {
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
 .pd_product_copy {
     display: flex;
     flex-direction: column;
@@ -308,7 +328,7 @@ section {
 }
 
 .pd_product_brand {
-    color: #349169;
+    color: var(--ink, #349169);
     font-family: var(--font-ROH_HOE-CHAN, 'ROH HOE-CHAN', serif);
     font-size: max(1.125rem, calc(28 * var(--u)));
     line-height: 1;
@@ -327,7 +347,7 @@ section {
     display: flex;
     flex-direction: column;
     gap: calc(20 * var(--u));
-    color: #349169;
+    color: var(--ink, #349169);
     font-family: Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
     line-height: 1.5;
 }
