@@ -152,18 +152,18 @@
             <img class="pd_wave" src="./product_detail_asset/new/wave.svg" alt="" aria-hidden="true">
 
             <!-- 양옆 슬라이드 힌트 -->
-            <img class="pd_abs pd_side pd_side_left" style="--x:-50.5;--y:246;--w:143;--h:448" src="./product_detail_asset/new/side_left.png" alt="" aria-hidden="true">
-            <img class="pd_abs pd_side pd_side_right" style="--x:1828.5;--y:247;--w:138;--h:447" src="./product_detail_asset/new/side_right.png" alt="" aria-hidden="true">
-            <img class="pd_abs pd_arrow" style="--x:200;--y:443.5;--w:28;--h:53" src="./product_detail_asset/new/arrow_l.svg" alt="" aria-hidden="true">
-            <img class="pd_abs pd_arrow pd_arrow_right" style="--x:1693;--y:443.5;--w:28;--h:53" src="./product_detail_asset/new/arrow_r.svg" alt="" aria-hidden="true">
-
-            <!-- 병 옆 장식 -->
-            <img class="pd_abs pd_deco" style="--x:1437.5;--y:527;--w:90;--h:300" src="./product_detail_asset/new/pet.svg" alt="" aria-hidden="true">
-            <img class="pd_abs pd_deco" style="--x:1332.5;--y:691;--w:71;--h:136" src="./product_detail_asset/new/union.svg" alt="" aria-hidden="true">
-
+            <div class="pd_abs pd_side pd_side_left" style="--x:-50.5;--y:246;--w:143;--h:448" aria-hidden="true" data-pd-side="prev"><img src="./product_detail_asset/new/chestnut.png" alt=""></div>
+            <div class="pd_abs pd_side pd_side_right" style="--x:1828.5;--y:247;--w:138;--h:447" aria-hidden="true" data-pd-side="next"><img src="./product_detail_asset/new/banana.png" alt=""></div>
+            <button type="button" class="pd_abs pd_arrow_btn" style="--x:174;--y:410;--w:80;--h:120" aria-label="Previous product" data-pd-prev><img src="./product_detail_asset/new/arrow_l.svg" alt="" width="28" height="53"></button>
+            <button type="button" class="pd_abs pd_arrow_btn pd_arrow_btn_right" style="--x:1667;--y:410;--w:80;--h:120" aria-label="Next product" data-pd-next><img src="./product_detail_asset/new/arrow_r.svg" alt="" width="28" height="53"></button>
 
             <!-- 제품 소개 -->
-            <div class="pd_product">
+            <!-- 제품 소개: 회전 테이블처럼 슬라이드(.pd_slide) 한 장 전체가 옆으로 돌아 넘어감 (product_switch.js) -->
+            <div class="pd_product" data-pd-product>
+                <div class="pd_slide" data-pd-slide>
+                <!-- 병 옆 장식(슬라이드와 함께 돌아 넘어감). 좌표는 슬라이드 왼쪽 위 기준 -->
+                <img class="pd_slide_deco" style="--x:1045;--y:500;--w:90;--h:300" src="./product_detail_asset/new/pet.svg" alt="" aria-hidden="true">
+                <img class="pd_slide_deco" style="--x:940;--y:664;--w:71;--h:136" src="./product_detail_asset/new/union.svg" alt="" aria-hidden="true">
 
                 <div class="pd_product_bottle">
                     <img src="./product_detail_asset/new/draft_bottle.png" alt="Original Draft Makgeolli bottle">
@@ -186,6 +186,7 @@
                         </p>
                     </div>
 
+                </div>
                 </div>
 
             </div>
@@ -387,6 +388,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js" defer></script>
     <script src="./banner_physics.js" defer></script>
     <script src="./features_stack.js" defer></script>
+    <script src="./product_switch.js" defer></script>
 
     <!-- 태블릿·모바일에서 한 줄 슬라이드가 된 more products 목록을 마우스로도 끌어서 넘길 수 있게 함.
          손가락(터치)은 브라우저 기본 가로 스크롤이 처리하므로 마우스일 때만 가로챔.

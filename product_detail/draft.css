@@ -79,12 +79,15 @@ section {
 ========================================================= */
 
 .pd_banner {
-    /* 쌓임 맥락을 만들어 노이즈가 아래 흰 곡선(.pd_wave) 위로 올라오지 않게 함 */
-    position: relative;
+    /* 배너는 화면에 고정되어 있고, 아래 내용(흰 아치부터)이 스크롤되면서 그 위를 덮고 올라옴.
+       z-index 로 쌓임 맥락을 만들어 노이즈가 흰 곡선(.pd_wave) 위로 올라오지 않게 함 */
+    position: sticky;
+    top: 0;
     z-index: 0;
     --banner-h: clamp(260px, 45.83vw, 880px);
 
-    height: var(--banner-h);
+    /* 처음 화면은 배너만 꽉 채워서 아래 병뚜껑이 보이지 않게 함 (판은 아래 기준이라 위쪽은 초록 바탕) */
+    height: max(var(--banner-h), 100vh);
     overflow: hidden;
     background: #349169;
 }
@@ -150,8 +153,11 @@ section {
 .pd_stage {
     --u: calc(min(100vw, 1920px) / 1920);
 
+    /* 흰 아치와 병 사이 여백을 시안(27)보다 넓힌 만큼(시안 단위). 아래 모든 y 좌표에 더해짐 */
+    --gap: 100;
+
     position: relative;
-    height: calc(1180 * var(--u));
+    height: calc((1180 + var(--gap)) * var(--u));
     background: #faf8f7;
     color: #232323;
     font-family: var(--font-Albert_Sans, 'Albert Sans', sans-serif);
@@ -173,7 +179,7 @@ section {
 .pd_abs {
     position: absolute;
     left: calc(var(--x) * var(--u));
-    top: calc(var(--y) * var(--u));
+    top: calc((var(--y) + var(--gap)) * var(--u));
     width: calc(var(--w) * var(--u));
     height: calc(var(--h) * var(--u));
     max-width: none;
@@ -182,24 +188,61 @@ section {
 
 .pd_side {
     z-index: 1;
-    object-fit: cover;
+    overflow: hidden;
     opacity: 0.4;
+    filter: grayscale(1) brightness(1.25);
+    transition: opacity 0.35s ease;
 }
 
-.pd_side_right {
-    object-fit: fill;
+/* 병 그림은 큰 그림의 일부만 잘라 쓰므로 안쪽 그림의 위치와 크기를 제품마다 JS 가 넣음 */
+.pd_side img {
+    position: absolute;
+    max-width: none;
 }
 
-.pd_arrow {
-    z-index: 2;
+.pd_side.is_out {
+    opacity: 0;
 }
 
-.pd_arrow_right {
+.pd_arrow_btn {
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 0.5rem;
+    background: transparent;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.pd_arrow_btn img {
+    width: calc(28 * var(--u));
+    min-width: 14px;
+    height: auto;
+    pointer-events: none;
+}
+
+.pd_arrow_btn_right img {
     transform: scaleX(-1);
 }
 
-.pd_deco {
-    z-index: 2;
+.pd_arrow_btn:hover { transform: translateX(calc(-4 * var(--u))); }
+.pd_arrow_btn_right:hover { transform: translateX(calc(4 * var(--u))); }
+.pd_arrow_btn:focus-visible { outline: 2px solid #349169; outline-offset: -4px; }
+
+
+/* 병 옆 장식: 슬라이드 안에 있어서 슬라이드와 함께 돌아 넘어감 */
+.pd_slide_deco {
+    position: absolute;
+    left: calc(var(--x) * var(--u));
+    top: calc(var(--y) * var(--u));
+    width: calc(var(--w) * var(--u));
+    height: calc(var(--h) * var(--u));
+    max-width: none;
+    pointer-events: none;
 }
 
 
@@ -209,13 +252,26 @@ section {
 
 .pd_product {
     position: absolute;
-    top: calc(27 * var(--u));
+    top: calc((27 + var(--gap)) * var(--u));
     left: calc(392.5 * var(--u));
     z-index: 3;
+    display: grid;
+    width: calc(1100 * var(--u));
+    /* 회전 테이블처럼 보이도록 원근감을 줌 */
+    perspective: calc(2400 * var(--u));
+}
+
+/* 슬라이드 한 장 = 병 + 글 전체(주황 네모). 넘길 때 이 한 장이 통째로 돌아서 넘어감 */
+.pd_slide {
+    position: relative;
+    grid-area: 1 / 1;
     display: flex;
     align-items: center;
     gap: calc(100 * var(--u));
-    width: calc(1100 * var(--u));
+    /* 앞쪽에서 먼 곳(뒤)에 놓인 축을 중심으로 돌게 해서 호를 그리며 지나감 */
+    transform-origin: 50% 50% calc(-1500 * var(--u));
+    backface-visibility: hidden;
+    will-change: transform, opacity;
 }
 
 /* 시안의 병 그림은 큰 그림의 일부만 잘라 쓰는 방식이라 그대로 잘라 놓음 */
@@ -265,7 +321,6 @@ section {
     line-height: 1.1;
     letter-spacing: -0.06em;
     text-transform: uppercase;
-    white-space: nowrap;
 }
 
 .pd_product_body {
@@ -281,6 +336,10 @@ section {
     max-width: calc(752 * var(--u));
     font-size: max(0.875rem, calc(20 * var(--u)));
     letter-spacing: -0.02em;
+}
+
+.pd_product_meta[hidden] {
+    display: none;
 }
 
 .pd_product_meta {
@@ -307,8 +366,8 @@ section {
     --lift: 0vh;
 
     position: relative;
-    /* 고정되어 있는 동안 스크롤할 길이: 화면 높이의 3배 + 고정 화면 1개 */
-    height: 400vh;
+    /* 고정되어 있는 동안 스크롤할 길이: 화면 높이의 2배 + 고정 화면 1개 */
+    height: 300vh;
     background: #faf8f7;
     color: #232323;
     font-family: var(--font-Albert_Sans, 'Albert Sans', sans-serif);
@@ -469,14 +528,29 @@ section {
         --bowl-u: calc(min(100vw - 3rem, 705px) / 705);
 
         height: auto;
-        padding: 3rem 1.5rem 3rem;
+        padding: 5rem 1.5rem 3rem;
     }
 
     .pd_side,
-    .pd_arrow,
-    .pd_deco {
+    .pd_slide_deco {
         display: none;
     }
+
+    /* 병 양옆(병 세로 가운데)에 화살표를 둠 */
+    .pd_arrow_btn {
+        --y: 0;
+        top: calc(5rem + clamp(7.5rem, 32vw, 12rem) * 1.613 - 2.5rem);
+        width: 3rem;
+        height: 5rem;
+        left: 0.25rem;
+    }
+
+    .pd_arrow_btn_right {
+        left: auto;
+        right: 0.25rem;
+    }
+
+    .pd_arrow_btn img { width: 1rem; }
 
     .pd_product {
         position: relative;
@@ -485,11 +559,15 @@ section {
     }
 
     .pd_product {
+        width: 100%;
+        text-align: center;
+    }
+
+    .pd_slide {
         flex-direction: column;
         align-items: center;
         gap: 2rem;
-        width: 100%;
-        text-align: center;
+        transform-origin: 50% 50% -60vw;
     }
 
     .pd_product_bottle {
