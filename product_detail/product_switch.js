@@ -5,8 +5,7 @@
    다음 제품이 반대편에서 같은 방식으로 돌아 들어옴.
    양옆의 흐린 병은 바로 앞·뒤 제품. 순서는 둥글게 이어짐.
 
-   ※ Draft 말고는 설명 글과 ABV·용량을 모르는 상태라 임시 문구로 채워 둠
-      (meta 가 null 이면 그 줄을 숨김. 지금은 모든 제품에 임시값을 넣어 켜 둠). 실제 문구가 정해지면 PRODUCTS 만 고치면 됨.
+   ※ 도수(ABV)와 용량은 확정값. 설명 글은 Draft 말고는 임시 문구라 실제 소개 글이 정해지면 PRODUCTS 의 desc 를 교체
    ※ crop 은 Figma 시안에서 큰 그림(1200x1800)의 일부만 잘라 쓴 값(left, top, width, height: %)
 ========================================================= */
 
@@ -34,7 +33,7 @@
             img: IMG + 'draft_bottle.png',
             crop: [-67.55, -3.59, 227.7, 105.94],
             desc: 'Kooksoondang Original Draft Makgeolli pairs the soft sweetness of rice with gentle fruity notes reminiscent of banana and melon. Live yeast creates a light fizz that tickles the tongue, while a mild tang keeps it easy to enjoy, even for first-timers. It goes down creamy yet light, finishing clean with a subtle, nutty hint of rice.',
-            meta: ['ABV: 6%', 'Volume: 500ml'],
+            meta: ['ABV: 6%', 'Volume: 750ml'],
         },
         {
             slug: 'banana',
@@ -42,7 +41,7 @@
             img: IMG + 'banana.png',
             crop: [-62.94, -1.72, 223.46, 103.45],
             desc: 'Kooksoondang Banana Makgeolli blends the soft sweetness of rice with the ripe, mellow aroma of banana. Its texture is creamy and smooth, with a gentle fizz that keeps every sip light and easy to enjoy. The fruit note stays soft rather than sharp, fading into a clean, rounded finish that makes it a friendly first choice for anyone new to makgeolli.',
-            meta: ['ABV: 6%', 'Volume: 500ml'], // 임시값(Draft 와 같음). 제품별 실제 값이 정해지면 교체
+            meta: ['ABV: 4%', 'Volume: 350ml / 750ml'],
         },
         {
             slug: 'peach',
@@ -50,7 +49,7 @@
             img: IMG + 'peach.png',
             crop: [-62.94, -1.79, 223.46, 103.93],
             desc: 'Kooksoondang Peach Makgeolli pairs the gentle sweetness of rice with the juicy fragrance of ripe peach. A light fizz lifts the aroma on the first sip, while a soft, creamy body keeps the flavor smooth and rounded. It finishes clean and refreshing, with a lingering hint of fruit that makes it easy to enjoy chilled at any time of day.',
-            meta: ['ABV: 6%', 'Volume: 500ml'], // 임시값(Draft 와 같음). 제품별 실제 값이 정해지면 교체
+            meta: ['ABV: 3%', 'Volume: 350ml / 750ml'],
         },
         {
             slug: 'whitegrape',
@@ -58,7 +57,7 @@
             img: IMG + 'white_grape.png',
             crop: [-61.76, -1.79, 220.59, 103.93],
             desc: 'Kooksoondang White Grape Makgeolli brings the crisp, refreshing character of fresh grape to the soft sweetness of rice. A light fizz adds a lively sparkle, and the bright fruit note keeps every sip clean and easy to drink. It finishes crisp with a subtle sweetness, making it a refreshing companion for light dishes and relaxed gatherings.',
-            meta: ['ABV: 6%', 'Volume: 500ml'], // 임시값(Draft 와 같음). 제품별 실제 값이 정해지면 교체
+            meta: ['ABV: 3%', 'Volume: 350ml / 750ml'],
         },
         {
             slug: 'strawberry',
@@ -66,7 +65,7 @@
             img: IMG + 'strawberry.png',
             crop: [-62.64, -1.72, 223.05, 103.45],
             desc: 'Kooksoondang Strawberry Makgeolli combines the sweet-tangy taste of ripe strawberry with the creamy softness of rice. A gentle fizz brightens the first sip, while the fruit keeps its fresh, playful tang all the way through. It goes down smooth and light, finishing with a sweet, berry-like note that makes it a joyful choice for any occasion.',
-            meta: ['ABV: 6%', 'Volume: 500ml'], // 임시값(Draft 와 같음). 제품별 실제 값이 정해지면 교체
+            meta: ['ABV: 3%', 'Volume: 350ml / 750ml'],
         },
         {
             slug: 'rice',
@@ -74,7 +73,7 @@
             img: IMG + 'rice.png',
             crop: [-64.62, -2.63, 223.46, 105.2],
             desc: 'Kooksoondang Rice Makgeolli is a smooth, authentic makgeolli made with carefully selected rice and nuruk. Its flavor is simple and honest, with the natural sweetness of rice and a soft, mild tang that never feels heavy. Vegan and gently sparkling, it finishes clean with a subtle, nutty hint of rice that lingers pleasantly on the palate.',
-            meta: ['ABV: 6%', 'Volume: 500ml'], // 임시값(Draft 와 같음). 제품별 실제 값이 정해지면 교체
+            meta: ['ABV: 6%', 'Volume: 240ml / 350ml / 750ml'],
         },
         {
             slug: 'prebiotics',
@@ -82,7 +81,7 @@
             img: IMG + 'prebiotics.png',
             crop: [-63.38, -1.84, 223.05, 103.69],
             desc: 'Kooksoondang 100 Billion Prebiotics Makgeolli is made with rice and nuruk for a clean, balanced taste. The natural sweetness of rice meets the gentle depth of nuruk, creating a smooth body that is light on the palate. Vegan and easy to drink, it finishes cleanly and quietly, making it a comfortable everyday makgeolli to enjoy at your own pace.',
-            meta: ['ABV: 6%', 'Volume: 500ml'], // 임시값(Draft 와 같음). 제품별 실제 값이 정해지면 교체
+            meta: ['ABV: 5%', 'Volume: 350ml / 750ml'],
         },
         {
             slug: 'chestnut',
@@ -90,7 +89,7 @@
             img: IMG + 'chestnut.png',
             crop: [-61.58, -1.72, 220.59, 103.45],
             desc: 'Kooksoondang Chestnut Makgeolli wraps the rich, nutty sweetness of chestnut in the creamy softness of rice. A gentle fizz opens the flavor, and the warm, toasty note settles into a smooth, mellow body. It finishes with a lingering nutty depth that makes it a comforting choice, especially on cooler days or alongside savory dishes.',
-            meta: ['ABV: 6%', 'Volume: 500ml'], // 임시값(Draft 와 같음). 제품별 실제 값이 정해지면 교체
+            meta: ['ABV: 3%', 'Volume: 350ml / 750ml'],
         },
     ];
 
@@ -126,6 +125,9 @@
     const tint = (el, p) => {
         el.style.setProperty('--tone', toneOf(p));
         el.style.setProperty('--ink', inkFor(toneOf(p)));
+        // 캔 색: Draft 는 기본(베이지) 그대로, 나머지는 제품 색
+        if (p.slug === 'draft') el.style.removeProperty('--can');
+        else el.style.setProperty('--can', toneOf(p));
     };
 
     const setCrop = (img, crop) => {

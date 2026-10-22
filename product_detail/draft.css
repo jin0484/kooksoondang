@@ -256,9 +256,9 @@ section {
     pointer-events: none;
 }
 
-/* 캔은 제품과 상관없이 원래 색(베이지) 그대로 */
+/* 캔: Draft 는 원래 색(베이지), 다른 제품은 제품 색(--can 을 product_switch.js 가 넣음) */
 .pd_slide_deco_can {
-    background: #EADFD8;
+    background: var(--can, #EADFD8);
 }
 
 
