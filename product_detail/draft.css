@@ -275,7 +275,7 @@ section {
     /* 긴 이름(nowrap)이 칸을 밀어 넓히지 않게 열 너비를 고정 */
     grid-template-columns: minmax(0, 1fr);
     width: calc(1100 * var(--u));
-    /* 원기둥 안쪽에서 보는 시점: 카메라가 축 위에 있도록 원근 거리를 반지름(R)과 같게 둠 */
+    /* 원기둥 안쪽에서 보는 시점: 카메라가 회전 축 위에 오도록 원근 거리를 반지름(R)과 같게 둠 */
     perspective: calc(1500 * var(--u));
 }
 
@@ -592,14 +592,13 @@ section {
     .pd_product {
         width: 100%;
         text-align: center;
-        perspective: 60vw;
     }
 
     .pd_slide {
         flex-direction: column;
         align-items: center;
         gap: 2rem;
-        transform-origin: 50% 50% 60vw;
+        transform-origin: 50% 50%;
     }
 
     .pd_product_bottle {

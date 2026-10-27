@@ -205,9 +205,9 @@
     // 웹 폰트가 늦게 도착하면 글자 폭이 달라지므로 폰트가 준비된 뒤 한 번 더 맞춤
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitAll);
 
-    const paintSides = () => {
+    const paintSides = (center = index) => {
         [['prev', -1], ['next', 1]].forEach(([key, dir]) => {
-            const p = PRODUCTS[wrap(index + dir)];
+            const p = PRODUCTS[wrap(center + dir)];
             const img = sides[key].querySelector('img');
             img.src = p.img;
             setCrop(img, p.crop);
@@ -221,7 +221,8 @@
 
     const reduce = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // 회전 테이블: 현재 슬라이드는 한쪽으로 돌아 나가고, 다음 슬라이드는 반대쪽에서 돌아 들어옴
+    // 원기둥 "안쪽"에서 카드를 돌려 보는 느낌: 현재 슬라이드는 한쪽으로 돌아 나가고,
+    // 다음 슬라이드는 반대쪽에서 돌아 들어옴 (축이 카드 앞쪽에 있어 카드는 가운데를 향한 채 돌아감)
     const ANGLE = 62; // 카드 사이 각도(도). 클수록 넘어가는 두 카드 사이 간격이 넓어짐
     const DURATION = 1100;
     const EASING = 'cubic-bezier(0.65, 0, 0.25, 1)';
@@ -241,6 +242,7 @@
             if (done) return;
             done = true;
             current.remove();
+            incoming.getAnimations({ subtree: true }).forEach((an) => an.cancel());
             index = nextIndex;
             paintSides();
             sides.prev.classList.remove('is_out');
