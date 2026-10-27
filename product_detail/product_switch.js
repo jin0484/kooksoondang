@@ -3,6 +3,8 @@
 
    히어로의 "병 + 글" 한 장(.pd_slide)이 통째로 옆으로 돌아 넘어가고,
    다음 제품이 반대편에서 같은 방식으로 돌아 들어옴.
+   원기둥 "안쪽"에서 카드를 돌려 보는 느낌: 보는 사람이 원기둥의 한가운데(축)에 서 있고,
+   카드는 둘레 안쪽 면에 붙어 있어서 항상 가운데를 향한 채 옆으로 돌아 지나감.
    양옆의 흐린 병은 바로 앞·뒤 제품. 순서는 둥글게 이어짐.
 
    ※ 도수(ABV)와 용량은 확정값. 설명 글은 Draft 말고는 임시 문구라 실제 소개 글이 정해지면 PRODUCTS 의 desc 를 교체
@@ -203,9 +205,9 @@
     // 웹 폰트가 늦게 도착하면 글자 폭이 달라지므로 폰트가 준비된 뒤 한 번 더 맞춤
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitAll);
 
-    const paintSides = () => {
+    const paintSides = (center = index) => {
         [['prev', -1], ['next', 1]].forEach(([key, dir]) => {
-            const p = PRODUCTS[wrap(index + dir)];
+            const p = PRODUCTS[wrap(center + dir)];
             const img = sides[key].querySelector('img');
             img.src = p.img;
             setCrop(img, p.crop);
@@ -219,9 +221,10 @@
 
     const reduce = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // 회전 테이블: 현재 슬라이드는 한쪽으로 돌아 나가고, 다음 슬라이드는 반대쪽에서 돌아 들어옴
-    const ANGLE = 42; // 돌아 나가는 각도(도)
-    const DURATION = 900;
+    // 원기둥 "안쪽"에서 카드를 돌려 보는 느낌: 현재 슬라이드는 한쪽으로 돌아 나가고,
+    // 다음 슬라이드는 반대쪽에서 돌아 들어옴 (축이 카드 앞쪽에 있어 카드는 가운데를 향한 채 돌아감)
+    const ANGLE = 62; // 카드 사이 각도(도). 클수록 넘어가는 두 카드 사이 간격이 넓어짐
+    const DURATION = 1100;
     const EASING = 'cubic-bezier(0.65, 0, 0.25, 1)';
 
     const go = (dir) => {
@@ -239,6 +242,7 @@
             if (done) return;
             done = true;
             current.remove();
+            incoming.getAnimations({ subtree: true }).forEach((an) => an.cancel());
             index = nextIndex;
             paintSides();
             sides.prev.classList.remove('is_out');
@@ -255,8 +259,9 @@
         // dir > 0(다음): 현재는 왼쪽으로, 다음은 오른쪽에서. dir < 0 은 반대
         paintTone(nextIndex);
 
-        const out = -dir * ANGLE;
-        const inn = dir * ANGLE;
+        // (축이 카드 앞쪽에 있으므로 양의 각도 = 왼쪽으로 돌아감)
+        const out = dir * ANGLE;
+        const inn = -dir * ANGLE;
 
         sides.prev.classList.add('is_out');
         sides.next.classList.add('is_out');
