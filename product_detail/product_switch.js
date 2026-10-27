@@ -3,6 +3,8 @@
 
    히어로의 "병 + 글" 한 장(.pd_slide)이 통째로 옆으로 돌아 넘어가고,
    다음 제품이 반대편에서 같은 방식으로 돌아 들어옴.
+   원기둥 "안쪽"에서 카드를 돌려 보는 느낌: 보는 사람이 원기둥의 한가운데(축)에 서 있고,
+   카드는 둘레 안쪽 면에 붙어 있어서 항상 가운데를 향한 채 옆으로 돌아 지나감.
    양옆의 흐린 병은 바로 앞·뒤 제품. 순서는 둥글게 이어짐.
 
    ※ 도수(ABV)와 용량은 확정값. 설명 글은 Draft 말고는 임시 문구라 실제 소개 글이 정해지면 PRODUCTS 의 desc 를 교체
@@ -255,8 +257,9 @@
         // dir > 0(다음): 현재는 왼쪽으로, 다음은 오른쪽에서. dir < 0 은 반대
         paintTone(nextIndex);
 
-        const out = -dir * ANGLE;
-        const inn = dir * ANGLE;
+        // (축이 카드 앞쪽에 있으므로 양의 각도 = 왼쪽으로 돌아감)
+        const out = dir * ANGLE;
+        const inn = -dir * ANGLE;
 
         sides.prev.classList.add('is_out');
         sides.next.classList.add('is_out');

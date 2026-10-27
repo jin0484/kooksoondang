@@ -275,8 +275,8 @@ section {
     /* 긴 이름(nowrap)이 칸을 밀어 넓히지 않게 열 너비를 고정 */
     grid-template-columns: minmax(0, 1fr);
     width: calc(1100 * var(--u));
-    /* 회전 테이블처럼 보이도록 원근감을 줌 */
-    perspective: calc(2400 * var(--u));
+    /* 원기둥 안쪽에서 보는 시점: 카메라가 축 위에 있도록 원근 거리를 반지름(R)과 같게 둠 */
+    perspective: calc(1500 * var(--u));
 }
 
 /* 슬라이드 한 장 = 병 + 글 전체(주황 네모). 넘길 때 이 한 장이 통째로 돌아서 넘어감 */
@@ -286,8 +286,8 @@ section {
     display: flex;
     align-items: center;
     gap: calc(100 * var(--u));
-    /* 앞쪽에서 먼 곳(뒤)에 놓인 축을 중심으로 돌게 해서 호를 그리며 지나감 */
-    transform-origin: 50% 50% calc(-1500 * var(--u));
+    /* 회전 축은 카드 "앞쪽"(보는 사람 위치)에 있음 → 카드는 원기둥 안쪽 면을 따라 가운데를 향한 채 돌아감 */
+    transform-origin: 50% 50% calc(1500 * var(--u));
     backface-visibility: hidden;
     will-change: transform, opacity;
 }
@@ -592,13 +592,14 @@ section {
     .pd_product {
         width: 100%;
         text-align: center;
+        perspective: 60vw;
     }
 
     .pd_slide {
         flex-direction: column;
         align-items: center;
         gap: 2rem;
-        transform-origin: 50% 50% -60vw;
+        transform-origin: 50% 50% 60vw;
     }
 
     .pd_product_bottle {
